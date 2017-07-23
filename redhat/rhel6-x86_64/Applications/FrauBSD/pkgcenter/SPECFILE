@@ -1,0 +1,141 @@
+# -*- tab-width:  4 -*- ;; Emacs
+# vi: set noexpandtab   :: Vi/ViM
+# vi: set filetype=spec ::
+############################################################ HEADER
+
+Name: pkgcenter
+Group: Applications/FrauBSD
+# For a list of groups, see pkgcenter/redhat/Mk/GROUPS
+
+Summary: pkgcenter
+License: BSD
+Version: 3.0
+Release: 1
+Buildarch: noarch
+
+URL: https://www.fraubsd.org/
+Packager: Devin Teske <dteske@freebsd.org>
+Vendor: The FrauBSD Project https://www.fraubsd.org/
+
+BuildRoot: %{_tmppath}/src
+
+Requires: /bin/sh
+Requires: /bin/awk
+Requires: /usr/bin/make
+
+############################################################ DESCRIPTION
+
+%Description
+Package Center is a multi-platform compatible packaging framework. It is
+written in Bourne-shell and compatible with most modern operating systems.
+It current can produce FreeBSD packages and RedHat RPM type packages.
+
+WWW: https://www.fraubsd.org/
+
+############################################################ MACROS
+
+#
+# Define how we should install the files into the temporary
+# install-root from which the RPM will be compiled.
+#
+%define TAR          %{__tar}
+%define TARFROMFLAGS c --exclude CVS -f - -C
+%define TARFILES     .
+%define TARTOFLAGS   xvf - -C
+
+#
+# Short-hand
+#
+# NOTE: $RPM_BUILD_ROOT has a trailing-slash
+#
+%define TMPROOT $RPM_BUILD_ROOT
+
+############################################################ INSTALL STANZA
+
+%install
+%{__mkdir_p} %{TMPROOT}
+%{TAR} %{TARFROMFLAGS} %{_srcdir} %{TARFILES} | %{TAR} %{TARTOFLAGS} %{TMPROOT}
+
+############################################################ FILES STANZA
+
+%files
+%defattr(-,root,root)
+/usr/pkgcenter/.git-filters/keywords
+/usr/pkgcenter/.git-hooks/commit-msg
+/usr/pkgcenter/.git-hooks/post-commit
+/usr/pkgcenter/.git-hooks/pre-commit
+/usr/pkgcenter/LICENSE
+/usr/pkgcenter/Makefile
+/usr/pkgcenter/Mk/HELP
+/usr/pkgcenter/Mk/USAGE
+/usr/pkgcenter/Mk/clean_directories
+/usr/pkgcenter/Mk/clean_symlinks
+/usr/pkgcenter/Mk/die
+/usr/pkgcenter/Mk/git_import
+/usr/pkgcenter/Mk/git_tag
+/usr/pkgcenter/Mk/make_directories
+/usr/pkgcenter/Mk/make_stage
+/usr/pkgcenter/Mk/make_symlinks
+/usr/pkgcenter/Mk/pkgcenter_readconf
+/usr/pkgcenter/Mk/xargs
+/usr/pkgcenter/README.md
+/usr/pkgcenter/depend/.keep
+/usr/pkgcenter/depend/import
+/usr/pkgcenter/depend/tag
+/usr/pkgcenter/freebsd/Makefile
+/usr/pkgcenter/freebsd/Mk/HELP_FREEBSD
+/usr/pkgcenter/freebsd/Mk/HELP_PACKAGE
+/usr/pkgcenter/freebsd/Mk/USAGE_FREEBSD
+/usr/pkgcenter/freebsd/Mk/USAGE_PACKAGE
+/usr/pkgcenter/freebsd/Mk/convert
+/usr/pkgcenter/freebsd/Mk/manifest.subr
+/usr/pkgcenter/freebsd/Mk/pkgcc
+/usr/pkgcenter/freebsd/Mk/pkgname
+/usr/pkgcenter/freebsd/Mk/pkgorigin
+/usr/pkgcenter/freebsd/Mk/pkgtag
+/usr/pkgcenter/freebsd/Mk/pkgtagname
+/usr/pkgcenter/freebsd/RELENG_11_0/Makefile
+/usr/pkgcenter/freebsd/create.sh
+/usr/pkgcenter/freebsd/skel/MANIFEST
+/usr/pkgcenter/freebsd/skel/Makefile
+/usr/pkgcenter/freebsd/skel/Makefile.ng
+/usr/pkgcenter/freebsd/skel/Makefile.old
+/usr/pkgcenter/freebsd/skel/PLIST
+/usr/pkgcenter/freebsd/skel/pkgcenter.conf
+/usr/pkgcenter/freebsd/skel/stage/+COMMENT
+/usr/pkgcenter/freebsd/skel/stage/+DESC
+/usr/pkgcenter/freebsd/unpack.sh
+/usr/pkgcenter/redhat/Makefile
+/usr/pkgcenter/redhat/Mk/GROUPS
+/usr/pkgcenter/redhat/Mk/HELP_REDHAT
+/usr/pkgcenter/redhat/Mk/HELP_RPM
+/usr/pkgcenter/redhat/Mk/USAGE_REDHAT
+/usr/pkgcenter/redhat/Mk/USAGE_RPM
+/usr/pkgcenter/redhat/Mk/rpmgroup
+/usr/pkgcenter/redhat/Mk/rpmname
+/usr/pkgcenter/redhat/Mk/rpmtag
+/usr/pkgcenter/redhat/Mk/rpmtagname
+/usr/pkgcenter/redhat/Mk/template.spec
+/usr/pkgcenter/redhat/create.sh
+/usr/pkgcenter/redhat/rhel6-x86_64/Makefile
+/usr/pkgcenter/redhat/skel/Makefile
+/usr/pkgcenter/redhat/skel/pkgcenter.conf
+/usr/pkgcenter/redhat/unpack.sh
+
+############################################################ FOOTER
+
+%pre
+
+
+%post
+
+
+%preun
+
+
+%postun
+
+
+%changelog
+* Sun Jul 07 2017 Devin Teske <dteske@freebsd.org> 3.0-1
+- Package created.
