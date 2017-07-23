@@ -1,0 +1,173 @@
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: dwatch(8) module for VOP_CREATE(9) [or similar] entry $
+# $Copyright: 2014-2017 Devin Teske. All rights reserved. $
+# $FreeBSD$
+#
+############################################################ DESCRIPTION
+#
+# Print filesystem paths being operated-on by VOP_CREATE(9) [or similar]
+# NB: All paths are shown even if error prevents operation.
+#
+############################################################ PROBE
+
+: ${PROBE:="vfs:vop:$PROFILE:entry"}
+
+############################################################ ACTIONS
+
+exec 9<<EOF
+$PROBE /* probe ID 1 */
+{${TRACE:+
+	printf("<1>");}
+	this->vp = (struct vnode *)arg0;
+	this->ncp = this->vp != NULL ?
+		this->vp->v_cache_dst.tqh_first : 0;
+	this->fi_name = args[1] ? (
+		args[1]->a_cnp != NULL ?
+			stringof(args[1]->a_cnp->cn_nameptr) : ""
+	) : "";
+	this->mount = this->vp != NULL ?
+		this->vp->v_mount : NULL; /* ptr to vfs we are in */
+	this->fi_fs = this->mount != NULL ?
+		stringof(this->mount->mnt_stat.f_fstypename) : "";
+	this->fi_mount = this->mount != NULL ?
+		stringof(this->mount->mnt_stat.f_mntonname) : "";
+	this->d_name = args[0]->v_cache_dd != NULL ?
+		stringof(args[0]->v_cache_dd->nc_name) : "";
+
+$( awk -v MAX_DEPTH=$MAX_DEPTH '
+	buf = buf $0 "\n" { }
+	END {
+		for (DEPTH = 1; DEPTH <= MAX_DEPTH + 1; DEPTH++) {
+			$0 = buf
+			gsub(/DEPTH/, DEPTH)
+			sub(/\n$/, "")
+			print
+		}
+	}
+' <<EOFDEPTH
+	this->nameDEPTH = "";
+EOFDEPTH
+)
+}
+
+$PROBE /this->vp == 0 || this->fi_fs == 0 ||
+	this->fi_fs == "devfs" || this->fi_fs == "" ||
+	this->fi_name == ""/ /* probe ID 2 */
+{${TRACE:+
+	printf("<2>");}
+	this->ncp = 0;
+}
+
+/*********************************************************/
+
+$PROBE /this->ncp/ /* probe ID 3 (depth 1) */
+{${TRACE:+
+	printf("<3>");}
+	this->dvp = this->ncp->nc_dvp != NULL ?
+		this->ncp->nc_dvp->v_cache_dst.tqh_first : 0;
+	this->name1 = this->dvp != 0 ? (
+		this->dvp->nc_name != 0 ? stringof(this->dvp->nc_name) : ""
+	) : "";
+}
+
+$PROBE /this->name1 == 0 || this->fi_fs == 0 ||
+	this->fi_fs == "devfs" || this->fi_fs == "" ||
+	this->name1 == "/" || this->name1 == ""/ /* probe ID 4 */
+{${TRACE:+
+	printf("<4>");}
+	this->dvp = 0;
+}
+
+/*********************************************************/
+
+/*
+ * BEGIN Pathname-depth iterators
+ */
+
+$( awk -v ID=5 -v MAX_DEPTH=$MAX_DEPTH '
+	buf = buf $0 "\n" { }
+	END {
+		for (DEPTH = 2; DEPTH <= MAX_DEPTH; DEPTH++) {
+			$0 = buf
+			gsub(/DEPTH/, DEPTH)
+			gsub(/IDNUM/, ID++)
+			sub(/\n$/, "")
+			print
+		}
+	}
+' <<EOFDEPTH
+$PROBE /this->dvp/ /* probe ID IDNUM (depth DEPTH) */
+{${TRACE:+
+	printf("<IDNUM>");}
+	this->dvp = this->dvp->nc_dvp != NULL ?
+		this->dvp->nc_dvp->v_cache_dst.tqh_first : 0;
+	this->nameDEPTH = this->dvp != 0 ? (
+		this->dvp->nc_name != 0 ? stringof(this->dvp->nc_name) : ""
+	) : "";
+}
+
+EOFDEPTH
+)
+
+$PROBE /this->dvp/ /* probe ID $(( $MAX_DEPTH + 4 )) */
+{${TRACE:+
+	printf("<$(( $MAX_DEPTH + 4 ))>");}
+	this->dvp = this->dvp->nc_dvp != NULL ?
+		this->dvp->nc_dvp->v_cache_dst.tqh_first : 0;
+	this->name$(( $MAX_DEPTH + 1 )) = this->dvp != 0 ? (
+		this->dvp->nc_dvp != NULL ? "..." : ""
+	) : "";
+}
+
+/*
+ * END Pathname-depth iterators
+ */
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $MAX_DEPTH + 5 ))
+
+############################################################ EVENT ACTION
+
+EVENT_TEST="this->fi_mount != 0"
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
+	/*
+	 * Print full path
+	 * NB: Up-to but not including the parent directory (printed below)
+	 */
+	printf("%s%s", this->fi_mount, this->fi_mount != 0 ? (
+		this->fi_mount == "/" ? "" : "/"
+	) : "/");
+	$( awk -v MAX_DEPTH=$MAX_DEPTH '
+		buf = buf $0 "\n" { }
+		END {
+			for (N = MAX_DEPTH + 1; N > 0; N--) {
+				$0 = (N <= MAX_DEPTH ? "\t" : "") buf
+				gsub(/N/, N)
+				sub(/\n$/, "")
+				print
+			}
+		}
+	' <<-EOFDEPTH
+	printf("%s%s", this->name = this->nameN, this->name != "" ? "/" : "");
+	EOFDEPTH
+	)
+
+	/* Print the parent directory name */
+	this->name = this->d_name != 0 ? this->d_name : "";
+	printf("%s%s", this->name, this->name != "" ? "/" : "");
+
+	/* Print the entry name */
+	this->name = this->fi_name != 0 ? this->fi_name : "";
+	printf("%s", this->name);
+EOF
+EVENT_DETAILS=$( cat <&9 )
+
+################################################################################
+# END
+################################################################################

@@ -1,0 +1,79 @@
+// -*- tab-width: 4 -*-        ;; Emacs
+// vi: set noexpandtab         :: Vi/ViM
+// vi: set filetype=javascript ::
+{
+	//////////////////////////////////////////////////// HEADER
+
+	"name":"dwatch",
+	"origin":"fraubsd/dwatch",
+	"categories":["fraubsd"],
+
+	"comment":"Watch processes as they trigger a particular DTrace probe",
+	"licenselogic":"single",
+	"licenses":["BSD"],
+	"version":"1.0-beta-2",
+
+	"maintainer":"dteske@freebsd.org",
+	"www":"https://www.fraubsd.org/",
+
+	"arch":"freebsd:11:*",
+	"prefix":"/",
+
+	//////////////////////////////////////////////////// DESCRIPTION
+
+	"desc":"The dwatch utility uses dtrace(1) to display process info when DTrace
+hits a given probe proint.
+
+WWW: https://www.fraubsd.org/",
+
+	//////////////////////////////////////////////////// FILES
+
+	"files":[
+		"/usr/libexec/dwatch/chmod",
+		"/usr/libexec/dwatch/fchmod",
+		"/usr/libexec/dwatch/fchmodat",
+		"/usr/libexec/dwatch/kill",
+		"/usr/libexec/dwatch/lchmod",
+		"/usr/libexec/dwatch/nanosleep",
+		"/usr/libexec/dwatch/readdir",
+		"/usr/libexec/dwatch/vop_create",
+		"/usr/libexec/dwatch/vop_lookup",
+		"/usr/libexec/dwatch/vop_mkdir",
+		"/usr/libexec/dwatch/vop_mknod",
+		"/usr/libexec/dwatch/vop_remove",
+		"/usr/libexec/dwatch/vop_rename",
+		"/usr/libexec/dwatch/vop_rmdir",
+		"/usr/libexec/dwatch/vop_symlink",
+		"/usr/sbin/dwatch",
+		"/usr/share/examples/dwatch/profile_template",
+		"/usr/share/man/man1/dwatch.1",
+	],
+
+	//////////////////////////////////////////////////// DIRECTORIES
+
+	"directories":{
+		"/usr":"n",
+		"/usr/libexec":"n",
+		"/usr/libexec/dwatch":"y",
+		"/usr/sbin":"n",
+		"/usr/share":"n",
+		"/usr/share/examples":"n",
+		"/usr/share/examples/dwatch":"y",
+		"/usr/share/man":"n",
+		"/usr/share/man/man1":"n",
+	},
+
+	//////////////////////////////////////////////////// MESSAGE
+
+	"message":"
+	+ This package will use security/sudo if installed.
+",
+}
+////////////////////////////////////////////////////////////////////////////////
+// END
+////////////////////////////////////////////////////////////////////////////////
+//
+// $Copyright: 2016-2017 Devin Teske. All rights reserved. $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-07-23 16:22:53 -0700 freebsdfrau $
+//
+////////////////////////////////////////////////////////////////////////////////

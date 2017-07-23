@@ -1,0 +1,26 @@
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: dwatch(8) module for kill(2) [or similar] entry $
+# $Copyright: 2014-2017 Devin Teske. All rights reserved. $
+# $FreeBSD$
+#
+############################################################ DESCRIPTION
+#
+# Print arguments being passed to kill(2) [or similar]
+#
+############################################################ PROBE
+
+: ${PROBE:="syscall::$PROFILE:entry"}
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
+	printf("%s(pid %d, sig %i)", probefunc, (pid_t)arg0, (int)arg1);
+EOF
+EVENT_DETAILS=$( cat <&9 )
+
+################################################################################
+# END
+################################################################################

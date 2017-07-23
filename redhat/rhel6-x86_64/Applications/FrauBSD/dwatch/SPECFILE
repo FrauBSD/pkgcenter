@@ -1,0 +1,96 @@
+# -*- tab-width:  4 -*- ;; Emacs
+# vi: set noexpandtab   :: Vi/ViM
+# vi: set filetype=spec ::
+############################################################ HEADER
+
+Name: dwatch
+Group: Applications/FrauBSD
+# For a list of groups, see pkgcenter/redhat/Mk/GROUPS
+
+Summary: dwatch
+License: BSD
+Version: 1.0b2
+Release: 1
+Buildarch: noarch
+
+URL: https://www.fraubsd.org/
+Packager: Devin Teske <dteske@freebsd.org>
+Vendor: The FrauBSD Project https://www.fraubsd.org/
+
+BuildRoot: %{_tmppath}/src
+
+Requires: /bin/sh
+Requires: /bin/awk
+
+############################################################ DESCRIPTION
+
+%Description
+The dwatch utility uses dtrace(1) to display process info when DTrace
+hits a given probe proint.
+
+WWW: https://www.fraubsd.org/
+
+############################################################ MACROS
+
+#
+# Define how we should install the files into the temporary
+# install-root from which the RPM will be compiled.
+#
+%define TAR          %{__tar}
+%define TARFROMFLAGS c --exclude CVS -f - -C
+%define TARFILES     .
+%define TARTOFLAGS   xvf - -C
+
+#
+# Short-hand
+#
+# NOTE: $RPM_BUILD_ROOT has a trailing-slash
+#
+%define TMPROOT $RPM_BUILD_ROOT
+
+############################################################ INSTALL STANZA
+
+%install
+%{__mkdir_p} %{TMPROOT}
+%{TAR} %{TARFROMFLAGS} %{_srcdir} %{TARFILES} | %{TAR} %{TARTOFLAGS} %{TMPROOT}
+
+############################################################ FILES STANZA
+
+%files
+%defattr(-,root,root)
+/usr/libexec/dwatch/chmod
+/usr/libexec/dwatch/fchmod
+/usr/libexec/dwatch/fchmodat
+/usr/libexec/dwatch/kill
+/usr/libexec/dwatch/lchmod
+/usr/libexec/dwatch/nanosleep
+/usr/libexec/dwatch/readdir
+/usr/libexec/dwatch/vop_create
+/usr/libexec/dwatch/vop_lookup
+/usr/libexec/dwatch/vop_mkdir
+/usr/libexec/dwatch/vop_mknod
+/usr/libexec/dwatch/vop_remove
+/usr/libexec/dwatch/vop_rename
+/usr/libexec/dwatch/vop_rmdir
+/usr/libexec/dwatch/vop_symlink
+/usr/sbin/dwatch
+/usr/share/examples/dwatch/profile_template
+/usr/share/man/man1/dwatch.1.gz
+
+############################################################ FOOTER
+
+%pre
+
+
+%post
+printf "\n\t+ This package will use security/sudo if installed.\n\n"
+
+%preun
+
+
+%postun
+
+
+%changelog
+* Sun Jul 07 2017 Devin Teske <dteske@fraubsd.org> 1.0b2-1
+- Package created.

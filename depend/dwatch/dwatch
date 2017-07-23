@@ -1,0 +1,1135 @@
+#!/bin/sh
+#-
+# Copyright (c) 2014-2017 Devin Teske
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+############################################################ IDENT(1)
+#
+# $Title: Watch processes as they trigger a particular DTrace probe $
+# $FreeBSD$
+#
+############################################################ CONFIGURATION
+
+#
+# DTrace pragma settings
+#
+DTRACE_PRAGMA="
+	option quiet
+	option dynvarsize=16m
+	option switchrate=10hz
+" # END-QUOTE
+
+#
+# Profiles
+#
+: ${DWATCH_PROFILES_PATH="/usr/libexec/dwatch:/usr/local/libexec/dwatch"}
+
+############################################################ GLOBALS
+
+VERSION='$Version: 1.0-beta-2 $' # -V
+
+pgm="${0##*/}" # Program basename
+
+#
+# Command-line arguments
+#
+PROBE_ARG=
+
+#
+# Command-line options
+#
+CONSOLE=		# -y
+CONSOLE_FORCE=		# -y
+[ -t 1 ] && CONSOLE=1	# -y
+COUNT=0			# -N count
+CUSTOM_DETAILS=		# -E code
+CUSTOM_TEST=		# -t test
+DEBUG=			# -d
+DESTRUCTIVE_ACTIONS=	# -w
+EXECNAME=		# -k name
+EXECREGEX=		# -z regex
+EXIT_AFTER_COMPILE=	# -e
+FILTER=			# -r regex
+GROUP=			# -g group
+JID=			# -j jail
+LIST=			# -l
+LIST_PROFILES=		# -Q
+MAX_ARGS=64		# -B num
+MAX_DEPTH=64		# -K num
+ONELINE=		# -1
+OUTPUT=			# -o output
+OUTPUT_CMD=		# -O cmd
+PID=			# -p pid
+PROBE_TYPE=		# -f -m -n -P
+PROFILE=		# -M name
+PSTREE=			# -R
+QUIET=			# -q
+TIMEOUT=		# -T time
+TRACE=			# -x
+USER=			# -u user
+USE_PROFILE=		# -M name
+VERBOSE=		# -v
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# Miscellaneous
+#
+ACTIONS=
+E=$( :|awk 'BEGIN{printf "\033"}' )
+EVENT_DETAILS=
+EVENT_TAG='printf("%d.%d %s[%d]: ",
+		this->uid0, this->gid0, execname, this->pid0);'
+EVENT_TEST=
+FILE=
+FUNC_COALESCE_DETAILS='
+	/**************** FUNC_COALESCE ****************/
+
+	printf("%s%s:%s:%s:%s ", probename == "entry" ? "=> " :
+			probename == "return" ? "<= " :
+			probename == "start" ? "=> " :
+			probename == "done" ? "<= " : "",
+		probeprov, probemod, probefunc, probename);'
+ID=1
+MODULE_CHECKED=
+PROBE=
+RGID=
+RUID=
+SUDO=
+export SUDO_PROMPT="[sudo] Password:"
+TITLE=\$Title:
+
+############################################################ FUNCTIONS
+
+ansi() { local fmt="$2 $4"; [ "$CONSOLE" ] && fmt="$E[$1m$2$E[$3m $4";
+	shift 4; printf "$fmt\n" "$@"; }
+die() { exec >&2; [ "$*" ] && echo "$pgm:" "$@"; exit $FAILURE; }
+info() { [ "$QUIET" ] || ansi 35 "INFO" 39 "$@" >&2; }
+
+usage()
+{
+	local optfmt="\t%-9s %s\n"
+	exec >&2
+	[ "$*" ] && printf "%s: %s\n" "$pgm" "$*"
+	printf "Usage: %s [-1defFmnPqRvVwxy] [%s] [%s] [%s] [%s]\n" "$pgm" \
+		"-B num" "-E code" "-g group" "-j jail"
+	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
+		"-k name" "-K num" "-M name" "-N count" "-o output" "-O cmd"
+	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
+		"-p pid" "-r regex" "-t test" "-T time" "-u user" "-z regex"
+	printf "\t      probe ...\n"
+	printf "       %s -l [-fmnPqy] [-r regex] [probe ...]\n" "$pgm"
+	printf "       %s -Q [-1qy] [-r regex]\n" "$pgm"
+	printf "\n"
+	printf "$optfmt" "-1" \
+		"Print one line per process/profile (Default; disables \`-R')."
+	printf "$optfmt" "-B num" \
+		"Maximum number of arguments to display (Default $MAX_ARGS)."
+	printf "$optfmt" "-d" \
+		"Debug. Send dtrace(1) script to stdout instead of executing."
+	printf "$optfmt" "-e" \
+		"Exit after compiling request but prior to enabling probes."
+	printf "$optfmt" "-E code" \
+		"DTrace code for event details. If \`-', read from stdin."
+	printf "$optfmt" "-f" \
+		"Enable probe matching the specified function name."
+	printf "$optfmt" "-F" \
+		"Coalesce trace output by function."
+	printf "$optfmt" "-g group" \
+		"Group filter. Only show processes matching group name/gid."
+	printf "$optfmt" "-j jail" \
+		"Jail filter. Only show processes matching jail name/jid."
+	printf "$optfmt" "-k name" \
+		"Only show processes matching name."
+	printf "$optfmt" "-K num" \
+		"Maximum directory depth to display (Default $MAX_DEPTH)."
+	printf "$optfmt" "-l" \
+		"List available probes on standard output and exit."
+	printf "$optfmt" "-m" \
+		"Enable probe matching the specified module name."
+	printf "$optfmt" "-M name" \
+		"Load profile name from DWATCH_PROFILES_PATH."
+	printf "$optfmt" "-n" \
+		"Enable probe matching the specified probe name."
+	printf "$optfmt" "-N count" \
+		"Exit after count matching entries (Default 0 for disabled)."
+	printf "$optfmt" "-o output" \
+		"Set output file. If \`-', the path \`/dev/stdout' is used."
+	printf "$optfmt" "-O cmd" \
+		"Execute cmd for each event."
+	printf "$optfmt" "-p pid" \
+		"Process id filter. Only show processes with matching pid."
+	printf "$optfmt" "-P" \
+		"Enable probe matching the specified provider name."
+	printf "$optfmt" "-q" \
+		"Quiet. Hide informational messages and all dtrace(1) errors."
+	printf "$optfmt" "-Q" \
+		"List available profiles in DWATCH_PROFILES_PATH and exit."
+	printf "$optfmt" "-r regex" \
+		"Filter. Only show blocks matching awk(1) regular expression."
+	printf "$optfmt" "-R" \
+		"Show parent, grandparent, and ancestor of process."
+	printf "$optfmt" "-t test" \
+		"Test clause (predicate) to limit events (Default none)."
+	printf "$optfmt" "-T time" \
+		"Timeout. Format is \`#[smhd]' or simply \`#' for seconds."
+	printf "$optfmt" "-u user" \
+		"User filter. Only show processes matching user name/uid."
+	printf "$optfmt" "-v" \
+		"Verbose. Show all errors from dtrace(1)."
+	printf "$optfmt" "-V" \
+		"Report dwatch version on standard output and exit."
+	printf "$optfmt" "-w" \
+		"Permit destructive actions (copyout*, stop, panic, etc.)."
+	printf "$optfmt" "-x" \
+		"Trace. Print \`<probe-id>' when a probe is triggered."
+	printf "$optfmt" "-y" \
+		"Always treat stdout as console (enable colors/columns/etc.)."
+	printf "$optfmt" "-z regex" \
+		"Only show processes matching awk(1) regular expression."
+	die
+}
+
+process_flag()
+{
+	local flag="$1"
+	local name predicate vers
+
+	case "$flag" in
+	1) ONELINE=1 PSTREE= ;;
+	B) MAX_ARGS="$OPTARG" ;;
+	d) DEBUG=1 ;;
+	e) EXIT_AFTER_COMPILE=1 ;;
+	E) CUSTOM_DETAILS=1 EVENT_DETAILS="$OPTARG" ;;
+	f) PROBE_TYPE=function ;;
+	F) CUSTOM_DETAILS=1 EVENT_DETAILS="$FUNC_COALESCE_DETAILS" ;;
+	g) GROUP="$OPTARG" ;;
+	j) JID="$OPTARG" ;;
+	k) EXECNAME="$EXECNAME${EXECNAME:+ }$OPTARG"
+	   case "$OPTARG" in
+	   \**\*) name="${OPTARG%\*}"
+		predicate="strstr(execname, \"${name#\*}\") != NULL" ;;
+	   \**) name="${OPTARG#\*}"
+		predicate="strstr(execname, \"$name\") == (execname +"
+		predicate="$predicate strlen(execname) - ${#name})" ;;
+	   *\*) predicate="strstr(execname, \"${OPTARG%\*}\") == execname" ;;
+	   *) predicate="execname == \"$OPTARG\""
+	   esac
+	   EVENT_TEST="$predicate${EVENT_TEST:+ ||
+		($EVENT_TEST)}" ;;
+	K) MAX_DEPTH="$OPTARG" ;;
+	l) LIST=1 ;;
+	m) PROBE_TYPE=module ;;
+	M) USE_PROFILE=1 PROFILE="$OPTARG" ;;
+	n) PROBE_TYPE=name ;;
+	N) COUNT="$OPTARG" ;;
+	o) OUTPUT="$OPTARG" ;;
+	O) OUTPUT_CMD="$OPTARG" ;;
+	p) PID="$OPTARG" ;;
+	P) PROBE_TYPE=provider ;;
+	q) QUIET=1 ;;
+	Q) LIST_PROFILES=1 ;;
+	r) FILTER="$OPTARG" ;;
+	R) PSTREE=1 ;;
+	t) CUSTOM_TEST="$OPTARG" ;;
+	T) TIMEOUT="$OPTARG" ;;
+	u) USER="$OPTARG" ;;
+	v) VERBOSE=1 ;;
+	V) vers="${VERSION#\$*[:\$]}"
+	   vers="${vers% \$}"
+	   printf "%s: %s\n" "$pgm" "${vers# }"
+	   exit ;;
+	w) DESTRUCTIVE_ACTIONS=1 ;;
+	x) TRACE=1 ;;
+	y) CONSOLE=1 CONSOLE_FORCE=1 ;;
+	z) EXECREGEX="$OPTARG" ;;
+	*) usage
+	   # NOTREACHED
+	esac
+}
+
+dtrace_cmd()
+{
+	local status stdout
+	local timeout=
+
+	if [ "$1" = "-t" ]; then
+		shift
+		[ "$TIMEOUT" ] && timeout=1
+	fi
+
+	exec 3>&1
+	stdout=3
+
+	#
+	# Filter dtrace(1) stderr while preserving exit status
+	#
+	status=$(
+		exec 4>&1
+		to_status=4
+		( trap 'echo $? >&$to_status' EXIT
+			eval $SUDO ${timeout:+timeout \"\$TIMEOUT\"} dtrace \
+				\"\$@\" 2>&1 ${QUIET:+2> /dev/null} >&$stdout
+		) | dtrace_stderr_filter >&2
+	)
+
+	return $status
+}
+
+dtrace_stderr_filter()
+{
+	if [ "$VERBOSE" ]; then
+		cat
+		return
+		# NOTREACHED
+	fi
+
+	awk ' # Start awk(1) stderr-filter
+	/[[:digit:]]+ drops? on CPU [[:digit:]]+/ { next }
+	/failed to write to <stdout>: No such file or directory/ { next }
+	/failed to write to <stdout>: Broken pipe/ { next }
+	/processing aborted: Broken pipe/ { next }
+	{ print; fflush() }
+	' # END-QUOTE
+}
+
+expand_probe()
+{
+	local OPTIND=1 OPTARG flag
+	local type=
+
+	while getopts t: flag; do
+		case "$flag" in
+		t) type="$OPTARG" ;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	local probe="$1"
+	case "$probe" in
+	*:*)
+		echo "$probe"
+		return $SUCCESS
+		;;
+	esac
+
+	dtrace_cmd -l | awk -v probe="$1" -v type="$type" '
+	# Start awk(1) processor
+	#################################################### BEGIN
+	BEGIN { getline dtrace_header }
+	#################################################### FUNCTIONS
+	function dump(unused1,unused2) {
+		if (n) {
+			if (NcF[n] == 1) f = N2F[n]
+			if (NcM[n] == 1) m = N2M[n]
+			if (NcP[n] == 1) p = N2P[n]
+		} else if (f) {
+			if (FcM[f] == 1) m = F2M[f]
+			if (FcP[f] == 1) p = F2P[f]
+			if (FcN[f] == 0 && found) n = "entry"
+		} else if (m) {
+			if (McP[m] == 1) p = M2P[m]
+		}
+		printf "%s:%s:%s:%s\n", p, m, f, n
+		exit !found
+	}
+	function inFMP() { return probe in F || probe in M || probe in P }
+	function inNMP() { return probe in N || probe in M || probe in P }
+	function inNFP() { return probe in N || probe in F || probe in P }
+	function inNFM() { return probe in N || probe in F || probe in M }
+	function diva(value, peerA, peerB, peerC) {
+		return value >= peerA && value >= peerB && value >= peerC
+	}
+	#################################################### MAIN
+	type == "name" && $NF != probe { next }
+	type == "function" && NF >=4 && $(NF-1) != probe { next }
+	type == "module" && NF == 5 && $(NF-2) != probe { next }
+	type == "provider" && $2 != probe { next }
+	type || $2 == probe || $3 == probe || $4 == probe || $5 == probe {
+		P[_p = $2]++
+		M[_m = (NF >= 5 ? $(NF-2) : "")]++
+		F[_f = (NF >= 4 ? $(NF-1) : "")]++
+		N[_n = $NF]++
+		if (N2F[_n] != _f) NcF[_n]++; N2F[_n] = _f
+		if (N2M[_n] != _m) NcM[_n]++; N2M[_n] = _m
+		if (N2P[_n] != _p) NcP[_n]++; N2P[_n] = _p
+		if (_n !~ /entry|return/) {
+			if (F2N[_f] != _n) FcN[_f]++
+			F2N[_f] = _n
+		}
+		if (F2M[_f] != _m) FcM[_f]++; F2M[_f] = _m
+		if (F2P[_f] != _p) FcP[_f]++; F2P[_f] = _p
+		if (M2P[_m] != _p) McP[_m]++; M2P[_m] = _p
+	}
+	#################################################### END
+	END {
+		if (type == "name")     dump(n = probe, found = probe in N)
+		if (type == "function") dump(f = probe, found = probe in F)
+		if (type == "module")   dump(m = probe, found = probe in M)
+		if (type == "provider") dump(p = probe, found = probe in P)
+		if (probe in N) {
+			found = 1
+			if (!inFMP()) dump(n = probe)
+			if (diva(F[probe], N[probe], M[probe], P[probe]))
+				dump(f = probe)
+			if (diva(M[probe], N[probe], F[probe], P[probe]))
+				dump(m = probe)
+			if (diva(P[probe], N[probe], F[probe], M[probe]))
+				dump(p = probe)
+			dump(n = probe) # N is the diva
+		} else if (probe in F) {
+			found = 1
+			if (!inNMP()) dump(f = probe)
+			if (diva(N[probe], F[probe], M[probe], P[probe]))
+				dump(n = probe)
+			if (diva(M[probe], F[probe], N[probe], P[probe]))
+				dump(m = probe)
+			if (diva(P[probe], F[probe], N[probe], M[probe]))
+				dump(p = probe)
+			dump(f = probe) # F is the diva
+		} else if (probe in M) {
+			found = 1
+			if (!inNFP()) dump(m = probe)
+			if (diva(N[probe], M[probe], F[probe], P[probe]))
+				dump(n = probe)
+			if (diva(F[probe], M[probe], N[probe], P[probe]))
+				dump(f = probe)
+			if (diva(P[probe], M[probe], N[probe], F[probe]))
+				dump(p = probe)
+			dump(m = probe) # M is the diva
+		} else if (probe in P) {
+			found = 1
+			if (!inNFM()) dump(p = probe)
+			if (diva(N[probe], P[probe], F[probe], M[probe]))
+				dump(n = probe)
+			if (diva(F[probe], P[probe], N[probe], M[probe]))
+				dump(f = probe)
+			if (diva(M[probe], P[probe], N[probe], F[probe]))
+				dump(m = probe)
+			dump(p = probe) # P is the diva
+		}
+		if (!found) print probe
+		exit !found
+	}
+	' # END-QUOTE
+}
+
+list_probes()
+{
+	local column=0 header="PROVIDER:MODULE:FUNCTION:NAME"
+
+	if [ ! "$PROBE" ]; then
+		case "$PROBE_TYPE" in
+		provider) column=1 header="PROVIDER" ;;
+		module)   column=2 header="MODULE" ;;
+		function) column=3 header="FUNCTION" ;;
+		name)     column=4 header="NAME" ;;
+		esac
+	fi
+
+	[ "$QUIET" ] || echo "$header"
+
+	dtrace_cmd -l${PROBE:+n "$PROBE"} | awk -v pattern="$(
+		# Prevent backslashes from being lost
+		echo "$FILTER" | awk 'gsub(/\\/,"&&")||1'
+	)" -v want="$column" -v sort="sort" '
+		BEGIN { getline dtrace_header }
+		NF > 3 && $(NF-1) ~ /^#/ { next }
+		!_[$0 = column[0] = sprintf("%s:%s:%s:%s",
+			column[1] = $2,
+			column[2] = (NF >= 5 ? $(NF-2) : ""),
+			column[3] = (NF >= 4 ? $(NF-1) : ""),
+			column[4] = $NF)]++ &&
+			!__[$0 = column[want]]++ &&
+			$0 ~ pattern { print | sort }
+		END { close(sort) }
+	' # END-QUOTE
+}
+
+list_profiles()
+{
+	local regex
+
+	# Prevent backslashes from being lost
+	regex=$( echo "$FILTER" | awk 'gsub(/\\/,"&&")||1' )
+
+	# Build a list of profiles available
+	local profiles
+	profiles=$( { IFS=:
+		for dir in $DWATCH_PROFILES_PATH; do
+			[ -d "$dir" ] || continue
+			for path in $dir/*; do
+				[ -f "$path" ] || continue
+				name="${path##*/}"
+				[ "$name" = "${name%%[!0-9A-Za-z_-]*}" ] ||
+					continue
+				echo $name
+			done
+		done
+	} | sort -u )
+
+	# Get the longest profile name
+	local longest_profile_name
+	longest_profile_name=$( echo "$profiles" |
+		awk -v N=0 '(L = length($0)) > N { N = L } END { print N }' )
+
+	# Get the width of the terminal
+	local max_size="$( stty size 2> /dev/null )"
+	: ${max_size:=24 80}
+	local max_width="${max_size#*[$IFS]}"
+
+	# Determine how many columns we can display
+	local x=$longest_profile_name ncols=1
+	[ "$QUIET" ] || x=$(( $x + 8 )) # Accommodate leading tab character
+	x=$(( $x + 3 + $longest_profile_name )) # Preload end of next column
+	while [ $x -lt $max_width ]; do
+		ncols=$(( $ncols + 1 ))
+		x=$(( $x + 3 + $longest_profile_name ))
+	done
+
+	# Output single lines if sent to a pipe
+	if [ "$ONELINE" ]; then
+		echo "$profiles" | awk -v regex="$regex" '$0 ~ regex'
+		return $SUCCESS
+		# NOTREACHED
+	fi
+
+	[ "$QUIET" ] || printf "PROFILES:\n"
+	echo "$profiles" | awk \
+		-v ncols=$ncols \
+		-v colsize=$longest_profile_name \
+		-v quiet="$QUIET" \
+		-v regex="$regex" \
+	' # Begin awk(1) processor
+		BEGIN { row_item[1] = "" }
+		function print_row()
+		{
+			printf "%s%-*s", quiet ? "" : "\t",
+				colsize, row_item[1]
+			for (i = 2; i <= cur_col; i++)
+				printf "   %-*s", colsize, row_item[i]
+			printf "\n"
+		}
+		$0 ~ regex {
+			n++
+			cur_col = (( n - 1 ) % ncols ) + 1
+			row_item[cur_col] = $0
+			if ( cur_col == ncols ) print_row()
+		}
+		END { if (cur_col < ncols) print_row() }
+	' # END-QUOTE
+	return $SUCCESS
+}
+
+load_profile()
+{
+	local profile="$1"
+
+	[ "$profile" ] ||
+		die "missing profile argument (\`$pgm -Q' to list profiles)"
+
+	local oldIFS="$IFS"
+	local dir found=
+
+	IFS=:
+	for dir in $DWATCH_PROFILES_PATH; do
+		[ -d "$dir" ] || continue
+		[ -f "$dir/$profile" ] || continue
+		PROFILE="$profile" found=1
+		info "Sourcing $profile profile [found in %s]" "$dir"
+		. "$dir/$profile"
+		break
+	done
+	IFS="$oldIFS"
+
+	[ "$found" ] ||
+		die "no module named \`$profile' (\`$pgm -Q' to list profiles)"
+}
+
+pproc()
+{
+	local proc="curthread->td_proc"
+	[ $1 -gt 0 ] && proc="this->proc->p_pptr"
+
+	awk 'NR > 1 && $0 { $0 = "\t" $0 }
+		gsub(/\\\t/, "\t") || 1' <<-EOFPREAMBLE
+	this->proc = $proc;
+	this->pid$1 = this->proc->p_pid;
+	this->uid$1 = this->proc->p_ucred->cr_uid;
+	this->gid$1 = this->proc->p_ucred->cr_rgid;
+	this->jid$1 = this->proc->p_ucred->cr_prison->pr_id;
+	this->p_args = this->proc ? this->proc->p_args : 0;
+	this->ar_length = this->p_args ? this->p_args->ar_length : 0;
+	this->ar_args = (char *)(this->p_args ? this->p_args->ar_args : 0);
+
+	this->arg${1}_0 = this->ar_length > 0 ?
+	\	this->ar_args : stringof(this->proc->p_comm);
+	this->len = this->ar_length > 0 ? strlen(this->ar_args) + 1 : 0;
+	this->ar_args += this->len;
+	this->ar_length -= this->len;
+
+	EOFPREAMBLE
+
+	awk -v P=$1 -v MAX_ARGS=$MAX_ARGS '
+		$0 { $0 = "\t" $0 }
+		buf = buf $0 "\n" { }
+		END {
+			while (++N <= MAX_ARGS) {
+				$0 = buf
+				gsub(/P/, P)
+				gsub(/N/, N)
+				sub(/\n$/, "")
+				print
+			}
+		}
+	' <<-EOFARGS
+	this->argP_N = this->ar_length > 0 ? this->ar_args : "";
+	this->len = this->ar_length > 0 ? strlen(this->ar_args) + 1 : 0;
+	this->ar_args += this->len;
+	this->ar_length -= this->len;
+
+	EOFARGS
+
+	awk '$0 = "\t" $0' <<-EOFPROC
+	this->arg${1}_$(( $MAX_ARGS + 1 )) = this->ar_length > 0 ? "..." : "";
+	EOFPROC
+}
+
+pproc_dump()
+{
+	local OPTIND=1 OPTARG flag
+	local indent= nl=1 verbose=
+
+	while getopts inv flag; do
+		case "$flag" in
+		i) indent=1 ;;
+		n) nl= ;;
+		v) verbose=1 ;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	echo
+
+	[ "$verbose" ] && awk -v indent=$indent -v P=$1 '
+		BEGIN { if (indent) printf "\t" }
+		NR > 1 && $0 { $0 = "\t" $0 }
+		buf = buf $0 "\n" { }
+		END {
+			$0 = buf
+			gsub(/S/, P < 3 ? sprintf("%" 7-2*(P+1) "s", "") : "")
+			gsub(/B/, P < 3 ? "\\" : "")
+			gsub(/\\\t/, "\t")
+			sub(/\n$/, "")
+			print
+		}
+	' <<-EOFPREAMBLE
+	printf(" SB-+= %05d %d.%d %s",
+	\	this->pid$1, this->uid$1, this->gid$1, this->arg${1}_0);
+	EOFPREAMBLE
+
+	awk -v indent=$indent -v P=$1 -v MAX_ARGS=$MAX_ARGS '
+		BEGIN { if (indent) printf "\t" }
+		$0 { $0 = "\t" $0 }
+		buf = buf $0 "\n" { }
+		END {
+			while (++N <= MAX_ARGS + 1) {
+				$0 = buf
+				if (N == 1) sub(/^\t/, "")
+				gsub(/P/, P)
+				gsub(/N/, N)
+				sub(/\n$/, "")
+				print
+			}
+		}
+	' <<-EOFARGS
+	printf("%s%s", this->argP_N != "" ? " " : "", this->argP_N);
+	EOFARGS
+
+	if [ "$nl" ]; then
+		awk '$0 = "\t" $0' <<-EOFTAIL
+		printf("%s", this->arg${1}_0 != "" ? "\\n" : "");
+		EOFTAIL
+	fi
+}
+
+############################################################ MAIN
+
+# If we're running as root, no need for sudo(8)
+[ "$( id -u )" != 0 ] && type sudo > /dev/null 2>&1 && SUDO=sudo
+
+#
+# Process command-line options and arguments
+#
+while :; do
+	OPTIND=1
+	while getopts 1B:deE:fFg:j:k:K:lmM:nN:o:O:p:PqQr:Rt:T:u:vVwxyz: flag
+	do
+		process_flag "$flag"
+	done
+	shift $(( $OPTIND - 1 ))
+
+	# Validate number of arguments
+	[ "$PROBE$PROFILE$LIST$LIST_PROFILES" -o $# -gt 0 ] ||
+		usage # NOTREACHED
+
+	PROBE_ARG="$1"
+	shift
+
+	#
+	# Expand probe
+	#
+	# NB: No need to do this if `-Q' was given (this prevents $SUDO access
+	# when listing profiles since probe names are unused by `-Q').
+	#
+	if [ "$PROBE_ARG" -a ! "$LIST_PROFILES" ]; then
+		PROBE_ARG=$( expand_probe -t "$PROBE_TYPE" -- "$PROBE_ARG" )
+		PROBE="$PROBE${PROBE:+, }$PROBE_ARG"
+	fi
+
+	[ $# -eq 0 ] && break
+done
+
+#
+# List probes if `-l' was given
+#
+if [ "$LIST" ]; then
+	list_probes
+	exit $SUCCESS
+fi
+
+#
+# List profiles if `-Q' was given
+#
+if [ "$LIST_PROFILES" ]; then
+	list_profiles
+	exit $SUCCESS
+fi
+
+#
+# Validate `-N count' option argument
+#
+case "$COUNT" in
+"") usage "-N option requires a number argument" ;; # NOTREACHED
+*[!0-9]*) usage "-N argument must be a number" ;; # NOTREACHED
+esac
+
+#
+# Validate `-B num' option argument
+#
+case "$MAX_ARGS" in
+"") usage "-B option requires a number argument" ;; # NOTREACHED
+*[!0-9]*) usage "-B argument must be a number" ;; # NOTREACHED
+esac
+
+#
+# Validate `-K num' option argument
+#
+case "$MAX_DEPTH" in
+"") usage "-K option requires a number argument" ;; # NOTREACHED
+*[!0-9]*) usage "-K argument must be a number" ;; # NOTREACHED
+esac
+
+#
+# Validate `-j jail' option argument
+#
+case "$JID" in
+"") : fall through ;;
+*[!0-9]*) JID=$( jls -j "$JID" jid ) || exit ;;
+esac
+
+#
+# Validate `-u user' option argument
+#
+case "$USER" in
+"") : fall through ;;
+*[![:alnum:]_-]*) RUID="$USER" ;;
+*[!0-9]*) RUID=$( id -u "$USER" 2> /dev/null ) || die "No such user: $USER" ;;
+*) RUID=$USER
+esac
+
+#
+# Validate `-g group' option argument
+#
+case "$GROUP" in
+"") : fall-through ;;
+*[![:alnum:]_-]*) RGID="$GROUP" ;;
+*[!0-9]*)
+	RGID=$( getent group | awk -F: -v group="$GROUP" '
+		$1 == group { print $3; exit found=1 }
+		END { exit !found }
+	' ) || die "No such group: $GROUP" ;;
+*) RGID=$GROUP
+esac
+
+#
+# Read event code from stdin if `-' is the argument to `-E code' option
+#
+[ "$CUSTOM_DETAILS" -a "$EVENT_DETAILS" = "-" ] && EVENT_DETAILS=$( cat )
+
+#
+# Default event details
+#
+[ "$CUSTOM_DETAILS" ] || EVENT_DETAILS="printf(\"%s\", this->arg0_0);$(
+	pproc_dump -in 0
+)"
+
+#
+# Load profile if given with `-M name'
+#
+[ "$USE_PROFILE" ] && load_profile "$PROFILE"
+[ "$PROBE" ] || die "PROBE not defined by profile and none given as argument"
+
+#
+# Show the user what's being watched
+#
+[ "$DEBUG$QUIET$EXIT_AFTER_COMPILE" ] || info "Watching '$PROBE' ..."
+
+#
+# Header for watched probe entry
+#
+case "$PROBE" in
+*,*) : fall-through ;;
+*:execve:entry|execve:entry)
+	ACTIONS=$( awk 'gsub(/\\\t/, "\t") || 1' <<-EOF
+		$PROBE /* probe ID 1 */
+		{${TRACE:+
+		\	printf("<1>");}
+		\	this->caller_execname = execname;
+		}
+		EOF
+	)
+	PROBE="${PROBE%entry}return"
+	ID=2
+	EVENT_TEST="execname != this->caller_execname${EVENT_TEST:+ &&
+		($EVENT_TEST)}"
+	EVENT_TAG='printf("%d.%d %s[%d]: ",
+		this->uid1, this->gid1, this->caller_execname, this->pid1);'
+	;;
+esac
+
+#
+# Jail clause/predicate
+#
+if [ "$JID" ]; then
+	prison_id="curthread->td_proc->p_ucred->cr_prison->pr_id"
+	EVENT_TEST="$prison_id == $JID${EVENT_TEST:+ &&
+		($EVENT_TEST)}"
+fi
+
+#
+# Custom test clause/predicate
+#
+if [ "$CUSTOM_TEST" ]; then
+	case "$EVENT_TEST" in
+	"") EVENT_TEST="$CUSTOM_TEST" ;;
+	 *) EVENT_TEST="$EVENT_TEST &&
+		($CUSTOM_TEST)"
+	esac
+fi
+
+#
+# Make sure dynamic code has trailing semi-colons if non-NULL
+#
+EVENT_TAG="${EVENT_TAG%;}${EVENT_TAG:+;}"
+EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
+
+#
+# DTrace script
+#
+# If `-d' is given, script is sent to stdout for debugging
+# If `-c count", `-g group', `-r regex', or `-u user' is given, run script with
+# dtrace and send output to awk(1) post-processor (making sure to preserve the
+# exit code returned by dtrace invocation). Otherwise, simply run script with
+# dtrace and then exit.
+#
+[ "$OUTPUT" -a ! "$CONSOLE_FORCE" ] && CONSOLE=
+{
+	if [ "$DEBUG" ]; then
+		# Send script to stdout
+		cat
+		exit
+	fi
+
+	if [ "$CUSTOM_TEST$EXECNAME$JID$OUTPUT$TIMEOUT$TRACE$VERBOSE" -a \
+	    ! "$QUIET" ]
+	then
+		msg=Setting
+		[ "$CUSTOM_TEST" ] && msg="$msg test: $CUSTOM_TEST"
+		[ "$EXECNAME" ] && msg="$msg execname: $EXECNAME"
+		[ "$JID" ] && msg="$msg jid: $JID"
+		[ "$OUTPUT" ] && msg="$msg output: $OUTPUT"
+		[ "$TIMEOUT" ] && msg="$msg timeout: $TIMEOUT"
+		[ "$TRACE" ] && msg="$msg trace: $TRACE"
+		[ "$VERBOSE" ] && msg="$msg verbose: $VERBOSE"
+		info "$msg"
+	fi
+
+	exec 3>&1
+	console_stdout=3
+
+	if [ $COUNT -eq 0 -a ! "$EXECREGEX$FILTER$GROUP$OUTPUT_CMD$PID$USER" ]
+	then
+		case "$OUTPUT" in
+		-) output_path=/dev/stdout ;;
+		*) output_path="$OUTPUT"
+		esac
+
+		# Run script without pipe to awk post-processor
+		dtrace_cmd -t \
+			${DESTRUCTIVE_ACTIONS:+-w} \
+			${EXIT_AFTER_COMPILE:+-e} \
+			${OUTPUT:+-o "$output_path"} \
+			-s /dev/stdin
+		exit
+	fi
+
+	if [ ! "$QUIET" ]; then
+		msg=Filtering
+		[ "$EXECREGEX" ] && msg="$msg execregex: $EXECREGEX"
+		[ "$FILTER" ] && msg="$msg filter: $FILTER"
+		[ "$GROUP" ] && msg="$msg group: $GROUP"
+		[ "$OUTPUT_CMD" ] && msg="$msg cmd: $OUTPUT_CMD"
+		[ "$PID" ] && msg="$msg pid: $PID"
+		[ "$USER" ] && msg="$msg user: $USER"
+		[ $COUNT -gt 0 ] && msg="$msg count: $COUNT"
+		info "$msg"
+	fi
+
+	#
+	# Send script output to post-processor for filtering
+	#
+	status=$(
+		exec 4>&1
+		to_status=4
+		( exec 5>&1; to_dtrace_stderr_filter=5; (
+			trap 'echo $? >&$to_status' EXIT
+			eval $SUDO ${TIMEOUT:+timeout \"\$TIMEOUT\"} dtrace \
+				${EXIT_AFTER_COMPILE:+-e} \
+				${DESTRUCTIVE_ACTIONS:+-w} \
+				-s /dev/stdin \
+				2>&$to_dtrace_stderr_filter \
+				${QUIET:+2> /dev/null}
+		) | $SUDO awk \
+			-v cmd="$OUTPUT_CMD" \
+			-v console="$CONSOLE_FORCE" \
+			-v count=$COUNT \
+			-v execregex="$EXECREGEX" \
+			-v filter="$FILTER" \
+			-v gid="$RGID" \
+			-v output="$OUTPUT" \
+			-v pid="$PID" \
+			-v pstree=$PSTREE \
+			-v quiet=$QUIET \
+			-v tty=$( ps -o tty= -p $$ ) \
+			-v uid="$RUID" \
+		' # Start awk(1) post-processor
+		############################################ BEGIN
+		BEGIN {
+			num = "[[:digit:]]+"
+			name1 = "[^\\[]*"
+			name2 = "[^[:space:]]+"
+			gsub(/\\/,"&&", execregex)
+			fmt = sprintf("(%s|%s)",
+				"^[^\\n]* (%s)\\.(%s) (%s)\\[(%s)\\]: ",
+				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) (%s)")
+			pidfilter = sprintf(fmt,
+				num, num, name1, pid,
+				pid, num, num, name2)
+			uidfilter = sprintf(fmt,
+				uid, num, name1, num,
+				num, uid, num, name2)
+			gidfilter = sprintf(fmt,
+				num, gid, name1, num,
+				num, num, gid, name2)
+			execfilter = sprintf(fmt,
+				num, num, execregex, num,
+				num, num, num, execregex)
+			if (output == "-")
+				output = "/dev/stdout"
+		}
+		############################################ FUNCTIONS
+		function strip(s) { gsub(/\033\[[0-9;]*m/, "", s); return s }
+		function esc(str) { gsub(/'\''/, "&\\\\&&", str); return str }
+		function arg(str) { return "'\''" esc(str) "'\''" }
+		function env(var, str) { return var "=" arg(str) " " }
+		function runcmd() {
+			return system(sprintf("%s/bin/sh -c %s",
+				env("TAG", tag) \
+					env("DETAILS", details),
+				arg(cmd)))
+		}
+		function dump() {
+			lines = block
+			block = ""
+			if (execregex != "" && lines !~ execfilter) return
+			if (pid != "" && lines !~ pidfilter) return
+			if (uid != "" && lines !~ uidfilter) return
+			if (gid != "" && lines !~ gidfilter) return
+			if (filter != "" && lines !~ filter) return
+			if (lines) {
+				stdout = 1
+				if (output) {
+					stdout = 0
+					if (!console) lines = strip(lines)
+					print lines > output
+				} else if (cmd) {
+					if (!quiet) print lines
+					tag = details = lines
+					sub(/: .*/, "", tag)
+					sub(/.*: /, "", details)
+					if (!console) tag = strip(tag)
+					runcmd()
+				} else print lines
+			}
+			fflush()
+			++matches
+		}
+		############################################ MAIN
+		{ block = (block ? block "\n" : block) $0 }
+		!pstree { dump() }
+		$0 ~ sprintf("^%6s\\\\-\\+= %s ", "", num) { dump() }
+		count && matches >= count { exit }
+		############################################ END
+		END {
+			dump()
+			system(sprintf("pkill -t %s dtrace %s", tty,
+				quiet ? "2> /dev/null" : ""))
+		}
+		' >&$console_stdout ) | dtrace_stderr_filter >&2
+	) # status
+	exit $status
+
+} <<EOF
+#!/usr/sbin/dtrace -s
+/* -
+ * Copyright (c) 2014-2017 Devin Teske <dteske@FreeBSD.org>
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS \`\`AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * $TITLE dtrace(1) script to log process(es) triggering $PROBE $
+ * \$FreeBSD$
+ */
+
+$( echo "$DTRACE_PRAGMA" | awk '
+	!/^[[:space:]]*(#|$)/, sub(/^[[:space:]]*/, "#pragma D ")||1
+' )
+
+int console;
+
+dtrace:::BEGIN { console = ${CONSOLE:-0} }
+${ACTIONS:+
+/*********************************************************/
+
+$ACTIONS
+}
+/*********************************************************/
+
+$PROBE${EVENT_TEST:+ /$EVENT_TEST/} /* probe ID $ID */
+{${TRACE:+
+	printf("<$ID>");
+}
+	/*
+	 * Examine process, parent process, and grandparent process details
+	 */
+
+	/******************* CURPROC *******************/
+
+	$( pproc 0 )
+
+	/******************* PPARENT *******************/
+
+	$( if [ "$PSTREE" ]; then pproc 1; else echo -n \
+	"this->proc = this->proc->p_pptr;
+	this->pid1 = this->proc->p_pid;
+	this->uid1 = this->proc->p_ucred->cr_uid;
+	this->gid1 = this->proc->p_ucred->cr_rgid;
+	this->jid1 = this->proc->p_ucred->cr_prison->pr_id;"
+	fi )
+
+	/******************* GPARENT *******************/
+
+	$( [ "$PSTREE" ] && pproc 2 )
+
+	/******************* APARENT *******************/
+
+	$( [ "$PSTREE" ] && pproc 3 )
+
+	/***********************************************/
+
+	/*
+	 * Print process, parent, grandparent, and ancestor details
+	 */
+
+	printf("%s%Y%s ",
+		console ? "\033[32m" : "",
+		walltimestamp,
+		console ? "\033[39m" : "");
+
+	/****************** EVENT_TAG ******************/
+
+	${EVENT_TAG#[[:space:]]}
+
+	/**************** EVENT_DETAILS ****************/
+
+	${EVENT_DETAILS#[[:space:]]}
+
+	/***********************************************/
+
+	printf("\\n");
+$( if [ "$PSTREE" ]; then
+	pproc_dump -iv 3
+	pproc_dump -iv 2
+	pproc_dump -iv 1
+	pproc_dump -iv 0
+fi )
+}
+EOF
+
+################################################################################
+# END
+################################################################################

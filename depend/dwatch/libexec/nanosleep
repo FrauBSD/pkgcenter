@@ -1,0 +1,31 @@
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: dwatch(8) module for nanosleep(2) [or similar] entry $
+# $Copyright: 2014-2017 Devin Teske. All rights reserved. $
+# $FreeBSD$
+#
+############################################################ DESCRIPTION
+#
+# Print arguments being passed to nanosleep(2) [or similar]
+#
+############################################################ PROBE
+
+: ${PROBE:="syscall::$PROFILE:entry"}
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
+	this->rqtp = (struct timespec *)copyin(arg0, sizeof(struct timespec));
+	this->rmtp = (struct timespec *)copyin(arg1, sizeof(struct timespec));
+	printf("%s(rqtp {%ds, %dns}, rmtp {%ds, %dns})",
+		probefunc,
+		this->rqtp->tv_sec, this->rqtp->tv_nsec,
+		this->rmtp->tv_sec, this->rmtp->tv_nsec);
+EOF
+EVENT_DETAILS=$( cat <&9 )
+
+################################################################################
+# END
+################################################################################
