@@ -1,0 +1,53 @@
+#!/bin/sh
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set noexpandtab  :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: Script for importing current working directory to git $
+# $Copyright: 1999-2017 Devin Teske. All rights reserved. $
+# $FrauBSD: Mk/git_import 2017-07-23 16:16:24 -0700 freebsdfrau $
+#
+############################################################ INFORMATION
+#
+# Usage: git_import
+#
+############################################################ GLOBALS
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# Utility pathnames
+#
+: ${GIT:=git}
+
+############################################################ FUNCTIONS
+
+eval2()
+{
+	echo "$*"
+	eval "$@"
+}
+
+############################################################ MAIN
+
+#
+# Import src directory without verification
+#
+if [ -d "$STAGEDIR" ]; then
+	eval2 $GIT add "$STAGEDIR"
+	eval2 $GIT commit --no-verify
+fi
+
+#
+# Import everything else
+#
+eval2 $GIT add .
+eval2 $GIT commit
+
+################################################################################
+# END
+################################################################################

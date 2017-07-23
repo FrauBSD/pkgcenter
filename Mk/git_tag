@@ -1,0 +1,79 @@
+#!/bin/sh
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set noexpandtab  :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: Script for tagging git repositories from Makefiles $
+# $Copyright: 1999-2017 Devin Teske. All rights reserved. $
+# $FrauBSD: Mk/git_tag 2017-07-23 16:16:24 -0700 freebsdfrau $
+#
+############################################################ INFORMATION
+#
+# Usage: git_tag [OPTIONS] TAG
+# OPTIONS:
+# 	-f   Force. Allow tagging of files already tagged at a lower revision
+# 	     with the same tag.
+#
+############################################################ GLOBALS
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# Utility pathnames
+#
+: ${CP:=cp}
+: ${GIT:=git}
+
+#
+# Command-line options
+#
+FORCE=		# -f
+LIST=		# -l
+
+############################################################ FUNCTIONS
+
+eval2()
+{
+	echo "$*"
+	eval "$@"
+}
+
+############################################################ MAIN
+
+#
+# Process command-line arguments
+#
+while getopts fl flag; do
+	case "$flag" in
+	f) FORCE=1 ;;
+	l) LIST=1 ;;
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+#
+# Validate number of arguments
+#
+[ $# -lt 1 ] && exit $SUCCESS
+[ "$1" ] || exit $SUCCESS
+
+#
+# Process `-l' flag
+#
+if [ "$LIST" ]; then
+	eval2 $GIT tag -l "$@"
+	exit
+fi
+
+#
+# Tag everything
+#
+eval2 $GIT tag -a ${FORCE:+-f} -m "\"Create tag $1\"" "$@"
+
+################################################################################
+# END
+################################################################################

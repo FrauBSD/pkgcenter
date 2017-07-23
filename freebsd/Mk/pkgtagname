@@ -1,0 +1,61 @@
+#!/bin/sh
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set noexpandtab  :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: Script for getting the package tag name from a packing-list $
+# $Copyright: 1999-2017 Devin Teske. All rights reserved. $
+# $FrauBSD: freebsd/Mk/pkgtagname 2017-07-23 16:16:24 -0700 freebsdfrau $
+#
+############################################################ INFORMATION
+#
+# Usage: pkgtagname PLIST
+#
+############################################################ INCLUDES
+
+progdir="${0%/*}"
+. "$progdir/manifest.subr" || exit
+
+############################################################ GLOBALS
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# Utility pathnames
+#
+: ${AWK:=awk}
+
+############################################################ MAIN
+
+#
+# Validate number of arguments
+#
+[ $# -gt 0 ] || exit $SUCCESS
+
+#
+# Get the package name and return a suitable tag name
+#
+FILE="$1"
+case "$FILE" in
+*PLIST|*CONTENTS)
+	$AWK 'sub(/^@name[[:space:]]+/, "") {
+			sub(/-[^-]*$/, "")
+			gsub(/[^[:alnum:]]!&+,=_-]/, "_")
+			print
+			exit found++
+		}
+		END { exit !found }
+	' "$FILE"
+	;;
+*) # MANIFEST
+	manifest_read -r name "$FILE" || exit
+	echo "$name" | $AWK 'gsub(/[^[:alnum:]]!&+,=_-]/, "_")||1'
+esac
+
+################################################################################
+# END
+################################################################################

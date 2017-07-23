@@ -1,0 +1,28 @@
+@comment PKG_FORMAT_REVISION:1.1
+@name pkgname-x.y
+@comment ORIGIN:origin/pkgname
+@owner root
+@group wheel
+@pkgdep dependency-x.y
+@comment DEPORIGIN:deporigin/dependency
+@cwd /install/root
+file1
+file2
+file3
+dir/file4
+dir/file5
+dir/file6
+@dirrm dir
+@cwd .
+@ignore
++COMMENT
+@ignore
++DESC
+@ignore
++INSTALL
+@ignore
++POST-INSTALL
+@ignore
++DEINSTALL
+@ignore
++POST-DEINSTALL

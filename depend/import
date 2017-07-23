@@ -1,0 +1,43 @@
+#!/bin/sh
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set noexpandtab  :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: Script for importing a directory to git $
+# $Copyright: 1999-2017 Devin Teske. All rights reserved. $
+# $FrauBSD: depend/import 2017-07-23 16:16:24 -0700 freebsdfrau $
+#
+############################################################ INFORMATION
+#
+# Usage: import PATH ...
+#
+############################################################ GLOBALS
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# Utility pathnames
+#
+: ${GIT:=git}
+
+############################################################ MAIN
+
+if [ $# -eq 0 ]; then
+	exec >&2
+	echo "Usage: ${0##*/} PATH ..."
+	exit $FAILURE
+fi
+
+set -e
+$GIT add "$@"
+$GIT commit
+
+exit $SUCCESS
+
+################################################################################
+# END
+################################################################################

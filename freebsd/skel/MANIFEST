@@ -1,0 +1,79 @@
+// -*- tab-width: 4 -*-        ;; Emacs
+// vi: set noexpandtab         :: Vi/ViM
+// vi: set filetype=javascript ::
+{
+	//////////////////////////////////////////////////// HEADER
+
+	"name":"pkgname",
+	"origin":"origin/pkgname",
+	"categories":["origin"],
+
+	"comment":"",
+	"licenselogic":"single",
+	"version":"x.y",
+
+	"maintainer":"flast@fraubsd.org",
+	"www":"https://www.fraubsd.org/",
+
+	"arch":"freebsd:11:x86:64",
+	"prefix":"/install/root",
+
+	//////////////////////////////////////////////////// DESCRIPTION
+
+	"desc":"
+
+WWW: https://www.fraubsd.org/",
+
+	//////////////////////////////////////////////////// DEPENDENCIES
+
+	"deps":{
+		"dep1":{"origin":"category1/dep1","version":"a.b"},
+		"dep2":{"origin":"category2/dep2","version":"x.y"},
+	},
+	"shlibs_required":[
+		"libA.so",
+		"libB.so",
+		"libC.so.1",
+		"libD.so.2",
+	],
+	"options":{
+		"OPT1":"off",
+		"OPT2":"off",
+		"OPT3":"off",
+	},
+
+	//////////////////////////////////////////////////// FILES
+
+	"files":[
+		"/install/root/bin/file1",
+		"/install/root/bin/file2",
+		"/install/root/bin/file3",
+	],
+
+	//////////////////////////////////////////////////// DIRECTORIES
+
+	"directories":{
+		"/install/root/bin":"y",
+		"/install/root/bin/foo":"n",
+	},
+
+	//////////////////////////////////////////////////// SCRIPTS
+
+	"scripts":{
+		"post-install":"",
+		"pre-deinstall":"",
+		"post-deinstall":"",
+	},
+
+	//////////////////////////////////////////////////// MESSAGE
+
+	"message":"",
+}
+////////////////////////////////////////////////////////////////////////////////
+// END
+////////////////////////////////////////////////////////////////////////////////
+//
+// $Copyright: 2016-2017 The FrauBSD Project. All rights reserved. $
+// $FrauBSD: freebsd/skel/MANIFEST 2017-07-23 16:16:24 -0700 freebsdfrau $
+//
+////////////////////////////////////////////////////////////////////////////////

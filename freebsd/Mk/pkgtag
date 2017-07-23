@@ -1,0 +1,41 @@
+#!/bin/sh
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set noexpandtab  :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: Script for getting the package tag from a package name $
+# $Copyright: 1999-2017 Devin Teske. All rights reserved. $
+# $FrauBSD: freebsd/Mk/pkgtag 2017-07-23 16:16:24 -0700 freebsdfrau $
+#
+############################################################ INFORMATION
+#
+# Usage: pkgtag NAME
+#
+############################################################ GLOBALS
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# Utility pathnames
+#
+: ${AWK:=awk}
+
+############################################################ MAIN
+
+#
+# Validate number of arguments
+#
+[ $# -gt 0 ] || exit $SUCCESS
+
+#
+# Replace bad characters with underscore
+#
+echo "$1" | $AWK 'gsub(/[^[:alnum:]]!&+,=_-]/, "_")||1'
+
+################################################################################
+# END
+################################################################################
