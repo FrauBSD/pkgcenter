@@ -111,11 +111,16 @@ WWW: https://www.fraubsd.org/",
 		"/usr/pkgcenter/freebsd":"y",
 		"/usr/pkgcenter/freebsd/Mk":"y",
 		"/usr/pkgcenter/freebsd/RELENG_11_0":"y",
+		"/usr/pkgcenter/freebsd/RELENG_11_0/fraubsd":"y",
+		"/usr/pkgcenter/freebsd/RELENG_11_0/fraubsd/pkgcenter":"y",
 		"/usr/pkgcenter/freebsd/skel":"y",
 		"/usr/pkgcenter/freebsd/skel/stage":"y",
 		"/usr/pkgcenter/redhat":"y",
 		"/usr/pkgcenter/redhat/Mk":"y",
 		"/usr/pkgcenter/redhat/rhel6-x86_64":"y",
+		"/usr/pkgcenter/redhat/rhel6-x86_64/Applications":"y",
+		"/usr/pkgcenter/redhat/rhel6-x86_64/Applications/FrauBSD":"y",
+		"/usr/pkgcenter/redhat/rhel6-x86_64/Applications/FrauBSD/pkgcenter":"y",
 		"/usr/pkgcenter/redhat/skel":"y",
 	},
 }
@@ -124,6 +129,6 @@ WWW: https://www.fraubsd.org/",
 ////////////////////////////////////////////////////////////////////////////////
 //
 // $Copyright: 2016-2017 The FrauBSD Project. All rights reserved. $
-// $FrauBSD: freebsd/RELENG_11_0/fraubsd/pkgcenter/MANIFEST 2017-07-25 10:02:39 -0700 freebsdfrau $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/pkgcenter/MANIFEST 2017-07-25 13:06:50 -0700 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
