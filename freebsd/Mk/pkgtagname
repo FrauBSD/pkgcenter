@@ -29,6 +29,24 @@ FAILURE=1
 #
 : ${AWK:=awk}
 
+############################################################ FUNCTIONS
+
+if ! type realpath > /dev/null 2>&1; then
+case "$UNAME_s" in
+Darwin)
+realpath()
+{
+	perl -le 'use Cwd; print Cwd::abs_path(@ARGV)' -- "$@"
+}
+;;
+*)
+realpath()
+{
+	readlink -f "$@"
+}
+esac
+fi
+
 ############################################################ MAIN
 
 #
@@ -37,15 +55,36 @@ FAILURE=1
 [ $# -gt 0 ] || exit $SUCCESS
 
 #
+# Build the tag prefix
+#
+PWD=$( realpath "$PWD" )
+if [ "$PKGCENTER" ]; then
+	PKGCENTER=$( realpath "$PKGCENTER" )
+else
+	PKGCENTER="$PWD"
+	while [ "$PKGCENTER" ]; do
+		[ -e "$PKGCENTER/Mk/pkgcenter_readconf" ] && break
+		case "$PKGCENTER" in
+		*/*) PKGCENTER="${PKGCENTER%/*}" ;;
+		  *) PKGCENTER=
+		esac
+	done
+fi
+TAGPREFIX="${PWD#${PKGCENTER%/*}/}" # Remove everything leading up to pkgcenter
+TAGPREFIX="${TAGPREFIX%/*}"
+
+#
 # Get the package name and return a suitable tag name
 #
 FILE="$1"
 case "$FILE" in
 *PLIST|*CONTENTS)
-	$AWK 'sub(/^@name[[:space:]]+/, "") {
+	$AWK -v prefix="${TAGPREFIX:+$TAGPREFIX/}" '
+		BEGIN { gsub("/", "-", prefix) }
+		sub(/^@name[[:space:]]+/, "") {
 			sub(/-[^-]*$/, "")
 			gsub(/[^[:alnum:]]!&+,=_-]/, "_")
-			print
+			print prefix $0
 			exit found++
 		}
 		END { exit !found }
@@ -53,7 +92,11 @@ case "$FILE" in
 	;;
 *) # MANIFEST
 	manifest_read -r name "$FILE" || exit
-	echo "$name" | $AWK 'gsub(/[^[:alnum:]]!&+,=_-]/, "_")||1'
+	echo "${TAGPREFIX:+$TAGPREFIX/}$name" | $AWK '{
+		gsub("/", "-")
+		gsub(/[^[:alnum:]]!&+,=_-]/, "_")
+		print
+	}'
 esac
 
 ################################################################################

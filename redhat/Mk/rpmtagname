@@ -24,6 +24,24 @@ FAILURE=1
 #
 : ${AWK:=awk}
 
+############################################################ FUNCTIONS
+
+if ! type realpath > /dev/null 2>&1; then
+case "$UNAME_s" in
+Darwin)
+realpath()
+{
+	perl -le 'use Cwd; print Cwd::abs_path(@ARGV)' -- "$@"
+}
+;;
+*)
+realpath()
+{
+	readlink -f "$@"
+}
+esac
+fi
+
 ############################################################ MAIN
 
 #
@@ -32,10 +50,35 @@ FAILURE=1
 [ $# -gt 0 ] || exit $SUCCESS
 
 #
+# Build the tag prefix
+#
+PWD=$( realpath "$PWD" )
+if [ "$PKGCENTER" ]; then
+	PKGCENTER=$( realpath "$PKGCENTER" )
+else
+	PKGCENTER="$PWD"
+	while [ "$PKGCENTER" ]; do
+		[ -e "$PKGCENTER/Mk/pkgcenter_readconf" ] && break
+		case "$PKGCENTER" in
+		*/*) PKGCENTER="${PKGCENTER%/*}" ;;
+		  *) PKGCENTER=
+		esac
+	done
+fi
+TAGPREFIX="${PWD#${PKGCENTER%/*}/}" # Remove everything leading up to pkgcenter
+TAGPREFIX="${TAGPREFIX%/*}"
+
+#
 # Get the RPM name from the SPECFILE and return suitable tag name
 #
-$AWK 'sub(/^[[:space:]]*[Nn][Aa][Mm][Ee]:[[:space:]]*/, ""), \
-	gsub(/[^[:alnum:]]!&+,=_-]/, "_")||1' "$1"
+FILE="$1"
+$AWK -v prefix="${TAGPREFIX:+$TAGPREFIX/}" '
+	BEGIN { gsub("/", "-", prefix) }
+	sub(/^[[:space:]]*[Nn][Aa][Mm][Ee]:[[:space:]]*/, "") {
+		gsub(/[^[:alnum:]]!&+,=_-]/, "_")
+		print prefix $0
+	}
+' "$FILE"
 
 ################################################################################
 # END
