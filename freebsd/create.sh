@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/create.sh 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: freebsd/create.sh 2017-07-25 13:22:45 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -16,17 +16,14 @@
 #
 ############################################################ GLOBALS
 
+pgm="${0##*/}" # Program basename
+progdir="${0%/*}" # Program directory
+
 #
 # Global exit status
 #
 SUCCESS=0
 FAILURE=1
-
-#
-# Program basename and directory
-#
-pgm="${0##*/}"
-progdir="${0%/*}"
 
 #
 # Command-line options
