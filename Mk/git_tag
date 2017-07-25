@@ -5,7 +5,7 @@
 #
 # $Title: Script for tagging git repositories from Makefiles $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: Mk/git_tag 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: Mk/git_tag 2017-07-25 13:18:10 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -23,6 +23,11 @@ pgm="${0##*/}" # Program basename
 #
 SUCCESS=0
 FAILURE=1
+
+#
+# OS Glue
+#
+: ${UNAME_s:=$( uname -s )}
 
 #
 # Utility pathnames
