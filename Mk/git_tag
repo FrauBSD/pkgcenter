@@ -16,6 +16,8 @@
 #
 ############################################################ GLOBALS
 
+pgm="${0##*/}" # Program basename
+
 #
 # Global exit status
 #
@@ -41,6 +43,24 @@ eval2()
 	echo "$*"
 	eval "$@"
 }
+
+############################################################ FUNCTIONS
+
+if ! type realpath > /dev/null 2>&1; then
+case "$UNAME_s" in
+Darwin)
+realpath()
+{
+	perl -le 'use Cwd; print Cwd::abs_path(@ARGV)' -- "$@"
+}
+;;
+*)
+realpath()
+{
+	readlink -f "$@"
+}
+esac
+fi
 
 ############################################################ MAIN
 
@@ -70,9 +90,18 @@ if [ "$LIST" ]; then
 fi
 
 #
+# Build commit message
+#
+path=$( realpath "$0" )
+PKGCENTER="${path%"/Mk/$pgm"}"
+path="${PWD#"${PKGCENTER%/*}/"}"
+commitmsg="$pgm${FORCE:+ -f} in $path" 
+commitmsg=$( echo "$commitmsg" | awk 'gsub(/'\''/,"&\\\\&&")||1' )
+
+#
 # Tag everything
 #
-eval2 $GIT tag -a ${FORCE:+-f} -m "\"Create tag $1\"" "$@"
+eval2 $GIT tag -a ${FORCE:+-f} -m "'$commitmsg'" "$@"
 
 ################################################################################
 # END
