@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/create.sh 2017-07-25 13:22:45 -0700 freebsdfrau $
+# $FrauBSD: freebsd/create.sh 2017-07-25 13:28:33 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -24,6 +24,11 @@ progdir="${0%/*}" # Program directory
 #
 SUCCESS=0
 FAILURE=1
+
+#
+# OS Glue
+#
+: ${UNAME_s:=$( uname -s )}
 
 #
 # Command-line options
@@ -71,6 +76,22 @@ usage()
 	die
 }
 
+if ! type realpath > /dev/null 2>&1; then
+case "$UNAME_s" in
+Darwin)
+realpath()
+{
+	perl -le 'use Cwd; print Cwd::abs_path(@ARGV)' -- "$@"
+}
+;;
+*)
+realpath()
+{
+	readlink -f "$@"
+}
+esac
+fi
+
 ############################################################ MAIN
 
 #
@@ -115,7 +136,7 @@ while [ $# -gt 0 ]; do
 	# Detect older package creation (used later in Makefile fixup)
 	#
 	ar_opt=J
-	case "$( readlink -f "$DEST" )" in
+	case "$( realpath "$DEST" )" in
 	*/RELENG_[1-4][_/]*) ar_opt=z ;;
 	*/RELENG_[5-9][_/]*) ar_opt=j ;;
 	esac
