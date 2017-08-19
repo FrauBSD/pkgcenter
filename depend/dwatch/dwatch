@@ -82,13 +82,13 @@ OUTPUT=			# -o output
 OUTPUT_CMD=		# -O cmd
 PID=			# -p pid
 PROBE_TYPE=		# -f -m -n -P
-PROFILE=		# -M name
+PROFILE=		# -X profile
 PSTREE=			# -R
 QUIET=			# -q
 TIMEOUT=		# -T time
 TRACE=			# -x
 USER=			# -u user
-USE_PROFILE=		# -M name
+USE_PROFILE=		# -X profile
 VERBOSE=		# -v
 
 #
@@ -133,15 +133,16 @@ info() { [ "$QUIET" ] || ansi 35 "INFO" 39 "$@" >&2; }
 
 usage()
 {
-	local optfmt="\t%-9s %s\n"
+	local optfmt="\t%-10s %s\n"
 	exec >&2
 	[ "$*" ] && printf "%s: %s\n" "$pgm" "$*"
 	printf "Usage: %s [-1defFmnPqRvVwxy] [%s] [%s] [%s] [%s]\n" "$pgm" \
 		"-B num" "-E code" "-g group" "-j jail"
 	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
-		"-k name" "-K num" "-M name" "-N count" "-o output" "-O cmd"
+		"-k name" "-K num" "-N count" "-o output" "-O cmd" "-p pid"
 	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
-		"-p pid" "-r regex" "-t test" "-T time" "-u user" "-z regex"
+		"-r regex" "-t test" "-T time" "-u user" "-X profile" \
+		"-z regex"
 	printf "\t      probe ...\n"
 	printf "       %s -l [-fmnPqy] [-r regex] [probe ...]\n" "$pgm"
 	printf "       %s -Q [-1qy] [-r regex]\n" "$pgm"
@@ -172,8 +173,6 @@ usage()
 		"List available probes on standard output and exit."
 	printf "$optfmt" "-m" \
 		"Enable probe matching the specified module name."
-	printf "$optfmt" "-M name" \
-		"Load profile name from DWATCH_PROFILES_PATH."
 	printf "$optfmt" "-n" \
 		"Enable probe matching the specified probe name."
 	printf "$optfmt" "-N count" \
@@ -208,6 +207,8 @@ usage()
 		"Permit destructive actions (copyout*, stop, panic, etc.)."
 	printf "$optfmt" "-x" \
 		"Trace. Print \`<probe-id>' when a probe is triggered."
+	printf "$optfmt" "-X profile" \
+		"Load profile name from DWATCH_PROFILES_PATH."
 	printf "$optfmt" "-y" \
 		"Always treat stdout as console (enable colors/columns/etc.)."
 	printf "$optfmt" "-z regex" \
@@ -245,7 +246,6 @@ process_flag()
 	K) MAX_DEPTH="$OPTARG" ;;
 	l) LIST=1 ;;
 	m) PROBE_TYPE=module ;;
-	M) USE_PROFILE=1 PROFILE="$OPTARG" ;;
 	n) PROBE_TYPE=name ;;
 	N) COUNT="$OPTARG" ;;
 	o) OUTPUT="$OPTARG" ;;
@@ -266,6 +266,7 @@ process_flag()
 	   exit ;;
 	w) DESTRUCTIVE_ACTIONS=1 ;;
 	x) TRACE=1 ;;
+	X) USE_PROFILE=1 PROFILE="$OPTARG" ;;
 	y) CONSOLE=1 CONSOLE_FORCE=1 ;;
 	z) EXECREGEX="$OPTARG" ;;
 	*) usage
@@ -800,7 +801,7 @@ esac
 )"
 
 #
-# Load profile if given with `-M name'
+# Load profile if given (`-X profile')
 #
 [ "$USE_PROFILE" ] && load_profile "$PROFILE"
 [ "$PROBE" ] || die "PROBE not defined by profile and none given as argument"

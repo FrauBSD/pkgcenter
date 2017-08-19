@@ -39,7 +39,6 @@
 .Op Fl j Ar jail
 .Op Fl k Ar name
 .Op Fl K Ar num
-.Op Fl M Ar name
 .Op Fl N Ar count
 .Op Fl o Ar output
 .Op Fl O Ar cmd
@@ -48,6 +47,7 @@
 .Op Fl t Ar test
 .Op Fl T Ar time
 .Op Fl u Ar user
+.Op Fl X Ar profile
 .Op Fl z Ar regex
 probe ...
 .Nm
@@ -176,12 +176,12 @@ To list available profiles use the
 .Ql Fl Q
 option.
 Use the
-.Ql Fl M Ar name
+.Ql Fl X Ar profile
 option to use a particular profile.
 .Pp
 For example,
 the command
-.Ql dwatch -M kill
+.Ql dwatch -X kill
 displays arguments sent to
 .Xr kill 2 .
 .Pp
@@ -266,8 +266,8 @@ Maximum directory depth to display
 List available probes on standard output and exit.
 .It Fl m
 Enable probe matching the specified module name.
-.It Fl M Ar name
-Load profile name from DWATCH_PROFILES_PATH.
+.It Fl X Ar profile
+Load profile from DWATCH_PROFILES_PATH.
 .It Fl n
 Enable probe matching the specified probe name.
 .It Fl N Ar count
@@ -513,11 +513,11 @@ execve
 .Dl Display a list of unique providers.
 .Pp
 .Nm
-.Fl M Ar vop_remove
+.Fl X Ar vop_remove
 .Dl Watch paths being removed by Xr VOP_REMOVE 9 .
 .Pp
 .Nm
-.Fl M Ar kill
+.Fl X Ar kill
 .Dl Watch signals being passed to Xr kill 2 .
 .Pp
 .Nm
@@ -573,7 +573,7 @@ So Li random Sc .
 .Pp
 .Nm
 .Fl r Ar /lib/
-.Fl M Ar vop_lookup
+.Fl X Ar vop_lookup
 .Dl Watch Xr VOP_LOOKUP 9 paths containing So Li /lib/ Sc .
 .Pp
 .Nm
