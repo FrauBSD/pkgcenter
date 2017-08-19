@@ -196,7 +196,7 @@ usage()
 	printf "$optfmt" "-t test" \
 		"Test clause (predicate) to limit events (Default none)."
 	printf "$optfmt" "-T time" \
-		"Timeout. Format is \`#[smhd]' or simply \`#' for seconds."
+		"Timeout. Format is \`\#[smhd]' or simply \`\#' for seconds."
 	printf "$optfmt" "-u user" \
 		"User filter. Only show processes matching user name/uid."
 	printf "$optfmt" "-v" \
