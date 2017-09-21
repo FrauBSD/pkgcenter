@@ -47,7 +47,7 @@ DTRACE_PRAGMA="
 
 ############################################################ GLOBALS
 
-VERSION='$Version: 1.0-beta-3 $' # -V
+VERSION='$Version: 1.0-beta-4 $' # -V
 
 pgm="${0##*/}" # Program basename
 
@@ -938,7 +938,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 				${QUIET:+2> /dev/null}
 		) | $SUDO awk \
 			-v cmd="$OUTPUT_CMD" \
-			-v console="$CONSOLE_FORCE" \
+			-v console="$CONSOLE" \
 			-v count=$COUNT \
 			-v execregex="$EXECREGEX" \
 			-v filter="$FILTER" \
@@ -973,23 +973,67 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 				num, num, num, execregex)
 			if (output == "-")
 				output = "/dev/stdout"
+
+			#
+			# ANSI formatting for console
+			#
+			npidmatches = 2
+			pidregex[1] = sprintf("\\[(%s)\\]: ", pid)
+			pidstart[1] = 1
+			pidtrail[1] = 3
+			pidmatch[1] = sprintf( \
+				"^[^\\n]* (%s)\\.(%s) (%s)%s",
+				num, num, name1, pidregex[1])
+			pidregex[2] = sprintf("-\\+= (%s) ", pid)
+			pidstart[2] = 4
+			pidtrail[2] = 1
+			pidmatch[2] = sprintf("\\n +\\\\?%s", pidregex[2])
 		}
 		############################################ FUNCTIONS
 		function strip(s) { gsub(/\033\[[0-9;]*m/, "", s); return s }
 		function esc(str) { gsub(/'\''/, "&\\\\&&", str); return str }
 		function arg(str) { return "'\''" esc(str) "'\''" }
 		function env(var, str) { return var "=" arg(str) " " }
+		function ans(seq) { return console ? "\033[" seq "m" : "" }
+		function inv(str) { return ans(7) str ans(27) }
 		function runcmd() {
 			return system(sprintf("%s/bin/sh -c %s",
 				env("TAG", tag) \
 					env("DETAILS", details),
 				arg(cmd)))
 		}
+		function ansify(str, matchstr, regex, regstart, regtrail) {
+			newstr = ""
+			while (newstr != str) {
+				newstr = str
+				if (match(newstr, matchstr) &&
+				    (end = RSTART + RLENGTH - 1) &&
+				    (left = substr(newstr, 1, end)) &&
+				    match(left, regex "$") &&
+				    (start = RSTART + regstart) &&
+				    (len = end - start - regtrail + 1))
+				{
+					str = sprintf("%s%s%s",
+						substr(left, 1, start - 1),
+						inv(substr(left, start, len)),
+						substr(newstr, start + len))
+				}
+			}
+			return newstr
+		}
 		function dump() {
 			lines = block
 			block = ""
 			if (execregex != "" && lines !~ execfilter) return
-			if (pid != "" && lines !~ pidfilter) return
+			if (pid != "") {
+				if (lines !~ pidfilter) return
+				for (n = 1; n <= npidmatches; n++)
+					lines = ansify(lines,
+						pidmatch[n],
+						pidregex[n],
+						pidstart[n],
+						pidtrail[n])
+			}
 			if (uid != "" && lines !~ uidfilter) return
 			if (gid != "" && lines !~ gidfilter) return
 			if (filter != "" && lines !~ filter) return
