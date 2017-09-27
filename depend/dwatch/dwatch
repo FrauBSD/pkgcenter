@@ -968,9 +968,6 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			fmt = sprintf("(%s|%s)",
 				"^[^\\n]* (%s)\\.(%s) (%s)\\[(%s)\\]: ",
 				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) (%s)")
-			uidfilter = sprintf(fmt,
-				uid, num, name1, num,
-				num, uid, num, name2)
 			gidfilter = sprintf(fmt,
 				num, gid, name1, num,
 				num, num, gid, name2)
@@ -989,6 +986,10 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			pidstart[2] = "\\n +\\\\?-\\+= "
 			pidpreen[2] = "^0*"
 			piddeflt[2] = "0"
+			nuidmatches = 2
+			uidstart[1] = sprintf("^(%s) ", date_time)
+			uidstart[2] = sprintf("\\n +\\\\?-\\+= (%s) ",
+				ansi num ansi)
 		}
 		############################################ FUNCTIONS
 		function strip(s) { gsub(/\033\[[0-9;]*m/, "", s); return s }
@@ -1044,7 +1045,12 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 						found = 1
 				if (!found) return
 			}
-			if (uid != "" && lines !~ uidfilter) return
+			if (uid != "") {
+				for (n = 1; n <= nuidmatches; n++)
+					if (filter_field(uidstart[n], num,
+						uid)) found = 1
+				if (!found) return
+			}
 			if (gid != "" && lines !~ gidfilter) return
 			if (filter != "" && lines !~ filter) return
 			if (lines) {
