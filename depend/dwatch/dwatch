@@ -968,9 +968,6 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			fmt = sprintf("(%s|%s)",
 				"^[^\\n]* (%s)\\.(%s) (%s)\\[(%s)\\]: ",
 				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) (%s)")
-			gidfilter = sprintf(fmt,
-				num, gid, name1, num,
-				num, num, gid, name2)
 			execfilter = sprintf(fmt,
 				num, num, execregex, num,
 				num, num, num, execregex)
