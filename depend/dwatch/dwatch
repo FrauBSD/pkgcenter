@@ -1006,6 +1006,22 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 					env("DETAILS", details),
 				arg(cmd)))
 		}
+		function filter_block() {
+			if (length(lines) < 1) return 0
+			block_match = 0
+			newstr = ""
+			start = 1
+			if (match(lines, "^(" date_time ") ")) {
+				newstr = newstr substr(lines, 1,
+					RSTART + RLENGTH - 1)
+				start = RSTART + RLENGTH
+			}
+			replace = ans("31;1") "&" ans("39;22")
+			workstr = substr(lines, start)
+			if (gsub(filter, replace, workstr)) block_match = 1
+			lines = newstr workstr
+			return block_match
+		}
 		function filter_field(startre, fieldre, matchre, isword,
 			preenre, defaultstr)
 		{
@@ -1073,7 +1089,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 						uid, true)) found = 1
 				if (!found) return
 			}
-			if (filter != "" && lines !~ filter) return
+			if (filter != "" && !filter_block()) return
 			if (lines) {
 				stdout = 1
 				if (output) {
