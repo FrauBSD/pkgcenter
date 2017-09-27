@@ -913,6 +913,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 
 	if [ ! "$QUIET" ]; then
 		# Prevent backslashes from being lost
+		FILTER=$( echo "$FILTER" | awk 'gsub(/\\/,"&&")||1' )
 		EXECREGEX=$( echo "$EXECREGEX" | awk 'gsub(/\\/,"&&")||1' )
 
 		msg=Filtering
