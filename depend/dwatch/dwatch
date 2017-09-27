@@ -957,7 +957,12 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 		' # Start awk(1) post-processor
 		############################################ BEGIN
 		BEGIN {
-			num = "[[:digit:]]+"
+			ansi = "(\\033\\[[[:digit:];]+m)?"
+			num = year = day = "[[:digit:]]+"
+			month = "[[:alpha:]]+"
+			date = year " " month " +" day
+			time = "[012][0-9]:[0-5][0-9]:[0-5][0-9]"
+			date_time = ansi date " +" time ansi
 			name1 = "[^\\[]*"
 			name2 = "[^[:space:]]+"
 			fmt = sprintf("(%s|%s)",
