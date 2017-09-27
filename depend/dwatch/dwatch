@@ -315,6 +315,7 @@ dtrace_stderr_filter()
 	/failed to write to <stdout>: No such file or directory/ { next }
 	/failed to write to <stdout>: Broken pipe/ { next }
 	/processing aborted: Broken pipe/ { next }
+	/invalid address \(0x[[:xdigit:]]+\) in action #[[:digit:]]+/ { next }
 	{ print; fflush() }
 	' # END-QUOTE
 }
