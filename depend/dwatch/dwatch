@@ -957,6 +957,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 		' # Start awk(1) post-processor
 		############################################ BEGIN
 		BEGIN {
+			true = 1
 			ansi = "(\\033\\[[[:digit:];]+m)?"
 			num = year = day = "[[:digit:]]+"
 			month = "[[:alpha:]]+"
@@ -964,19 +965,20 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			time = "[012][0-9]:[0-5][0-9]:[0-5][0-9]"
 			date_time = ansi date " +" time ansi
 			name1 = "[^\\[]*"
-			name2 = "[^[:space:]]+"
-			fmt = sprintf("(%s|%s)",
-				"^[^\\n]* (%s)\\.(%s) (%s)\\[(%s)\\]: ",
-				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) (%s)")
-			execfilter = sprintf(fmt,
-				num, num, execregex, num,
-				num, num, num, execregex)
+			name2 = "[^\\n]*"
 			if (output == "-")
 				output = "/dev/stdout"
 
 			#
 			# Field definitions
 			#
+			nexecmatches = 2
+			execstart[1] = sprintf( \
+				"^(%s) (%s)\\.(%s) (%s)\\[(%s)\\]: ",
+				date_time, num, num, name1, num)
+			execstart[2] = sprintf( \
+				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) ",
+				num, num, num)
 			npidmatches = 2
 			pidstart[1] = sprintf("^(%s) (%s)\\.(%s) (%s)\\[",
 				date_time, num, num, name1)
@@ -1004,8 +1006,8 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 					env("DETAILS", details),
 				arg(cmd)))
 		}
-		function filter_field(startre, fieldre, matchre, preenre,
-			defaultstr)
+		function filter_field(startre, fieldre, matchre, isword,
+			preenre, defaultstr)
 		{
 			if (length(lines) < 1) return 0
 			field_match = 0
@@ -1023,11 +1025,19 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 				field = matchstr = substr(workstr, 1, end)
 				sub(preenre, "", matchstr)
 				if (!matchstr) matchstr = defaultstr
-				if (match(matchstr, matchre) &&
-					RSTART == 1 &&
-					RLENGTH == length(matchstr)) {
-					field_match = 1
-					field = ans(7) field ans(27)
+				if (isword) {
+					if (match(matchstr, matchre) &&
+						RSTART == 1 &&
+						RLENGTH == length(matchstr)) {
+						field_match = 1
+						field = ans(7) field ans(27)
+					}
+				} else {
+					replace = ans(7) "&" ans(27)
+					if (gsub(matchre, replace, matchstr)) {
+						field_match = 1
+						field = matchstr
+					}
 				}
 				newstr = newstr field
 			}
@@ -1038,24 +1048,29 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			lines = block
 			block = ""
 			found = 0
-			if (execregex != "" && lines !~ execfilter) return
+			if (execregex != "") {
+				for (n = 1; n <= nexecmatches; n++)
+					if (filter_field(execstart[n], name2,
+						execregex)) found = 1
+				if (!found) return
+			}
 			if (pid != "") {
 				for (n = 1; n <= npidmatches; n++)
 					if (filter_field(pidstart[n], num, pid,
-						pidpreen[n], piddeflt[n]))
-						found = 1
+						true, pidpreen[n],
+						piddeflt[n])) found = 1
 				if (!found) return
 			}
 			if (gid != "") {
 				for (n = 1; n <= ngidmatches; n++)
 					if (filter_field(gidstart[n], num,
-						gid)) found = 1
+						gid, true)) found = 1
 				if (!found) return
 			}
 			if (uid != "") {
 				for (n = 1; n <= nuidmatches; n++)
 					if (filter_field(uidstart[n], num,
-						uid)) found = 1
+						uid, true)) found = 1
 				if (!found) return
 			}
 			if (filter != "" && lines !~ filter) return
