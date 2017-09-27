@@ -986,6 +986,10 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			pidstart[2] = "\\n +\\\\?-\\+= "
 			pidpreen[2] = "^0*"
 			piddeflt[2] = "0"
+			ngidmatches = 2
+			gidstart[1] = sprintf("^(%s) (%s)\\.", date_time, num)
+			gidstart[2] = sprintf("\\n +\\\\?-\\+= (%s) (%s)\\.",
+				ansi num ansi, num)
 			nuidmatches = 2
 			uidstart[1] = sprintf("^(%s) ", date_time)
 			uidstart[2] = sprintf("\\n +\\\\?-\\+= (%s) ",
@@ -1045,13 +1049,18 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 						found = 1
 				if (!found) return
 			}
+			if (gid != "") {
+				for (n = 1; n <= ngidmatches; n++)
+					if (filter_field(gidstart[n], num,
+						gid)) found = 1
+				if (!found) return
+			}
 			if (uid != "") {
 				for (n = 1; n <= nuidmatches; n++)
 					if (filter_field(uidstart[n], num,
 						uid)) found = 1
 				if (!found) return
 			}
-			if (gid != "" && lines !~ gidfilter) return
 			if (filter != "" && lines !~ filter) return
 			if (lines) {
 				stdout = 1
