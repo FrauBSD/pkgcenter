@@ -912,6 +912,9 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 	fi
 
 	if [ ! "$QUIET" ]; then
+		# Prevent backslashes from being lost
+		EXECREGEX=$( echo "$EXECREGEX" | awk 'gsub(/\\/,"&&")||1' )
+
 		msg=Filtering
 		[ "$EXECREGEX" ] && msg="$msg execregex: $EXECREGEX"
 		[ "$FILTER" ] && msg="$msg filter: $FILTER"
@@ -956,7 +959,6 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			num = "[[:digit:]]+"
 			name1 = "[^\\[]*"
 			name2 = "[^[:space:]]+"
-			gsub(/\\/,"&&", execregex)
 			fmt = sprintf("(%s|%s)",
 				"^[^\\n]* (%s)\\.(%s) (%s)\\[(%s)\\]: ",
 				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) (%s)")
