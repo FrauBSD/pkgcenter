@@ -963,9 +963,6 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			fmt = sprintf("(%s|%s)",
 				"^[^\\n]* (%s)\\.(%s) (%s)\\[(%s)\\]: ",
 				"\\n +\\\\?-\\+= (%s) (%s)\\.(%s) (%s)")
-			pidfilter = sprintf(fmt,
-				num, num, name1, pid,
-				pid, num, num, name2)
 			uidfilter = sprintf(fmt,
 				uid, num, name1, num,
 				num, uid, num, name2)
@@ -1006,37 +1003,40 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 					env("DETAILS", details),
 				arg(cmd)))
 		}
-		function ansify(str, matchstr, regex, regstart, regtrail) {
+		function filter_field(startre, fieldre, matchre, preenre,
+			defaultstr)
+		{
+			if (length(lines) < 1) return 0
+			field_match = 0
 			newstr = ""
-			while (newstr != str) {
-				newstr = str
-				if (match(newstr, matchstr) &&
-				    (end = RSTART + RLENGTH - 1) &&
-				    (left = substr(newstr, 1, end)) &&
-				    match(left, regex "$") &&
-				    (start = RSTART + regstart) &&
-				    (len = end - start - regtrail + 1))
-				{
-					str = sprintf("%s%s%s",
-						substr(left, 1, start - 1),
-						inv(substr(left, start, len)),
-						substr(newstr, start + len))
-				}
+			start = 1
+			while ((workstr = substr(lines, start)) &&
+				(workstr ~ (startre fieldre)))
+			{
+				match(workstr, startre)
+				start += end = RSTART + RLENGTH - 1
+				newstr = newstr substr(workstr, 1, end)
+				workstr = substr(workstr, end + 1)
+				match(workstr, fieldre)
+				start += end = RSTART + RLENGTH - 1
+				field = matchstr = substr(workstr, 1, end)
+				sub(preenre, "", matchstr)
+				if (!matchstr) matchstr = defaultstr
 			}
-			return newstr
+			lines = newstr workstr
+			return field_match
 		}
 		function dump() {
 			lines = block
 			block = ""
+			found = 0
 			if (execregex != "" && lines !~ execfilter) return
 			if (pid != "") {
-				if (lines !~ pidfilter) return
 				for (n = 1; n <= npidmatches; n++)
-					lines = ansify(lines,
-						pidmatch[n],
-						pidregex[n],
-						pidstart[n],
-						pidtrail[n])
+					if (filter_field(pidstart[n], num, pid,
+						true, pidpreen[n],
+						piddefault[n])) found = 1
+				if (!found) return
 			}
 			if (uid != "" && lines !~ uidfilter) return
 			if (gid != "" && lines !~ gidfilter) return
