@@ -976,19 +976,14 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 				output = "/dev/stdout"
 
 			#
-			# ANSI formatting for console
+			# Field definitions
 			#
 			npidmatches = 2
-			pidregex[1] = sprintf("\\[(%s)\\]: ", pid)
-			pidstart[1] = 1
-			pidtrail[1] = 3
-			pidmatch[1] = sprintf( \
-				"^[^\\n]* (%s)\\.(%s) (%s)%s",
-				num, num, name1, pidregex[1])
-			pidregex[2] = sprintf("-\\+= (%s) ", pid)
-			pidstart[2] = 4
-			pidtrail[2] = 1
-			pidmatch[2] = sprintf("\\n +\\\\?%s", pidregex[2])
+			pidstart[1] = sprintf("^(%s) (%s)\\.(%s) (%s)\\[",
+				date_time, num, num, name1)
+			pidstart[2] = "\\n +\\\\?-\\+= "
+			pidpreen[2] = "^0*"
+			piddeflt[2] = "0"
 		}
 		############################################ FUNCTIONS
 		function strip(s) { gsub(/\033\[[0-9;]*m/, "", s); return s }
@@ -996,7 +991,6 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 		function arg(str) { return "'\''" esc(str) "'\''" }
 		function env(var, str) { return var "=" arg(str) " " }
 		function ans(seq) { return console ? "\033[" seq "m" : "" }
-		function inv(str) { return ans(7) str ans(27) }
 		function runcmd() {
 			return system(sprintf("%s/bin/sh -c %s",
 				env("TAG", tag) \
@@ -1041,7 +1035,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			if (pid != "") {
 				for (n = 1; n <= npidmatches; n++)
 					if (filter_field(pidstart[n], num, pid,
-						pidpreen[n], piddefault[n]))
+						pidpreen[n], piddeflt[n]))
 						found = 1
 				if (!found) return
 			}
