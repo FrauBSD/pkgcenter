@@ -690,7 +690,7 @@ pproc_dump()
 #
 while :; do
 	OPTIND=1
-	while getopts 1B:deE:fFg:j:k:K:lmM:nN:o:O:p:PqQr:Rt:T:u:vVwxyz: flag
+	while getopts 1B:deE:fFg:j:k:K:lmM:nN:o:O:p:PqQr:Rt:T:u:vVwxX:yz: flag
 	do
 		process_flag "$flag"
 	done
