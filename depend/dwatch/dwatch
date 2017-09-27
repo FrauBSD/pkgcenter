@@ -1022,6 +1022,13 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 				field = matchstr = substr(workstr, 1, end)
 				sub(preenre, "", matchstr)
 				if (!matchstr) matchstr = defaultstr
+				if (match(matchstr, matchre) &&
+					RSTART == 1 &&
+					RLENGTH == length(matchstr)) {
+					field_match = 1
+					field = ans(7) field ans(27)
+				}
+				newstr = newstr field
 			}
 			lines = newstr workstr
 			return field_match
@@ -1034,8 +1041,8 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			if (pid != "") {
 				for (n = 1; n <= npidmatches; n++)
 					if (filter_field(pidstart[n], num, pid,
-						true, pidpreen[n],
-						piddefault[n])) found = 1
+						pidpreen[n], piddefault[n]))
+						found = 1
 				if (!found) return
 			}
 			if (uid != "" && lines !~ uidfilter) return
