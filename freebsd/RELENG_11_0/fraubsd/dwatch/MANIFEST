@@ -11,7 +11,7 @@
 	"comment":"Watch processes as they trigger a particular DTrace probe",
 	"licenselogic":"single",
 	"licenses":["BSD"],
-	"version":"1.0-beta-3",
+	"version":"1.0-beta-4",
 
 	"maintainer":"dteske@freebsd.org",
 	"www":"https://www.fraubsd.org/",
@@ -74,6 +74,6 @@ WWW: https://www.fraubsd.org/",
 ////////////////////////////////////////////////////////////////////////////////
 //
 // $Copyright: 2016-2017 Devin Teske. All rights reserved. $
-// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-08-19 02:59:02 -0700 freebsdfrau $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-10-03 15:49:11 -0700 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
