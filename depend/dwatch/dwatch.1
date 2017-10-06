@@ -24,7 +24,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd September 24, 2017
+.Dd October 5, 2017
 .Dt DWATCH 1
 .Os
 .Sh NAME
@@ -64,7 +64,7 @@ The
 .Nm
 utility uses
 .Xr dtrace 1
-to display process info when DTrace hits a given probe point.
+to display process info when DTrace triggers a given probe point.
 .Pp
 .Nm
 automates the process of generating DTrace scripts to coalesce trace output by
@@ -94,7 +94,7 @@ to instead coalesce trace output by date/time,
 process info,
 and function traversal.
 .Pp
-Output format with
+Output format with the
 .Ql Fl F
 option is:
 .Pp
@@ -116,7 +116,7 @@ to display a process tree containing the parent,
 grandparent,
 and ancestor process info.
 .Pp
-Output format with
+Output format with the
 .Ql Fl R
 option is:
 .Pp
@@ -324,7 +324,7 @@ to limit events
 .Pq Default none .
 .It Fl T Ar time
 Timeout.
-Format is
+The format is
 .Ql Li #[smhd]
 or just
 .Ql Li #
@@ -336,13 +336,15 @@ Only show processes matching
 name/uid.
 This can be an
 .Xr awk 1
-regular expression to match a numerical uid.
+regular expression to match a numerical UID.
 .It Fl v
 Verbose.
 Show all errors from
 .Xr dtrace 1 .
 .It Fl V
-Report dwatch version on standard output and exit.
+Report
+.Nm
+version on standard output and exit.
 .It Fl w
 Permit destructive actions
 .Pq copyout*, stop, panic, etc. .
@@ -363,267 +365,311 @@ regular expression.
 Profiles customize the data printed during events.
 Profiles are loaded from a colon-separated list of directories in
 .Ev DWATCH_PROFILES_PATH .
-Below is an incomplete list of profiles with basic descriptions:
+This is an incomplete list of profiles with basic descriptions:
 .Bl -tag -width "vop_readdir"
 .It chmod
-Print arguments being passed to chmod(2)
+Print arguments being passed to
+.Xr chmod 2
 .It fchmod
-Print arguments being passed to fchmod(2)
+Print arguments being passed to
+.Xr fchmod 2
 .It fchmodat
-Print arguments being passed to fchmodat(2)
+Print arguments being passed to
+.Xr fchmodat 2
 .It kill
-Print arguments being passed to kill(2)
+Print arguments being passed to
+.Xr kill 2
 .It lchmod
-Print arguments being passed to lchmod(2)
+Print arguments being passed to
+.Xr lchmod 2
 .It nanosleep
-Print arguments being passed to nanosleep(2)
+Print arguments being passed to
+.Xr nanosleep 2
 .It vop_create
-Print filesystem paths being created by VOP_CREATE(9)
+Print filesystem paths being created by
+.Xr VOP_CREATE 9
 .It vop_lookup
-Print filesystem paths being looked-up by VOP_LOOKUP(9)
+Print filesystem paths being looked-up by
+.Xr VOP_LOOKUP 9
 .It vop_mkdir
-Print directory paths being created by VOP_MKDIR(9)
+Print directory paths being created by
+.Xr VOP_MKDIR 9
 .It vop_mknod
-Print device node paths being created by VOP_MKNOD(9)
+Print device node paths being created by
+.Xr VOP_MKNOD 9
 .It vop_readdir
-Print directory paths being read by VOP_READDIR(9)
+Print directory paths being read by
+.Xr VOP_READDIR 9
 .It vop_remove
-Print filesystem paths being removed by VOP_REMOVE(9)
+Print filesystem paths being removed by
+.Xr VOP_REMOVE 9
 .It vop_rename
-Print filesystem paths being renamed by VOP_RENAME(9)
+Print filesystem paths being renamed by
+.Xr VOP_RENAME 9
 .It vop_rmdir
-Print directory paths being removed by VOP_RMDIR(9)
+Print directory paths being removed by
+.Xr VOP_RMDIR 9
 .It vop_symlink
-Print symlink paths being created by VOP_SYMLINK(9)
+Print symlink paths being created by
+.Xr VOP_SYMLINK 9
 .El
 .Sh ENVIRONMENT
 These environment variables affect the execution of
 .Nm :
 .Bl -tag -width "DWATCH_PROFILES_PATH"
 .It Ev DWATCH_PROFILES_PATH
-If DWATCH_PROFILES_PATH is set,
+If
+.Ev DWATCH_PROFILES_PATH
+is set,
 .Nm
-will search for profiles in the colon-separated list of directories
-instead of the default
+searches for profiles in the colon-separated list of directories in that
+variable instead of the default
 .Ql Li /usr/libexec/dwatch:/usr/local/libexec/dwatch .
 If set to NULL,
-no profiles will be loaded.
+profiles are not loaded.
 .El
 .Sh EXIT STATUS
 .Ex -std
 .Sh EXAMPLES
-Below are some examples of how to use
-.Nm
-to watch system activity:
+Watch processes entering system CPU scheduler.
+.Bd -literal -offset indent
+dwatch on-cpu
+.Ed
 .Pp
-.Nm
-.Ar on-cpu
-.Dl Watch processes entering system CPU scheduler.
+List available profiles,
+one line per profile.
+.Bd -literal -offset indent
+dwatch -1 -Q
+.Ed
 .Pp
-.Nm
-.Fl 1
-.Fl Q
-.Dl List available profiles, one line per profile.
+Do not execute
+.Xr dtrace 1
+but display script on stdout and exit.
+.Bd -literal -offset indent
+dwatch -d fsync
+.Ed
 .Pp
-.Nm
-.Fl d
-fsync
-.Dl "Do not" execute Xr dtrace 1 but display script on stdout and exit.
+Compile and test but do not execute code generated with given probe.
+.Bd -literal -offset indent
+dwatch -e test_probe
+.Ed
 .Pp
-.Nm
-.Fl e
-.Ar test_probe
-.Dl Compile and test but do not execute code generated with given probe.
+Print argument one being passed to each call of zfs_sync().
+.Bd -literal -offset indent
+dwatch -E 'printf("%i", arg1)' zfs_sync
+.Ed
 .Pp
-.Nm
-.Fl E Ar 'printf("%i", arg1)'
-zfs_sync
-.Dl Print argument one being passed to each call of zfs_sync().
+Watch all functions named
+.Ql Li read .
+.Bd -literal -offset indent
+dwatch -f read
+.Ed
 .Pp
-.Nm
-.Fl f
-.Ar read
-.Dl Watch all functions named Ql Li read .
+Watch all function traversal.
+.Bd -literal -offset indent
+dwatch -F :
+.Ed
 .Pp
-.Nm
-.Fl F
-.Ar ":"
-.Dl Watch all function traversal.
+Watch syscall function traversal.
+.Bd -literal -offset indent
+dwatch -F syscall
+.Ed
 .Pp
-.Nm
-.Fl F
-.Ar syscall
-.Dl Watch syscall function traversal.
+Display only processes belonging to wheel super-group.
+.Bd -literal -offset indent
+dwatch -g wheel execve
+.Ed
 .Pp
-.Nm
-.Fl g Ar wheel
-execve
-.Dl Display only processes belonging to wheel super-group.
+Display only processes belonging to groups
+.Ql Li daemon
+or
+.Ql Li nobody .
+.Bd -literal -offset indent
+dwatch -g '1|65534' execve
+.Ed
 .Pp
-.Nm
-.Fl g Ar '1|65534'
-.Ar execve
-.Dl Display only processes belonging to groups \
-So Li daemon Sc \
-or \
-So Li nobody Sc .
+Ignore jails,
+displaying only base system processes.
+.Bd -literal -offset indent
+dwatch -j 0 execve
+.Ed
 .Pp
-.Nm
-.Fl j Ar 0
-execve
-.Dl Ignore jails, displaying only base system processes.
+Display only processes running inside the jail named
+.Ql Li myjail .
+.Bd -literal -offset indent
+dwatch -j myjail execve
+.Ed
 .Pp
-.Nm
-.Fl j Ar myjail
-execve
-.Dl Display only processes running inside the jail named Ql Li myjail .
+Watch syscall function traversal by ruby processes.
+.Bd -literal -offset indent
+dwatch -k 'ruby*' -F syscall
+.Ed
 .Pp
-.Nm
-.Fl k Ar 'ruby*'
-.Fl F
-.Ar syscall
-.Dl Watch syscall function traversal by ruby processes.
+Watch syscall function traversal by processes containing
+.Ql Li daemon
+in their name.
+.Bd -literal -offset indent
+dwatch -k '*daemon*' -F syscall
+.Ed
 .Pp
-.Nm
-.Fl k Ar '*daemon*'
-.Fl F
-.Ar syscall
-.Dl Watch syscall function traversal by processes containing Ql Li daemon
-.Dl in their name.
+Display a list of unique functions available.
+.Bd -literal -offset indent
+dwatch -l -f
+.Ed
 .Pp
-.Nm
-.Fl l
-.Fl f
-.Dl Display a list of unique functions available.
+List available probes for functions ending in
+.Ql Li read .
+.Bd -literal -offset indent
+dwatch -l -f '*read'
+.Ed
 .Pp
-.Nm
-.Fl l
-.Fl f Ar '*read'
-.Dl List available probes for functions ending in Ql Li read .
+List available probes ending in
+.Dq Li read .
+.Bd -literal -offset indent
+dwatch -l -r 'read$'
+.Ed
 .Pp
-.Nm
-.Fl l
-.Fl r Ar 'read$'
-.Dl List available probes ending in Dq Li read .
+Display a list of unique providers.
+.Bd -literal -offset indent
+dwatch -l -P
+.Ed
 .Pp
-.Nm
-.Fl l
-.Fl P
-.Dl Display a list of unique providers.
+Watch paths being removed by
+.Xr VOP_REMOVE 9 .
+.Bd -literal -offset indent
+dwatch -X vop_remove
+.Ed
 .Pp
-.Nm
-.Fl X Ar vop_remove
-.Dl Watch paths being removed by Xr VOP_REMOVE 9 .
+Watch signals being passed to
+.Xr kill 2 .
+.Bd -literal -offset indent
+dwatch -X kill
+.Ed
 .Pp
+Watch the name
+.Ql Li read
+instead of the function
+.Ql Li read .
+The
 .Nm
-.Fl X Ar kill
-.Dl Watch signals being passed to Xr kill 2 .
-.Pp
-.Nm
-.Fl n Ar read
-.Dl Watch the name \
-So Li read Sc \
-instead of the function \
-So Li read Sc . \
-The dwatch selection algorithm will commonly favor the function named \
-So Li read Sc \
-when not given a type \
-Po using So Fl P Sc , So Fl m Sc , So Fl f Sc , or So Fl n Sc Pc \
-because there are more probes matching the function named \
-So Li read Sc \
-than probes matching \
-So Li read Sc \
+selection algorithm will commonly favor the function named
+.Ql Li read
+when not given a type
+.Pq using So Fl P Sc , So Fl m Sc , So Fl f Sc , or So Fl n Sc
+because there are more probes matching the function named
+.Ql Li read
+than probes matching
+.Ql Li read
 for any other type.
+.Bd -literal -offset indent
+dwatch -n read
+.Ed
 .Pp
-.Nm
-.Fl N Ar 1
-kill
-.Dl Display the first process to call Xr kill 2 and then exit.
+Display the first process to call
+.Xr kill 2
+and then exit.
+.Bd -literal -offset indent
+dwatch -N 1 kill
+.Ed
 .Pp
-.Nm
-.Fl p Ar 1234
-execve
-.Dl Watch processes forked by pid 1234.
+Watch processes forked by pid 1234.
+.Bd -literal -offset indent
+dwatch -p 1234 execve
+.Ed
 .Pp
-.Nm
-.Fl p Ar '1234|5678' execve
-.Dl Watch processes forked by either pid 1234 or pid 5678.
+Watch processes forked by either pid 1234 or pid 5678.
+.Bd -literal -offset indent
+dwatch -p '1234|5678' execve
+.Ed
 .Pp
+Watch the provider
+.Ql Li random
+instead of the function
+.Ql Li random .
+The 
 .Nm
-.Fl P
-.Ar random
-.Dl Watch the provider \
-So Li random Sc \
-instead of the function \
-So Li random Sc . \
-The dwatch selection algorithm will commonly favor the function named \
-So Li random Sc \
-when not given a type \
-Po using So Fl P Sc , So Fl m Sc , So Fl f Sc , or So Fl n Sc Pc \
-because there are more probes matching the function named \
-So Li random Sc \
-than probes matching the provider named \
-So Li random Sc .
+selection algorithm will commonly favor the function named
+.Ql Li random
+when not given a type
+.Pq using So Fl P Sc , So Fl m Sc , So Fl f Sc , or So Fl n Sc
+because there are more probes matching the function named
+.Ql Li random
+than probes matching the provider named
+.Ql Li random .
+.Bd -literal -offset indent
+dwatch -P random
+.Ed
 .Pp
-.Nm
-.Fl Q
-.Fl r Ar vop
-.Dl Display available profiles matching Ql Li vop .
+Display available profiles matching
+.Ql Li vop .
+.Bd -literal -offset indent
+dwatch -Q -r vop
+.Ed
 .Pp
-.Nm
-.Fl r Ar /lib/
-.Fl X Ar vop_lookup
-.Dl Watch Xr VOP_LOOKUP 9 paths containing So Li /lib/ Sc .
+Watch
+.Xr VOP_LOOKUP 9
+paths containing
+.Ql Li /lib/ .
+.Bd -literal -offset indent
+dwatch -r /lib/ -X vop_lookup
+.Ed
 .Pp
-.Nm
-.Fl R
-execve
-.Dl Show process tree for each command as it is executed.
+Show process tree for each command as it is executed.
+.Bd -literal -offset indent
+dwatch -R execve
+.Ed
 .Pp
-.Nm
-.Fl R Fl p Ar 1234
-execve
-.Dl Watch processes forked by pid 1234 or children thereof .
+Watch processes forked by pid 1234 or children thereof.
+.Bd -literal -offset indent
+dwatch -R -p 1234 execve
+.Ed
 .Pp
-.Nm
-.Fl t Ar 'arg2<10'
-.Fl E Ar 'printf("%d",arg2)'
-write
-.Dl Display processes calling Xr write 2 with Do nbytes Dc less than 10 .
+Display processes calling
+.Xr write 2
+with
+.Dq nbytes
+less than 10.
+.Bd -literal -offset indent
+dwatch -t 'arg2<10' -E 'printf("%d",arg2)' write
+.Ed
 .Pp
-.Nm
-.Fl T Ar 5m
-.Ar statfs
-.Dl Watch So Li statfs Sc for 5 minutes and exit.
+Watch
+.Ql Li statfs
+for 5 minutes and exit.
+.Bd -literal -offset indent
+dwatch -T 5m statfs
+.Ed
 .Pp
-.Nm
-.Fl u Ar root
-execve
-.Dl Display only processes belonging to the root super-user.
+Display only processes belonging to the root super-user.
+.Bd -literal -offset indent
+dwatch -u root execve
+.Ed
 .Pp
-.Nm
-.Fl u Ar '1|65534'
-.Ar execve
-.Dl Display only processes belonging to users \
-So Li daemon Sc \
-or \
-So Li nobody Sc .
+Display only processes belonging to users
+.Ql Li daemon
+or
+.Ql Li nobody .
+.Bd -literal -offset indent
+dwatch -u '1|65534' execve
+.Ed
 .Pp
-.Nm
-.Fl V
-.Dl Print version and exit.
+Print version and exit.
+.Bd -literal -offset indent
+dwatch -V
+.Ed
 .Pp
-.Nm
-.Fl y
-.Fl N Ar 100
-preempt | less
-.Fl R
-.Dl View the first 100 scheduler preemptions.
+View the first 100 scheduler preemptions.
+.Bd -literal -offset indent
+dwatch -y -N 100 preempt | less -R
+.Ed
 .Pp
-.Nm
-.Fl z Ar '(mk|rm)dir'
-execve
-.Dl Display processes matching either Do Li mkdir Dc or Do Li rmdir Dc .
+Display processes matching either
+.Dq Li mkdir
+or
+.Dq Li rmdir .
+.Bd -literal -offset indent
+dwatch -z '(mk|rm)dir' execve
+.Ed
 .Sh SEE ALSO
 .Xr dtrace 1
 .Sh HISTORY
