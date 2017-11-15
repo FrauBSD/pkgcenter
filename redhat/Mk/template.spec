@@ -21,6 +21,8 @@ BuildRoot: %{_tmppath}/src
 
 __REQUIRES__
 
+__PROVIDES__
+
 ############################################################ DESCRIPTION
 
 %Description

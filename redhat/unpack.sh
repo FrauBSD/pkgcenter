@@ -5,7 +5,7 @@
 #
 # $Title: Script to unpack a Linux RPM package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/unpack.sh 2017-11-15 13:33:56 -0800 freebsdfrau $
+# $FrauBSD: redhat/unpack.sh 2017-11-15 13:37:18 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -280,7 +280,9 @@ while [ $# -gt 0 ]; do
 		"$DEST/SPECFILE" "$progdir/Mk/template.spec"
 	REQUIRES=$( rpm -qRp "$package" |
 		awk '!/^(\/|[[:alpha:]]+\()/{print "Requires:", $0}' )
-	export REQUIRES
+	PROVIDES=$( rpm -qp --provides "$package" |
+		awk '!/^(\/|[[:alpha:]]+\()/{print "Provides:", $0}' )
+	export REQUIRES PROVIDES
 	if ! awk -v dest="$DEST" -v regex="[[:alnum:]]+(:[[:alnum:]]+)?" '
 	BEGIN {
 		find_cmd = sprintf("find \"%s/src\" ! -type d", dest)
@@ -295,6 +297,11 @@ while [ $# -gt 0 ]; do
 		if ( $0 ~ /^__REQUIRES__$/ )
 		{
 			printf "%s\n", ENVIRON["REQUIRES"]
+			next
+		}
+		if ( $0 ~ /^__PROVIDES__$/ )
+		{
+			printf "%s\n", ENVIRON["PROVIDES"]
 			next
 		}
 		if ( $0 ~ /^__FILE_LISTING__$/ )
