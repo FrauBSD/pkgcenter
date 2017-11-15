@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new RPM $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/create.sh 2017-07-25 13:22:45 -0700 freebsdfrau $
+# $FrauBSD: redhat/create.sh 2017-11-15 13:21:18 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -197,8 +197,11 @@ while [ $# -gt 0 ]; do
 				llen = length(line)
 				if (plen < llen) next
 
-				text2match = (plen == llen) ? "/" path :
-					substr(path, (plen + 1) - (llen + 1))
+				if (plen == llen)
+					text2match = "/" path
+				else
+					text2match = substr(path,
+						(plen + 1) - (llen + 1))
 
 				if ("/" line == text2match)
 				{
