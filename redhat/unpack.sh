@@ -5,7 +5,7 @@
 #
 # $Title: Script to unpack a Linux RPM package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/unpack.sh 2017-11-15 13:32:49 -0800 freebsdfrau $
+# $FrauBSD: redhat/unpack.sh 2017-11-15 13:33:56 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -299,7 +299,7 @@ while [ $# -gt 0 ]; do
 		}
 		if ( $0 ~ /^__FILE_LISTING__$/ )
 		{
-			printf paths
+			printf "%s", paths
 			next
 		}
 
