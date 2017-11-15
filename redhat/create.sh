@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new RPM $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/create.sh 2017-11-15 13:21:18 -0800 freebsdfrau $
+# $FrauBSD: redhat/create.sh 2017-11-15 13:22:49 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -261,7 +261,7 @@ while [ $# -gt 0 ]; do
 	#
 	# Declare initial dependencies and file-list to be null
 	#
-	export REQUIRES= FILE_LISTING=
+	export REQUIRES= PROVIDES= FILE_LISTING=
 
 	#
 	# Declare initial summary/description to be the same as the name
@@ -281,6 +281,11 @@ while [ $# -gt 0 ]; do
 		if ($0 ~ /^__REQUIRES__$/)
 		{
 			printf "%s\n", ENVIRON["REQUIRES"]
+			next
+		}
+		if ($0 ~ /^__PROVIDES__$/)
+		{
+			printf "%s\n", ENVIRON["PROVIDES"]
 			next
 		}
 		if ($0 ~ /^__FILE_LISTING__$/)
