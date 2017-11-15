@@ -5,7 +5,7 @@
 #
 # $Title: Script to unpack a Linux RPM package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/unpack.sh 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: redhat/unpack.sh 2017-11-15 13:32:49 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -280,10 +280,17 @@ while [ $# -gt 0 ]; do
 		"$DEST/SPECFILE" "$progdir/Mk/template.spec"
 	REQUIRES=$( rpm -qRp "$package" |
 		awk '!/^(\/|[[:alpha:]]+\()/{print "Requires:", $0}' )
-	FILE_LISTING=$( find "$DEST/stage" ! -type d |
-		sed -e "s#^$DEST/stage##" )
-	export REQUIRES FILE_LISTING
-	if ! awk -vregex="[[:alnum:]]+(:[[:alnum:]]+)?" '
+	export REQUIRES
+	if ! awk -v dest="$DEST" -v regex="[[:alnum:]]+(:[[:alnum:]]+)?" '
+	BEGIN {
+		find_cmd = sprintf("find \"%s/src\" ! -type d", dest)
+		path_strip = length(dest) + 5
+		while (find_cmd | getline path)
+		{
+			path = substr(path, path_strip)
+			paths = paths path "\n"
+		}
+	}
 	{
 		if ( $0 ~ /^__REQUIRES__$/ )
 		{
@@ -292,7 +299,7 @@ while [ $# -gt 0 ]; do
 		}
 		if ( $0 ~ /^__FILE_LISTING__$/ )
 		{
-			printf "%s\n", ENVIRON["FILE_LISTING"]
+			printf paths
 			next
 		}
 
