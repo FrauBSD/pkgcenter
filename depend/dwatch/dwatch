@@ -47,7 +47,7 @@ DTRACE_PRAGMA="
 
 ############################################################ GLOBALS
 
-VERSION='$Version: 1.0-beta-6 $' # -V
+VERSION='$Version: 1.0-beta-7 $' # -V
 
 pgm="${0##*/}" # Program basename
 
@@ -690,7 +690,7 @@ pproc_dump()
 #
 while :; do
 	OPTIND=1
-	while getopts 1B:deE:fFg:j:k:K:lmM:nN:o:O:p:PqQr:Rt:T:u:vVwxX:yz: flag
+	while getopts 1B:deE:fFg:j:k:K:lmnN:o:O:p:PqQr:Rt:T:u:vVwxX:yz: flag
 	do
 		process_flag "$flag"
 	done
@@ -802,7 +802,7 @@ esac
 )"
 
 #
-# Load profile if given (`-X profile')
+# Load profile if given `-X profile'
 #
 [ "$USE_PROFILE" ] && load_profile "$PROFILE"
 [ "$PROBE" ] || die "PROBE not defined by profile and none given as argument"
