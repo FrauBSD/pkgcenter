@@ -3,7 +3,7 @@
 #
 # $Title: Script to enable client side hooks $
 # $Copyright: 2017 Devin Teske. All rights reserved. $
-# $FrauBSD: .git-hooks/install.sh 2017-11-15 13:09:19 -0800 freebsdfrau $
+# $FrauBSD: .git-hooks/install.sh 2017-11-15 13:12:41 -0800 freebsdfrau $
 #
 ############################################################ GLOBALS
 
@@ -40,7 +40,7 @@ FORCE=	# -f
 
 usage()
 {
-	local optfmt="\t%10s %s\n"
+	local optfmt="\t%-5s %s\n"
 	exec >&2
 	printf "Usage: %s [OPTIONS]\n" "$pgm"
 	printf "OPTIONS:\n"
