@@ -133,7 +133,12 @@ package: check_name
 	 eval2 cd $(STAGEDIR) || exit;                 \
 	 TARFILE=$$cwd/$$name.$(TARSUFFIX);            \
 	 if tar --help 2>&1 | grep -q bsdtar; then     \
-	     TARFLAGS2="-s ':^[^+]:/~:' -P";           \
+	     vers=$$( tar --version 2> /dev/null );    \
+	     case "$${vers##*[^0-9]}" in               \
+	     [0-2].*) TRANSFORM=':^[^+]:/~:' ;;        \
+	           *) TRANSFORM=':^[^+]:/~:S' ;;       \
+	     esac;                                     \
+	     TARFLAGS2="-s '$$TRANSFORM' -P";          \
 	 else                                          \
 	     TARFLAGS2="--transform 's:^[^+]:/&:' -P"; \
 	 fi;                                           \
