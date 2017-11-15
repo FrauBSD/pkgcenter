@@ -136,7 +136,10 @@ rpm: check_name .rpmmacros
 # Package Maintenance Targets
 #
 
-.PHONY: clean distclean
+.PHONY: conf clean distclean
+
+conf:
+	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmconf
 
 clean:
 	$(RM) -f $(GENERATED_FILES)
