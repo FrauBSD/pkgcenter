@@ -9,7 +9,7 @@ Group: Applications/FrauBSD
 
 Summary: dwatch
 License: BSD
-Version: 1.0b2
+Version: 1.0b6
 Release: 1
 Buildarch: noarch
 
@@ -64,11 +64,11 @@ WWW: https://www.fraubsd.org/
 /usr/libexec/dwatch/kill
 /usr/libexec/dwatch/lchmod
 /usr/libexec/dwatch/nanosleep
-/usr/libexec/dwatch/readdir
 /usr/libexec/dwatch/vop_create
 /usr/libexec/dwatch/vop_lookup
 /usr/libexec/dwatch/vop_mkdir
 /usr/libexec/dwatch/vop_mknod
+/usr/libexec/dwatch/vop_readdir
 /usr/libexec/dwatch/vop_remove
 /usr/libexec/dwatch/vop_rename
 /usr/libexec/dwatch/vop_rmdir
@@ -92,5 +92,7 @@ printf "\n\t+ This package will use security/sudo if installed.\n\n"
 
 
 %changelog
+* Wed Nov 15 2017 Devin Teske <dteske@fraubsd.org> 1.0b6-1
+- Update to beta-6
 * Sun Jul 07 2017 Devin Teske <dteske@fraubsd.org> 1.0b2-1
 - Package created.
