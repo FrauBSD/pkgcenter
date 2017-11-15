@@ -5,7 +5,7 @@
 #
 # $Title: Script to unpack a Linux RPM package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/unpack.sh 2017-11-15 13:37:18 -0800 freebsdfrau $
+# $FrauBSD: redhat/unpack.sh 2017-11-15 13:38:20 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -284,15 +284,32 @@ while [ $# -gt 0 ]; do
 		awk '!/^(\/|[[:alpha:]]+\()/{print "Provides:", $0}' )
 	export REQUIRES PROVIDES
 	if ! awk -v dest="$DEST" -v regex="[[:alnum:]]+(:[[:alnum:]]+)?" '
+	################################################## FUNCTIONS
+	function _asorti(src, dest)
+	{
+		k = nitems = 0
+		for (i in src) dest[++nitems] = i
+		for (i = 1; i <= nitems; k = i++) {
+			idx = dest[i]
+			while ((k > 0) && (dest[k] > idx)) {
+				dest[k+1] = dest[k]; k--
+			}
+			dest[k+1] = idx
+		}
+		return nitems
+	}
+	################################################## BEGIN
 	BEGIN {
 		find_cmd = sprintf("find \"%s/src\" ! -type d", dest)
 		path_strip = length(dest) + 5
 		while (find_cmd | getline path)
-		{
-			path = substr(path, path_strip)
-			paths = paths path "\n"
-		}
+			path_index[substr(path, path_strip)] = 1
+
+		n = _asorti(path_index, sorted_path_index)
+		for (i = 1; i <= n; i++)
+			paths = paths sorted_path_index[i] "\n"
 	}
+	################################################## MAIN
 	{
 		if ( $0 ~ /^__REQUIRES__$/ )
 		{
