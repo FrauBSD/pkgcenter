@@ -134,7 +134,7 @@ package: check_name
 	 TARFILE=$$cwd/$$name.$(TARSUFFIX);            \
 	 if tar --help 2>&1 | grep -q bsdtar; then     \
 	     vers=$$( tar --version 2> /dev/null );    \
-	     case "$${vers##*[^0-9]}" in               \
+	     case "$${vers#"$${vers%%[0-9]*}"}" in     \
 	     [0-2].*) TRANSFORM=':^[^+]:/~:' ;;        \
 	           *) TRANSFORM=':^[^+]:/~:S' ;;       \
 	     esac;                                     \
