@@ -5,7 +5,7 @@
 #
 # $Title: Script for getting the package tag from an RPM name $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/Mk/rpmtag 2017-07-25 13:18:10 -0700 freebsdfrau $
+# $FrauBSD: redhat/Mk/rpmtag 2017-11-15 13:49:53 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -78,7 +78,7 @@ TAGPREFIX="${TAGPREFIX%/*}"
 #
 echo "${TAGPREFIX:+$TAGPREFIX/}$1" | $AWK '{
 	gsub("/", "-")
-	gsub(/[^[:alnum:]]!&+,=_-]/, "_")
+	gsub(/[^[:alnum:]!&+,.=_-]/, "_")
 	print
 }'
 
