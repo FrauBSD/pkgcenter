@@ -11,7 +11,7 @@
 	"comment":"Watch processes as they trigger a particular DTrace probe",
 	"licenselogic":"single",
 	"licenses":["BSD"],
-	"version":"1.0-beta-5",
+	"version":"1.0-beta-6",
 
 	"maintainer":"dteske@freebsd.org",
 	"www":"https://www.fraubsd.org/",
@@ -35,11 +35,11 @@ WWW: https://www.fraubsd.org/",
 		"/usr/libexec/dwatch/kill",
 		"/usr/libexec/dwatch/lchmod",
 		"/usr/libexec/dwatch/nanosleep",
-		"/usr/libexec/dwatch/readdir",
 		"/usr/libexec/dwatch/vop_create",
 		"/usr/libexec/dwatch/vop_lookup",
 		"/usr/libexec/dwatch/vop_mkdir",
 		"/usr/libexec/dwatch/vop_mknod",
+		"/usr/libexec/dwatch/vop_readdir",
 		"/usr/libexec/dwatch/vop_remove",
 		"/usr/libexec/dwatch/vop_rename",
 		"/usr/libexec/dwatch/vop_rmdir",
@@ -74,6 +74,6 @@ WWW: https://www.fraubsd.org/",
 ////////////////////////////////////////////////////////////////////////////////
 //
 // $Copyright: 2016-2017 Devin Teske. All rights reserved. $
-// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-10-05 19:12:51 -0700 freebsdfrau $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-11-15 12:48:45 -0800 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
