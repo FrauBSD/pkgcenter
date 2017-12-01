@@ -129,22 +129,22 @@ check_name: plist
 
 package: check_name
 	$(PKGCC) $(PKGCCFLAGS) $(PLIST) $(STAGEDIR)
-	@$(EVAL2); cwd=$(CWD); name=$(NAME);           \
-	 eval2 cd $(STAGEDIR) || exit;                 \
-	 TARFILE=$$cwd/$$name.$(TARSUFFIX);            \
-	 if tar --help 2>&1 | grep -q bsdtar; then     \
-	     vers=$$( tar --version 2> /dev/null );    \
-	     case "$${vers#"$${vers%%[0-9]*}"}" in     \
-	     [0-2].*) TRANSFORM=':^[^+]:/~:' ;;        \
-	           *) TRANSFORM=':^[^+]:/~:S' ;;       \
-	     esac;                                     \
-	     TARFLAGS2="-s '$$TRANSFORM' -P";          \
-	 else                                          \
-	     TARFLAGS2="--transform 's:^[^+]:/&:' -P"; \
-	 fi;                                           \
+	@$(EVAL2); cwd=$(CWD); name=$(NAME);            \
+	 eval2 cd $(STAGEDIR) || exit;                  \
+	 TARFILE=$$cwd/$$name.$(TARSUFFIX);             \
+	 if tar --help 2>&1 | grep -q bsdtar; then      \
+	     vers=$$( tar --version 2> /dev/null );     \
+	     case "$${vers#"$${vers%%[0-9]*}"}" in      \
+	     [0-2].*) TRANSFORM=':^[^+]:/~:' ;;         \
+	           *) TRANSFORM=':^[^+]:/~:S' ;;        \
+	     esac;                                      \
+	     TARFLAGS2="-s '$$TRANSFORM' -P";           \
+	 else                                           \
+	     TARFLAGS2="--transform 's:^[^+]:/&:S' -P"; \
+	 fi;                                            \
 	 eval2 $(TAR) $(TARFLAGS) $$TARFILE $$TARFLAGS2 * || exit; \
-	 ! type "$(ZIP)" > /dev/null 2>&1 && exit;     \
-	 eval2 $(ZIP) $$TARFILE || exit;               \
+	 ! type "$(ZIP)" > /dev/null 2>&1 && exit;      \
+	 eval2 $(ZIP) $$TARFILE || exit;                \
 	 eval2 $(MV) -f $$TARFILE.$(ZIPSUFFIX) $$cwd/$$name.$(SUFFIX)
 	@[ "$(ORIGIN)" ] || echo "WARNING: Empty or missing package origin"
 
