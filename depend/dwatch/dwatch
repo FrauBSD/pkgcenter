@@ -47,7 +47,7 @@ DTRACE_PRAGMA="
 
 ############################################################ GLOBALS
 
-VERSION='$Version: 1.0-beta-7 $' # -V
+VERSION='$Version: 1.0-beta-8 $' # -V
 
 pgm="${0##*/}" # Program basename
 
@@ -71,6 +71,7 @@ EXECNAME=		# -k name
 EXECREGEX=		# -z regex
 EXIT_AFTER_COMPILE=	# -e
 FILTER=			# -r regex
+FUNC_COALESCE=		# -F
 GROUP=			# -g group
 JID=			# -j jail
 LIST=			# -l
@@ -107,14 +108,6 @@ EVENT_TAG='printf("%d.%d %s[%d]: ",
 		this->uid0, this->gid0, execname, this->pid0);'
 EVENT_TEST=
 FILE=
-FUNC_COALESCE_DETAILS='
-	/**************** FUNC_COALESCE ****************/
-
-	printf("%s%s:%s:%s:%s ", probename == "entry" ? "=> " :
-			probename == "return" ? "<= " :
-			probename == "start" ? "=> " :
-			probename == "done" ? "<= " : "",
-		probeprov, probemod, probefunc, probename);'
 ID=1
 MODULE_CHECKED=
 PROBE=
@@ -228,7 +221,7 @@ process_flag()
 	e) EXIT_AFTER_COMPILE=1 ;;
 	E) CUSTOM_DETAILS=1 EVENT_DETAILS="$OPTARG" ;;
 	f) PROBE_TYPE=function ;;
-	F) CUSTOM_DETAILS=1 EVENT_DETAILS="$FUNC_COALESCE_DETAILS" ;;
+	F) FUNC_COALESCE=1 ;;
 	g) GROUP="$OPTARG" ;;
 	j) JID="$OPTARG" ;;
 	k) EXECNAME="$EXECNAME${EXECNAME:+ }$OPTARG"
@@ -1211,7 +1204,15 @@ $PROBE${EVENT_TEST:+ /$EVENT_TEST/} /* probe ID $ID */
 	/****************** EVENT_TAG ******************/
 
 	${EVENT_TAG#[[:space:]]}
+${FUNC_COALESCE:+
+	/**************** FUNC_COALESCE ****************/
 
+	printf("%s%s:%s:%s:%s ", probename == "entry" ? "=> " :
+			probename == "return" ? "<= " :
+			probename == "start" ? "=> " :
+			probename == "done" ? "<= " : "",
+		probeprov, probemod, probefunc, probename);
+}
 	/**************** EVENT_DETAILS ****************/
 
 	${EVENT_DETAILS#[[:space:]]}
