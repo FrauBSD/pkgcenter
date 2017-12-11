@@ -11,7 +11,7 @@
 	"comment":"Watch processes as they trigger a particular DTrace probe",
 	"licenselogic":"single",
 	"licenses":["BSD"],
-	"version":"1.0-beta-7",
+	"version":"1.0-beta-8",
 
 	"maintainer":"dteske@freebsd.org",
 	"www":"https://www.fraubsd.org/",
@@ -21,8 +21,8 @@
 
 	//////////////////////////////////////////////////// DESCRIPTION
 
-	"desc":"The dwatch utility uses dtrace(1) to display process info when DTrace
-hits a given probe proint.
+	"desc":"The dwatch utility uses dtrace(1) to display process info when
+a given DTrace probe proint is triggered.
 
 WWW: https://www.fraubsd.org/",
 
@@ -74,6 +74,6 @@ WWW: https://www.fraubsd.org/",
 ////////////////////////////////////////////////////////////////////////////////
 //
 // $Copyright: 2016-2017 Devin Teske. All rights reserved. $
-// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-11-15 15:45:15 -0800 freebsdfrau $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-12-11 11:23:19 -0800 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
