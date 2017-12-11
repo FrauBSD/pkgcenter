@@ -24,7 +24,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd October 5, 2017
+.Dd December 11, 2017
 .Dt DWATCH 1
 .Os
 .Sh NAME
@@ -92,7 +92,7 @@ option causes
 .Nm
 to instead coalesce trace output by date/time,
 process info,
-and function traversal.
+and probe traversal.
 .Pp
 Output format with the
 .Ql Fl F
@@ -230,7 +230,7 @@ the name and arguments of the program triggering the probe are shown.
 .It Fl f
 Enable probe matching the specified function name.
 .It Fl F
-Coalesce trace output by function.
+Coalesce trace output by probe.
 .It Fl g Ar group
 Group filter.
 Only show processes matching
@@ -465,12 +465,12 @@ Watch all functions named
 dwatch -f read
 .Ed
 .Pp
-Watch all function traversal.
+Watch all probe traversal.
 .Bd -literal -offset indent
 dwatch -F :
 .Ed
 .Pp
-Watch syscall function traversal.
+Watch syscall probe traversal.
 .Bd -literal -offset indent
 dwatch -F syscall
 .Ed
@@ -500,12 +500,12 @@ Display only processes running inside the jail named
 dwatch -j myjail execve
 .Ed
 .Pp
-Watch syscall function traversal by ruby processes.
+Watch syscall probe traversal by ruby processes.
 .Bd -literal -offset indent
 dwatch -k 'ruby*' -F syscall
 .Ed
 .Pp
-Watch syscall function traversal by processes containing
+Watch syscall probe traversal by processes containing
 .Ql Li daemon
 in their name.
 .Bd -literal -offset indent
