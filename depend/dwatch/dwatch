@@ -219,7 +219,14 @@ process_flag()
 	B) MAX_ARGS="$OPTARG" ;;
 	d) DEBUG=1 ;;
 	e) EXIT_AFTER_COMPILE=1 ;;
-	E) CUSTOM_DETAILS=1 EVENT_DETAILS="$OPTARG" ;;
+	E) CUSTOM_DETAILS=1
+	   EVENT_DETAILS="${EVENT_DETAILS%;}"
+	   [ "$EVENT_DETAILS" ] && EVENT_DETAILS="$EVENT_DETAILS;
+		printf(\" \");
+		" # END-QUOTE
+	   # Read event code from stdin if `-' is argument
+	   [ "$OPTARG" = "-" ] && OPTARG=$( cat )
+	   EVENT_DETAILS="$EVENT_DETAILS$OPTARG" ;;
 	f) PROBE_TYPE=function ;;
 	F) FUNC_COALESCE=1 ;;
 	g) GROUP="$OPTARG" ;;
@@ -783,11 +790,6 @@ case "$GROUP" in
 esac
 
 #
-# Read event code from stdin if `-' is the argument to `-E code' option
-#
-[ "$CUSTOM_DETAILS" -a "$EVENT_DETAILS" = "-" ] && EVENT_DETAILS=$( cat )
-
-#
 # Default event details
 #
 [ "$CUSTOM_DETAILS" ] || EVENT_DETAILS="printf(\"%s\", this->arg0_0);$(
@@ -1207,10 +1209,10 @@ $PROBE${EVENT_TEST:+ /$EVENT_TEST/} /* probe ID $ID */
 ${FUNC_COALESCE:+
 	/**************** FUNC_COALESCE ****************/
 
-	printf("%s%s:%s:%s:%s ", probename == "entry" ? "=> " :
-			probename == "return" ? "<= " :
-			probename == "start" ? "=> " :
-			probename == "done" ? "<= " : "",
+	printf("%s%s:%s:%s:%s ", probename == "entry" ? "-> " :
+			probename == "return" ? "<- " :
+			probename == "start" ? "-> " :
+			probename == "done" ? "<- " : " | ",
 		probeprov, probemod, probefunc, probename);
 }
 	/**************** EVENT_DETAILS ****************/

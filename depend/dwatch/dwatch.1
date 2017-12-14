@@ -24,7 +24,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd December 11, 2017
+.Dd December 14, 2017
 .Dt DWATCH 1
 .Os
 .Sh NAME
@@ -64,7 +64,10 @@ The
 .Nm
 utility uses
 .Xr dtrace 1
-to display process info when DTrace triggers a given probe point.
+to display process info when a given DTrace probe point is triggered.
+Only the root user or users with
+.Xr sudo 8
+access can run this command.
 .Pp
 .Nm
 automates the process of generating DTrace scripts to coalesce trace output by
@@ -98,7 +101,7 @@ Output format with the
 .Ql Fl F
 option is:
 .Pp
-.Dl date/time uid.gid execname[pid]: [=> |<= ]prov:mod:func:name
+.Dl date/time uid.gid execname[pid]: {->,<-, |} prov:mod:func:name ...
 .Pp
 For example,
 the command
@@ -106,7 +109,7 @@ the command
 produces the output:
 .Pp
 .Dl INFO Watching 'dtrace:::BEGIN' ...
-.Dl 2017 May 29 21:34:41 0.0 dtrace[86593]: dtrace:::BEGIN
+.Dl 2017 May 29 21:34:41 0.0 dtrace[86593]:  | dtrace:::BEGIN ...
 .Pp
 The
 .Fl R
@@ -122,9 +125,9 @@ option is:
 .Pp
 .Dl date/time uid0.gid0 execname[pid0]: psargs0
 .Dl " -+= pid3 uid3.gid3 psargs3"
-.Dl "  \\\-+= pid2 uid2.gid2 psargs2"
-.Dl "    \\\-+= pid1 uid1.gid1 psargs1"
-.Dl "      \\\-+= pid0 uid0.guid0 psargs0"
+.Dl "  \e\\-+= pid2 uid2.gid2 psargs2"
+.Dl "    \e\\-+= pid1 uid1.gid1 psargs1"
+.Dl "      \e\\-+= pid0 uid0.guid0 psargs0"
 .Pp
 For example,
 the command
@@ -134,9 +137,9 @@ produces the output:
 .Dl INFO Watching 'dtrace:::BEGIN' ...
 .Dl 2017 May 29 21:38:54 0.0 dtrace[86899]: dtrace -s /dev/stdin
 .Dl " -+= 86855 604.604 -bash"
-.Dl "  \-+= 86857 604.604 /bin/sh /usr/sbin/dwatch -R BEGIN"
-.Dl "    \-+= 86897 0.0 sudo dtrace -s /dev/stdin"
-.Dl "      \-+= 86899 0.0 dtrace -s /dev/stdin"
+.Dl "  \e\\-+= 86857 604.604 /bin/sh /usr/sbin/dwatch -R BEGIN"
+.Dl "    \e\\-+= 86897 0.0 sudo dtrace -s /dev/stdin"
+.Dl "      \e\\-+= 86899 0.0 dtrace -s /dev/stdin"
 .Pp
 Of particular interest is the ability to filter using regular expressions.
 The
@@ -171,7 +174,7 @@ displays the path argument sent to
 .Xr chdir 2
 calls.
 .Pp
-Profiles can be written for more complex routines or convenience.
+Profiles can be written for more complex routines and/or convenience.
 To list available profiles use the
 .Ql Fl Q
 option.
@@ -184,15 +187,11 @@ the command
 .Ql dwatch -X kill
 displays arguments sent to
 .Xr kill 2 .
-.Pp
-Since this uses DTrace, only the root user or users with
-.Xr sudo 8
-access can run this command.
 .Sh OPTIONS
 If a
 .Ar probe
 argument does not contain colon
-.Pq Ql Li ":"
+.Pq Qo Li ":" Qc
 and none of
 .Ql Fl P ,
 .Ql Fl m ,
@@ -227,6 +226,7 @@ read from stdin.
 This allows customization of what is printed after date/time and process info.
 By default,
 the name and arguments of the program triggering the probe are shown.
+Can be specified multiple times.
 .It Fl f
 Enable probe matching the specified function name.
 .It Fl F
@@ -258,6 +258,7 @@ or
 .Ql Li *name*
 to indicate
 .Dq Li contains .
+Can be specified multiple times.
 .It Fl K Ar num
 Maximum directory depth to display
 .Pq Default 64 .
@@ -586,7 +587,7 @@ Watch the provider
 .Ql Li random
 instead of the function
 .Ql Li random .
-The 
+The
 .Nm
 selection algorithm will commonly favor the function named
 .Ql Li random
