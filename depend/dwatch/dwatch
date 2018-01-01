@@ -410,8 +410,9 @@ list_probes()
 	dtrace_cmd -l${probe:+n "$probe"} | awk -v pattern="$(
 		# Prevent backslashes from being lost
 		echo "$filter" | awk 'gsub(/\\/,"&&")||1'
-	)" -v want="$column" '
+	)" -v want="$column" -v console="$CONSOLE" '
 		BEGIN { getline dtrace_header }
+		function ans(seq) { return console ? "\033[" seq "m" : "" }
 		NF > 3 && $(NF-1) ~ /^#/ { next }
 		!_[$0 = column[0] = sprintf("%s:%s:%s:%s",
 			column[1] = $2,
@@ -419,7 +420,9 @@ list_probes()
 			column[3] = (NF >= 4 ? $(NF-1) : ""),
 			column[4] = $NF)]++ &&
 			!__[$0 = column[want]]++ &&
-			$0 ~ pattern { print | "sort" }
+			gsub(pattern, ans("31;1") "&" ans("39;22")) {
+				print | "sort"
+			}
 		END { close("sort") }
 	' # END-QUOTE
 
@@ -479,7 +482,10 @@ list_profiles()
 
 	# Output single lines if sent to a pipe
 	if [ "$oneline" ]; then
-		echo "$profiles" | awk -v filter="$filter" '$0 ~ filter'
+		echo "$profiles" | awk -v filter="$filter" -v cons="$CONSOLE" '
+			function ans(s) { return cons ? "\033[" s "m" : "" }
+			gsub(filter, ans("31;1") "&" ans("39;22"))
+		' # END-QUOTE
 		return $SUCCESS
 		# NOTREACHED
 	fi
@@ -487,17 +493,27 @@ list_profiles()
 	[ "$quiet" ] || echo PROFILES:
 	echo "$profiles" | awk \
 		-v colsize=$longest_profile_name \
+		-v console="$CONSOLE" \
 		-v ncols=$ncols \
 		-v quiet="$quiet" \
 		-v filter="$filter" \
 	' # Begin awk(1) processor
-		BEGIN { row_item[1] = "" }
+		function ans(seq) { return console ? "\033[" seq "m" : "" }
+		BEGIN {
+			row_item[1] = ""
+			replace = ans("31;1") "&" ans("39;22")
+			ansi_offset = length(replace) - 1
+		}
 		function print_row()
 		{
-			printf "%s%-*s", quiet ? "" : "\t",
-				colsize, row_item[1]
-			for (i = 2; i <= cur_col; i++)
-				printf "   %-*s", colsize, row_item[i]
+			cs = colsize + ansi_offset * \
+				gsub(filter, replace, row_item[1])
+			printf "%s%-*s", quiet ? "" : "\t", cs, row_item[1]
+			for (i = 2; i <= cur_col; i++) {
+				cs = colsize + ansi_offset * \
+					gsub(filter, replace, row_item[i])
+				printf "   %-*s", cs, row_item[i]
+			}
 			printf "\n"
 		}
 		$0 ~ filter {
