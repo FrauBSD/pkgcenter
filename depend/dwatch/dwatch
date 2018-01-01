@@ -405,6 +405,8 @@ list_probes()
 			$0 ~ pattern { print | sort }
 		END { close(sort) }
 	' # END-QUOTE
+
+	exit $SUCCESS
 }
 
 list_profiles()
@@ -479,7 +481,8 @@ list_profiles()
 		}
 		END { if (cur_col < ncols) print_row() }
 	' # END-QUOTE
-	return $SUCCESS
+
+	exit $SUCCESS
 }
 
 load_profile()
@@ -687,18 +690,16 @@ shift $(( $OPTIND - 1 ))
 #
 # List probes if `-l' was given
 #
-if [ "$LIST" ]; then
+[ "$LIST" ] &&
 	list_probes
-	exit $SUCCESS
-fi
+	# NOTREACHED
 
 #
 # List profiles if `-Q' was given
 #
-if [ "$LIST_PROFILES" ]; then
+[ "$LIST_PROFILES" ] &&
 	list_profiles
-	exit $SUCCESS
-fi
+	# NOTREACHED
 
 #
 # Validate number of arguments
