@@ -2,6 +2,7 @@
 
 FILESDIR=	${LIBEXECDIR}/dwatch
 FILES=		chmod \
+		errno \
 		kill \
 		nanosleep \
 		vop_create \
