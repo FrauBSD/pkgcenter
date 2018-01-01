@@ -9,7 +9,8 @@
 ############################################################ DESCRIPTION
 #
 # Print when syscall returns with non-zero errno (default) or other condition.
-# To override the default condition, use (for example) `-t errno==2'.
+# To override the default test condition, use (for example) `-t errno==2' to
+# test for specific value or simply `-t 1' to unconditionally show all values.
 #
 ############################################################ PROBE
 
@@ -17,7 +18,7 @@
 
 ############################################################ EVENT ACTION
 
-: ${EVENT_TEST:="errno > 0"}
+[ "$CUSTOM_TEST" ] || EVENT_TEST="errno > 0"
 
 ############################################################ EVENT DETAILS
 
