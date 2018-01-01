@@ -486,8 +486,8 @@ list_profiles()
 
 	[ "$quiet" ] || echo PROFILES:
 	echo "$profiles" | awk \
-		-v ncols=$ncols \
 		-v colsize=$longest_profile_name \
+		-v ncols=$ncols \
 		-v quiet="$quiet" \
 		-v regex="$regex" \
 	' # Begin awk(1) processor
