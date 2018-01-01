@@ -502,9 +502,9 @@ list_profiles()
 		}
 		$0 ~ filter {
 			n++
-			cur_col = (( n - 1 ) % ncols ) + 1
+			cur_col = ((n - 1) % ncols) + 1
 			row_item[cur_col] = $0
-			if ( cur_col == ncols ) print_row()
+			if (cur_col == ncols) print_row()
 		}
 		END { if (cur_col < ncols) print_row() }
 	' # END-QUOTE
