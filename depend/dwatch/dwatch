@@ -135,7 +135,7 @@ usage()
 	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
 		"-r regex" "-t test" "-T time" "-u user" "-X profile" \
 		"-z regex"
-	printf "\t      probe ...\n"
+	printf "\t      probe[,...] [args ...]\n"
 	printf "       %s -l [-fmnPqy] [-r regex] [probe ...]\n" "$pgm"
 	printf "       %s -Q [-1qy] [-r regex]\n" "$pgm"
 	printf "\n"
@@ -206,71 +206,6 @@ usage()
 	printf "$optfmt" "-z regex" \
 		"Only show processes matching awk(1) regular expression."
 	die
-}
-
-process_flag()
-{
-	local flag="$1"
-	local name predicate vers
-
-	case "$flag" in
-	1) ONELINE=1 PSTREE= ;;
-	B) MAX_ARGS="$OPTARG" ;;
-	d) DEBUG=1 ;;
-	e) EXIT_AFTER_COMPILE=1 ;;
-	E) CUSTOM_DETAILS=1
-	   EVENT_DETAILS="${EVENT_DETAILS%;}"
-	   [ "$EVENT_DETAILS" ] && EVENT_DETAILS="$EVENT_DETAILS;
-		printf(\" \");
-		" # END-QUOTE
-	   # Read event code from stdin if `-' is argument
-	   [ "$OPTARG" = "-" ] && OPTARG=$( cat )
-	   EVENT_DETAILS="$EVENT_DETAILS$OPTARG" ;;
-	f) PROBE_TYPE=function ;;
-	F) PROBE_COALESCE=1 ;;
-	g) GROUP="$OPTARG" ;;
-	j) JID="$OPTARG" ;;
-	k) EXECNAME="$EXECNAME${EXECNAME:+ }$OPTARG"
-	   case "$OPTARG" in
-	   \**\*) name="${OPTARG%\*}"
-		predicate="strstr(execname, \"${name#\*}\") != NULL" ;;
-	   \**) name="${OPTARG#\*}"
-		predicate="strstr(execname, \"$name\") == (execname +"
-		predicate="$predicate strlen(execname) - ${#name})" ;;
-	   *\*) predicate="strstr(execname, \"${OPTARG%\*}\") == execname" ;;
-	   *) predicate="execname == \"$OPTARG\""
-	   esac
-	   EVENT_TEST="$predicate${EVENT_TEST:+ ||
-		($EVENT_TEST)}" ;;
-	K) MAX_DEPTH="$OPTARG" ;;
-	l) LIST=1 ;;
-	m) PROBE_TYPE=module ;;
-	n) PROBE_TYPE=name ;;
-	N) COUNT="$OPTARG" ;;
-	o) OUTPUT="$OPTARG" ;;
-	O) OUTPUT_CMD="$OPTARG" ;;
-	p) PID="$OPTARG" ;;
-	P) PROBE_TYPE=provider ;;
-	q) QUIET=1 ;;
-	Q) LIST_PROFILES=1 ;;
-	r) FILTER="$OPTARG" ;;
-	R) PSTREE=1 ;;
-	t) CUSTOM_TEST="$OPTARG" ;;
-	T) TIMEOUT="$OPTARG" ;;
-	u) USER="$OPTARG" ;;
-	v) VERBOSE=1 ;;
-	V) vers="${VERSION#\$*[:\$]}"
-	   vers="${vers% \$}"
-	   printf "%s: %s\n" "$pgm" "${vers# }"
-	   exit ;;
-	w) DESTRUCTIVE_ACTIONS=1 ;;
-	x) TRACE=1 ;;
-	X) USE_PROFILE=1 PROFILE="$OPTARG" ;;
-	y) CONSOLE=1 CONSOLE_FORCE=1 ;;
-	z) EXECREGEX="$OPTARG" ;;
-	*) usage
-	   # NOTREACHED
-	esac
 }
 
 dtrace_cmd()
@@ -685,36 +620,69 @@ pproc_dump()
 [ "$( id -u )" != 0 ] && type sudo > /dev/null 2>&1 && SUDO=sudo
 
 #
-# Process command-line options and arguments
+# Process command-line options
 #
-while :; do
-	OPTIND=1
-	while getopts 1B:deE:fFg:j:k:K:lmnN:o:O:p:PqQr:Rt:T:u:vVwxX:yz: flag
-	do
-		process_flag "$flag"
-	done
-	shift $(( $OPTIND - 1 ))
-
-	# Validate number of arguments
-	[ "$PROBE$PROFILE$LIST$LIST_PROFILES" -o $# -gt 0 ] ||
-		usage # NOTREACHED
-
-	PROBE_ARG="$1"
-	shift
-
-	#
-	# Expand probe
-	#
-	# NB: No need to do this if `-Q' was given (this prevents $SUDO access
-	# when listing profiles since probe names are unused by `-Q').
-	#
-	if [ "$PROBE_ARG" -a ! "$LIST_PROFILES" ]; then
-		PROBE_ARG=$( expand_probe -t "$PROBE_TYPE" -- "$PROBE_ARG" )
-		PROBE="$PROBE${PROBE:+, }$PROBE_ARG"
-	fi
-
-	[ $# -eq 0 ] && break
+while getopts 1B:deE:fFg:j:k:K:lmnN:o:O:p:PqQr:Rt:T:u:vVwxX:yz: flag; do
+	case "$flag" in
+	1) ONELINE=1 PSTREE= ;;
+	B) MAX_ARGS="$OPTARG" ;;
+	d) DEBUG=1 ;;
+	e) EXIT_AFTER_COMPILE=1 ;;
+	E) CUSTOM_DETAILS=1
+	   EVENT_DETAILS="${EVENT_DETAILS%;}"
+	   [ "$EVENT_DETAILS" ] && EVENT_DETAILS="$EVENT_DETAILS;
+		printf(\" \");
+		" # END-QUOTE
+	   # Read event code from stdin if `-' is argument
+	   [ "$OPTARG" = "-" ] && OPTARG=$( cat )
+	   EVENT_DETAILS="$EVENT_DETAILS$OPTARG" ;;
+	f) PROBE_TYPE=function ;;
+	F) PROBE_COALESCE=1 ;;
+	g) GROUP="$OPTARG" ;;
+	j) JID="$OPTARG" ;;
+	k) EXECNAME="$EXECNAME${EXECNAME:+ }$OPTARG"
+	   case "$OPTARG" in
+	   \**\*) name="${OPTARG%\*}"
+		predicate="strstr(execname, \"${name#\*}\") != NULL" ;;
+	   \**) name="${OPTARG#\*}"
+		predicate="strstr(execname, \"$name\") == (execname +"
+		predicate="$predicate strlen(execname) - ${#name})" ;;
+	   *\*) predicate="strstr(execname, \"${OPTARG%\*}\") == execname" ;;
+	   *) predicate="execname == \"$OPTARG\""
+	   esac
+	   EVENT_TEST="$predicate${EVENT_TEST:+ ||
+		($EVENT_TEST)}" ;;
+	K) MAX_DEPTH="$OPTARG" ;;
+	l) LIST=1 ;;
+	m) PROBE_TYPE=module ;;
+	n) PROBE_TYPE=name ;;
+	N) COUNT="$OPTARG" ;;
+	o) OUTPUT="$OPTARG" ;;
+	O) OUTPUT_CMD="$OPTARG" ;;
+	p) PID="$OPTARG" ;;
+	P) PROBE_TYPE=provider ;;
+	q) QUIET=1 ;;
+	Q) LIST_PROFILES=1 ;;
+	r) FILTER="$OPTARG" ;;
+	R) PSTREE=1 ;;
+	t) CUSTOM_TEST="$OPTARG" ;;
+	T) TIMEOUT="$OPTARG" ;;
+	u) USER="$OPTARG" ;;
+	v) VERBOSE=1 ;;
+	V) vers="${VERSION#\$*[:\$]}"
+	   vers="${vers% \$}"
+	   printf "%s: %s\n" "$pgm" "${vers# }"
+	   exit ;;
+	w) DESTRUCTIVE_ACTIONS=1 ;;
+	x) TRACE=1 ;;
+	X) USE_PROFILE=1 PROFILE="$OPTARG" ;;
+	y) CONSOLE=1 CONSOLE_FORCE=1 ;;
+	z) EXECREGEX="$OPTARG" ;;
+	*) usage
+	   # NOTREACHED
+	esac
 done
+shift $(( $OPTIND - 1 ))
 
 #
 # List probes if `-l' was given
@@ -730,6 +698,14 @@ fi
 if [ "$LIST_PROFILES" ]; then
 	list_profiles
 	exit $SUCCESS
+fi
+
+#
+# Validate number of arguments
+#
+if [ ! "$PROFILE" ]; then
+	# If not given `-X profile' then a probe argument is required
+	[ $# -gt 0 ] || usage # NOTREACHED
 fi
 
 #
@@ -787,6 +763,25 @@ case "$GROUP" in
 	' ) || die "No such group: $GROUP" ;;
 *) RGID=$GROUP
 esac
+
+#
+# Expand probe
+#
+case "$1" in
+-*) : Assume dtrace options such as "-c cmd" or "-p pid" ;; # No probe(s) given
+*)
+	PROBE_ARG="$1"
+	shift
+esac
+if [ "$PROBE_ARG" ]; then
+	oldIFS="$IFS"
+	IFS="$IFS,"
+	for arg in $PROBE_ARG; do
+		arg=$( expand_probe -t "$PROBE_TYPE" -- "$arg" )
+		PROBE="$PROBE${PROBE:+, }$arg"
+	done
+	IFS="$oldIFS"
+fi
 
 #
 # Default event details
@@ -901,7 +896,8 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 			${DESTRUCTIVE_ACTIONS:+-w} \
 			${EXIT_AFTER_COMPILE:+-e} \
 			${OUTPUT:+-o "$output_path"} \
-			-s /dev/stdin
+			-s /dev/stdin \
+			"$@"
 		exit
 	fi
 
@@ -933,6 +929,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 				${EXIT_AFTER_COMPILE:+-e} \
 				${DESTRUCTIVE_ACTIONS:+-w} \
 				-s /dev/stdin \
+				\"\$@\" \
 				2>&$to_dtrace_stderr_filter \
 				${QUIET:+2> /dev/null}
 		) | $SUDO awk \
