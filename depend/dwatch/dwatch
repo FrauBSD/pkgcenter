@@ -71,7 +71,7 @@ EXECNAME=		# -k name
 EXECREGEX=		# -z regex
 EXIT_AFTER_COMPILE=	# -e
 FILTER=			# -r regex
-FUNC_COALESCE=		# -F
+PROBE_COALESCE=		# -F
 GROUP=			# -g group
 JID=			# -j jail
 LIST=			# -l
@@ -227,7 +227,7 @@ process_flag()
 	   [ "$OPTARG" = "-" ] && OPTARG=$( cat )
 	   EVENT_DETAILS="$EVENT_DETAILS$OPTARG" ;;
 	f) PROBE_TYPE=function ;;
-	F) FUNC_COALESCE=1 ;;
+	F) PROBE_COALESCE=1 ;;
 	g) GROUP="$OPTARG" ;;
 	j) JID="$OPTARG" ;;
 	k) EXECNAME="$EXECNAME${EXECNAME:+ }$OPTARG"
@@ -1120,7 +1120,7 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 } <<EOF
 #!/usr/sbin/dtrace -s
 /* -
- * Copyright (c) 2014-2017 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2014-2018 Devin Teske <dteske@FreeBSD.org>
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1205,8 +1205,8 @@ $PROBE${EVENT_TEST:+ /$EVENT_TEST/} /* probe ID $ID */
 	/****************** EVENT_TAG ******************/
 
 	${EVENT_TAG#[[:space:]]}
-${FUNC_COALESCE:+
-	/**************** FUNC_COALESCE ****************/
+${PROBE_COALESCE:+
+	/**************** PROBE_COALESCE ***************/
 
 	printf("%s%s:%s:%s:%s ", probename == "entry" ? "-> " :
 			probename == "return" ? "<- " :
