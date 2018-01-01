@@ -11,7 +11,7 @@
 	"comment":"Watch processes as they trigger a particular DTrace probe",
 	"licenselogic":"single",
 	"licenses":["BSD"],
-	"version":"1.0-beta-9",
+	"version":"1.0-beta-10",
 
 	"maintainer":"dteske@freebsd.org",
 	"www":"https://www.fraubsd.org/",
@@ -29,12 +29,24 @@ WWW: https://www.fraubsd.org/",
 	//////////////////////////////////////////////////// FILES
 
 	"files":[
+		"/usr/libexec/dwatch/accept-established",
+		"/usr/libexec/dwatch/accept-refused",
 		"/usr/libexec/dwatch/chmod",
-		"/usr/libexec/dwatch/fchmod",
+		"/usr/libexec/dwatch/connect-established",
+		"/usr/libexec/dwatch/connect-refused",
+		"/usr/libexec/dwatch/connect-request",
+		"/usr/libexec/dwatch/errno",
 		"/usr/libexec/dwatch/fchmodat",
 		"/usr/libexec/dwatch/kill",
 		"/usr/libexec/dwatch/lchmod",
 		"/usr/libexec/dwatch/nanosleep",
+		"/usr/libexec/dwatch/open",
+		"/usr/libexec/dwatch/openat",
+		"/usr/libexec/dwatch/tcp",
+		"/usr/libexec/dwatch/tcp-accept",
+		"/usr/libexec/dwatch/tcp-connect",
+		"/usr/libexec/dwatch/tcp-established",
+		"/usr/libexec/dwatch/tcp-refused",
 		"/usr/libexec/dwatch/vop_create",
 		"/usr/libexec/dwatch/vop_lookup",
 		"/usr/libexec/dwatch/vop_mkdir",
@@ -73,7 +85,7 @@ WWW: https://www.fraubsd.org/",
 // END
 ////////////////////////////////////////////////////////////////////////////////
 //
-// $Copyright: 2016-2017 Devin Teske. All rights reserved. $
-// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2017-12-14 04:11:46 -0800 freebsdfrau $
+// $Copyright: 2016-2018 Devin Teske. All rights reserved. $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/dwatch/MANIFEST 2018-01-01 14:23:54 -0800 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
