@@ -484,7 +484,7 @@ list_profiles()
 		# NOTREACHED
 	fi
 
-	[ "$quiet" ] || printf "PROFILES:\n"
+	[ "$quiet" ] || echo PROFILES:
 	echo "$profiles" | awk \
 		-v ncols=$ncols \
 		-v colsize=$longest_profile_name \
