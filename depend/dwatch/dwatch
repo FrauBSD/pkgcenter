@@ -489,7 +489,7 @@ list_profiles()
 		-v colsize=$longest_profile_name \
 		-v ncols=$ncols \
 		-v quiet="$quiet" \
-		-v regex="$regex" \
+		-v filter="$filter" \
 	' # Begin awk(1) processor
 		BEGIN { row_item[1] = "" }
 		function print_row()
@@ -500,7 +500,7 @@ list_profiles()
 				printf "   %-*s", colsize, row_item[i]
 			printf "\n"
 		}
-		$0 ~ regex {
+		$0 ~ filter {
 			n++
 			cur_col = (( n - 1 ) % ncols ) + 1
 			row_item[cur_col] = $0
