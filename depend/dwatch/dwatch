@@ -377,10 +377,21 @@ expand_probe()
 
 list_probes()
 {
+	local OPTIND=1 OPTARG flag
 	local column=0 header="PROVIDER:MODULE:FUNCTION:NAME"
+	local filter= quiet= type=
 
-	if [ ! "$PROBE" ]; then
-		case "$PROBE_TYPE" in
+	while getopts f:qt: flag; do
+		case "$flag" in
+		f) filter="$OPTARG" ;;
+		q) quiet=1 ;;
+		t) type="$OPTARG" ;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -eq 0 ]; then
+		case "$type" in
 		provider) column=1 header="PROVIDER" ;;
 		module)   column=2 header="MODULE" ;;
 		function) column=3 header="FUNCTION" ;;
@@ -388,11 +399,17 @@ list_probes()
 		esac
 	fi
 
-	[ "$QUIET" ] || echo "$header"
+	[ "$quiet" ] || echo "$header"
 
-	dtrace_cmd -l${PROBE:+n "$PROBE"} | awk -v pattern="$(
+	local arg probe=
+	for arg in "$@"; do
+		arg=$( expand_probe -t "$type" -- "$arg" )
+		probe="$probe${probe:+, }$arg"
+	done
+
+	dtrace_cmd -l${probe:+n "$probe"} | awk -v pattern="$(
 		# Prevent backslashes from being lost
-		echo "$FILTER" | awk 'gsub(/\\/,"&&")||1'
+		echo "$filter" | awk 'gsub(/\\/,"&&")||1'
 	)" -v want="$column" -v sort="sort" '
 		BEGIN { getline dtrace_header }
 		NF > 3 && $(NF-1) ~ /^#/ { next }
@@ -411,10 +428,20 @@ list_probes()
 
 list_profiles()
 {
-	local regex
+	local OPTIND=1 OPTARG flag
+	local filter= oneline= quiet=
+
+	while getopts 1f:q flag; do
+		case "$flag" in
+		1) oneline=1 ;;
+		f) filter="$OPTARG" ;;
+		q) quiet=1 ;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
 
 	# Prevent backslashes from being lost
-	regex=$( echo "$FILTER" | awk 'gsub(/\\/,"&&")||1' )
+	filter=$( echo "$filter" | awk 'gsub(/\\/,"&&")||1' )
 
 	# Build a list of profiles available
 	local profiles
@@ -451,17 +478,17 @@ list_profiles()
 	done
 
 	# Output single lines if sent to a pipe
-	if [ "$ONELINE" ]; then
+	if [ "$oneline" ]; then
 		echo "$profiles" | awk -v regex="$regex" '$0 ~ regex'
 		return $SUCCESS
 		# NOTREACHED
 	fi
 
-	[ "$QUIET" ] || printf "PROFILES:\n"
+	[ "$quiet" ] || printf "PROFILES:\n"
 	echo "$profiles" | awk \
 		-v ncols=$ncols \
 		-v colsize=$longest_profile_name \
-		-v quiet="$QUIET" \
+		-v quiet="$quiet" \
 		-v regex="$regex" \
 	' # Begin awk(1) processor
 		BEGIN { row_item[1] = "" }
@@ -691,14 +718,14 @@ shift $(( $OPTIND - 1 ))
 # List probes if `-l' was given
 #
 [ "$LIST" ] &&
-	list_probes
+	list_probes -f "$FILTER" ${QUIET:+-q} -t "$PROBE_TYPE" -- "$@"
 	# NOTREACHED
 
 #
 # List profiles if `-Q' was given
 #
 [ "$LIST_PROFILES" ] &&
-	list_profiles
+	list_profiles ${ONELINE:+-1} -f "$FILTER" ${QUIET:+-q}
 	# NOTREACHED
 
 #
