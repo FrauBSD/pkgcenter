@@ -765,7 +765,7 @@ case "$GROUP" in
 esac
 
 #
-# Expand probe
+# Expand probe argument into probe(s)
 #
 case "$1" in
 -*) : Assume dtrace options such as "-c cmd" or "-p pid" ;; # No probe(s) given
@@ -784,7 +784,7 @@ if [ "$PROBE_ARG" ]; then
 fi
 
 #
-# Default event details
+# Set default event details if `-E code' was not given
 #
 [ "$CUSTOM_DETAILS" ] || EVENT_DETAILS="printf(\"%s\", this->arg0_0);$(
 	pproc_dump -in 0
