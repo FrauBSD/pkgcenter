@@ -1,6 +1,6 @@
 #!/bin/sh
 #-
-# Copyright (c) 2014-2017 Devin Teske
+# Copyright (c) 2014-2018 Devin Teske
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ DTRACE_PRAGMA="
 
 ############################################################ GLOBALS
 
-VERSION='$Version: 1.0-beta-9 $' # -V
+VERSION='$Version: 1.0-beta-10 $' # -V
 
 pgm="${0##*/}" # Program basename
 
@@ -102,7 +102,6 @@ FAILURE=1
 # Miscellaneous
 #
 ACTIONS=
-E=$( :|awk 'BEGIN{printf "\033"}' )
 EVENT_DETAILS=
 EVENT_TAG='printf("%d.%d %s[%d]: ",
 		this->uid0, this->gid0, execname, this->pid0);'
@@ -119,7 +118,7 @@ TITLE=\$Title:
 
 ############################################################ FUNCTIONS
 
-ansi() { local fmt="$2 $4"; [ "$CONSOLE" ] && fmt="$E[$1m$2$E[$3m $4";
+ansi() { local fmt="$2 $4"; [ "$CONSOLE" ] && fmt="\\033[$1m$2\\033[$3m $4";
 	shift 4; printf "$fmt\n" "$@"; }
 die() { exec >&2; [ "$*" ] && echo "$pgm:" "$@"; exit $FAILURE; }
 info() { [ "$QUIET" ] || ansi 35 "INFO" 39 "$@" >&2; }
