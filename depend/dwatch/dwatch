@@ -711,7 +711,7 @@ while getopts 1B:deE:fFg:j:k:K:lmnN:o:O:p:PqQr:Rt:T:u:vVwxX:yz: flag; do
 	Q) LIST_PROFILES=1 ;;
 	r) FILTER="$OPTARG" ;;
 	R) PSTREE=1 ;;
-	t) CUSTOM_TEST="$OPTARG" ;;
+	t) CUSTOM_TEST="${CUSTOM_TEST:+($CUSTOM_TEST) && }$OPTARG" ;;
 	T) TIMEOUT="$OPTARG" ;;
 	u) USER="$OPTARG" ;;
 	v) VERBOSE=1 ;;
