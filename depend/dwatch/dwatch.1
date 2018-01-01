@@ -49,7 +49,8 @@
 .Op Fl u Ar user
 .Op Fl X Ar profile
 .Op Fl z Ar regex
-probe[,...]
+.Op Fl -
+.Op probe[,...]
 .Op args ...
 .Nm
 .Fl l
@@ -204,6 +205,14 @@ the probe argument is intelligently mapped to its most-likely value.
 Use
 .Ql Nm Fl l Ar name
 to see what probes will match a given name.
+.Pp
+Multiple probes must be given as a single
+.Pq quoted
+argument,
+separated by comma and/or whitespace.
+Any/all arguments following said probes will be passed to
+.Xr dtrace 1
+unmodified.
 .Bl -tag -width "-c count"
 .It Fl 1
 Print one line per process/profile
@@ -229,7 +238,7 @@ By default,
 the name and arguments of the program triggering the probe are shown.
 Can be specified multiple times.
 .It Fl f
-Enable probe matching the specified function name.
+Enable probes matching the specified function names.
 .It Fl F
 Coalesce trace output by probe.
 .It Fl g Ar group
@@ -266,11 +275,11 @@ Maximum directory depth to display
 .It Fl l
 List available probes on standard output and exit.
 .It Fl m
-Enable probe matching the specified module name.
+Enable probes matching the specified module names.
 .It Fl X Ar profile
 Load profile from DWATCH_PROFILES_PATH.
 .It Fl n
-Enable probe matching the specified probe name.
+Enable probes matching the specified probe names.
 .It Fl N Ar count
 Exit after
 .Ar count
@@ -324,6 +333,7 @@ Test clause
 .Pq predicate
 to limit events
 .Pq Default none .
+Can be specified multiple times.
 .It Fl T Ar time
 Timeout.
 The format is
@@ -370,23 +380,26 @@ Profiles are loaded from a colon-separated list of directories in
 This is an incomplete list of profiles with basic descriptions:
 .Bl -tag -width "vop_readdir"
 .It chmod
-Print arguments being passed to
-.Xr chmod 2
-.It fchmod
-Print arguments being passed to
-.Xr fchmod 2
-.It fchmodat
-Print arguments being passed to
+Print mode and path from
+.Xr chmod 2 ,
+.Xr lchmod 2 ,
 .Xr fchmodat 2
+.It errno
+Print non-zero errno results from system calls
 .It kill
-Print arguments being passed to
+Print signal and pid from
 .Xr kill 2
-.It lchmod
-Print arguments being passed to
-.Xr lchmod 2
 .It nanosleep
 Print arguments being passed to
 .Xr nanosleep 2
+.It open
+Print path from
+.Xr open 2 ,
+.Xr openat 2
+.It tcp
+Print
+.Xr dtrace_tcp 4
+details
 .It vop_create
 Print filesystem paths being created by
 .Xr VOP_CREATE 9
@@ -671,6 +684,20 @@ or
 .Dq Li rmdir .
 .Bd -literal -offset indent
 dwatch -z '(mk|rm)dir' execve
+.Ed
+.Pp
+Run a command and watch network activity only while that command runs.
+.Bd -literal -offset indent
+dwatch -X tcp -- -c "nc -zvw10 google.com 22"
+.Ed
+.Pp
+Watch
+.Xr open 2
+and
+.Xr openat 2
+calls only while pid 1234 is active.
+.Bd -literal -offset indent
+dwatch -X open -- -p 1234
 .Ed
 .Sh SEE ALSO
 .Xr dtrace 1
