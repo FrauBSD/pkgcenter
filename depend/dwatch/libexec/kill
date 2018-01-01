@@ -17,7 +17,7 @@
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
-	printf("%s(pid %d, sig %i)", probefunc, (pid_t)arg0, (int)arg1);
+	printf("signal %i to pid %d", (int)arg1, (pid_t)arg0);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 
