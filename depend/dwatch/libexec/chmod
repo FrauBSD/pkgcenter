@@ -2,23 +2,37 @@
 # vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
 ############################################################ IDENT(1)
 #
-# $Title: dwatch(8) module for [l]chmod(2) [or similar] entry $
-# $Copyright: 2014-2017 Devin Teske. All rights reserved. $
+# $Title: dwatch(8) module for [l]chmod(2), fchmodat(2), or similar entry $
+# $Copyright: 2014-2018 Devin Teske. All rights reserved. $
 # $FreeBSD$
 #
 ############################################################ DESCRIPTION
 #
-# Print arguments being passed to chmod(2), lchmod(2), and/or similar
+# Print mode/path being passed to chmod(2), lchmod(2), fchmodat(2), or similar
 #
 ############################################################ PROBE
 
-: ${PROBE:="syscall::$PROFILE:entry"}
+case "$PROFILE" in
+chmod)
+	: ${PROBE:=$( echo \
+		syscall::chmod:entry, \
+		syscall::lchmod:entry, \
+		syscall::fchmodat:entry )}
+	;;
+*)
+	: ${PROBE:="syscall::$PROFILE:entry"}
+esac
 
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
-	printf("%s(path \"%s\", mode %04o)",
-		probefunc, (string)copyinstr(arg0), (mode_t)arg1);
+	this->at = strstr(probefunc, "at") ==
+		(probefunc + strlen(probefunc) - 2) ? 1 : 0;
+
+	/* If probefunc ends in "at" [i.e., fchmodat] ignore first arg [fd] */
+	printf("%04o %s",
+		(mode_t)(this->at ? arg2 : arg1),
+		copyinstr(this->at ? arg1 : arg0));
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

@@ -2,8 +2,6 @@
 
 FILESDIR=	${LIBEXECDIR}/dwatch
 FILES=		chmod \
-		fchmod \
-		fchmodat \
 		kill \
 		nanosleep \
 		vop_create \
@@ -11,7 +9,8 @@ FILES=		chmod \
 		vop_rename \
 		vop_symlink
 
-LINKS=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/lchmod
+LINKS=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/fchmodat
+LINKS+=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/lchmod
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_mkdir
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_mknod
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_remove
