@@ -274,7 +274,7 @@ expand_probe()
 		;;
 	esac
 
-	dtrace_cmd -l | awk -v probe="$1" -v type="$type" '
+	dtrace_cmd -l | awk -v probe="$probe" -v type="$type" '
 	# Start awk(1) processor
 	#################################################### BEGIN
 	BEGIN { getline dtrace_header }
