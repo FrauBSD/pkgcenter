@@ -142,7 +142,7 @@ usage()
 	printf "$optfmt" "-1" \
 		"Print one line per process/profile (Default; disables \`-R')."
 	printf "$optfmt" "-B num" \
-		"Maximum number of arguments to display (Default $MAX_ARGS)."
+		"Maximum process arguments to display (Default $MAX_ARGS)."
 	printf "$optfmt" "-d" \
 		"Debug. Send dtrace(1) script to stdout instead of executing."
 	printf "$optfmt" "-e" \
