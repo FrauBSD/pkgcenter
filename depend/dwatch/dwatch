@@ -410,7 +410,7 @@ list_probes()
 	dtrace_cmd -l${probe:+n "$probe"} | awk -v pattern="$(
 		# Prevent backslashes from being lost
 		echo "$filter" | awk 'gsub(/\\/,"&&")||1'
-	)" -v want="$column" -v sort="sort" '
+	)" -v want="$column" '
 		BEGIN { getline dtrace_header }
 		NF > 3 && $(NF-1) ~ /^#/ { next }
 		!_[$0 = column[0] = sprintf("%s:%s:%s:%s",
@@ -419,8 +419,8 @@ list_probes()
 			column[3] = (NF >= 4 ? $(NF-1) : ""),
 			column[4] = $NF)]++ &&
 			!__[$0 = column[want]]++ &&
-			$0 ~ pattern { print | sort }
-		END { close(sort) }
+			$0 ~ pattern { print | "sort" }
+		END { close("sort") }
 	' # END-QUOTE
 
 	exit $SUCCESS
