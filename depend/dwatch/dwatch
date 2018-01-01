@@ -479,7 +479,7 @@ list_profiles()
 
 	# Output single lines if sent to a pipe
 	if [ "$oneline" ]; then
-		echo "$profiles" | awk -v regex="$filter" '$0 ~ regex'
+		echo "$profiles" | awk -v filter="$filter" '$0 ~ filter'
 		return $SUCCESS
 		# NOTREACHED
 	fi
