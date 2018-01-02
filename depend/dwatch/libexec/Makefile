@@ -3,10 +3,12 @@
 FILESDIR=	${LIBEXECDIR}/dwatch
 FILES=		chmod \
 		errno \
+		ip \
 		kill \
 		nanosleep \
 		open \
 		tcp \
+		udp \
 		vop_create \
 		vop_readdir \
 		vop_rename \
@@ -14,6 +16,8 @@ FILES=		chmod \
 
 LINKS=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/fchmodat
 LINKS+=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/lchmod
+LINKS+=	${LIBEXECDIR}/dwatch/ip ${LIBEXECDIR}/dwatch/ip-receive
+LINKS+=	${LIBEXECDIR}/dwatch/ip ${LIBEXECDIR}/dwatch/ip-send
 LINKS+=	${LIBEXECDIR}/dwatch/open ${LIBEXECDIR}/dwatch/openat
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/accept-established
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/accept-refused
@@ -24,6 +28,8 @@ LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-accept
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-connect
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-established
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-refused
+LINKS+=	${LIBEXECDIR}/dwatch/udp ${LIBEXECDIR}/dwatch/udp-receive
+LINKS+=	${LIBEXECDIR}/dwatch/udp ${LIBEXECDIR}/dwatch/udp-send
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_lookup
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_mkdir
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_mknod
