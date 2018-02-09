@@ -557,9 +557,24 @@ load_profile()
 
 pproc()
 {
-	local proc="curthread->td_proc"
-	local P=$1
-	[ $1 -gt 0 ] && proc="this->proc->p_pptr"
+	local OPTIND=1 OPTARG flag
+	local P= N=0
+
+	while getopts P: flag; do
+		case "$flag" in
+		P) P="$OPTARG" ;;
+		esac
+	done
+	shift $(( OPTIND - 1 ))
+
+	local proc=$1
+	if [ ! "$proc" ]; then
+		if [ "$P" = "0" ]; then
+			proc="curthread->td_proc"
+		else
+			proc="this->proc->p_pptr"
+		fi
+	fi
 
 	awk 'NR > 1 && $0 { $0 = "\t" $0 }
 		gsub(/\\\t/, "\t") || 1
@@ -903,11 +918,11 @@ $PROBE /* probe ID 1 */
 
 	/******************* CURPROC *******************/
 
-	$( pproc 0 )
+	$( pproc -P0 )
 
 	/******************* PPARENT *******************/
 
-	$( if [ "$PSTREE" ]; then pproc 1; else echo -n \
+	$( if [ "$PSTREE" ]; then pproc -P1; else echo -n \
 	"this->proc = this->proc->p_pptr;
 	this->pid1 = this->proc->p_pid;
 	this->uid1 = this->proc->p_ucred->cr_uid;
@@ -917,11 +932,11 @@ $PROBE /* probe ID 1 */
 
 	/******************* GPARENT *******************/
 
-	$( [ "$PSTREE" ] && pproc 2 )
+	$( [ "$PSTREE" ] && pproc -P2 )
 
 	/******************* APARENT *******************/
 
-	$( [ "$PSTREE" ] && pproc 3 )
+	$( [ "$PSTREE" ] && pproc -P3 )
 }
 EOF
 PSARGS_ACTION=$( cat <&9 )
