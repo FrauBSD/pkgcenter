@@ -2,13 +2,13 @@
 # vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
 ############################################################ IDENT(1)
 #
-# $Title: dwatch(8) module for TCP connections $
+# $Title: dwatch(8) module for dtrace_ip(4) $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
 # $FreeBSD$
 #
 ############################################################ DESCRIPTION
 #
-# Print addresses when TCP connections are established
+# Display interface name and bytes sent/received when IP I/O occurs
 #
 ############################################################ PROBE
 
@@ -45,13 +45,13 @@ exec 9<<EOF
 	this->send = probename == "send" ? 1 : 0;
 
 	/*
-	 * UDP addresses
+	 * IP addresses
 	 */
 	this->local = this->send ? args[2]->ip_saddr : args[2]->ip_daddr;
 	this->remote = this->send ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
-	 * Print connection details
+	 * Print I/O details
 	 */
 	printf("%s %s %s [%d bytes]",
 		this->local,

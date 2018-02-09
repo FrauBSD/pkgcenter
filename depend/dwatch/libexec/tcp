@@ -2,7 +2,7 @@
 # vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
 ############################################################ IDENT(1)
 #
-# $Title: dwatch(8) module for TCP connections $
+# $Title: dwatch(8) module for dtrace_tcp(4) connections $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
 # $FreeBSD$
 #

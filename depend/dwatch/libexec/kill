@@ -17,6 +17,9 @@
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
+	/*
+	 * Print signal/pid details
+	 */
 	printf("signal %i to pid %d", (int)arg1, (pid_t)arg0);
 EOF
 EVENT_DETAILS=$( cat <&9 )

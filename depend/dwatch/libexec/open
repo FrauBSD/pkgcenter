@@ -2,13 +2,13 @@
 # vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
 ############################################################ IDENT(1)
 #
-# $Title: dwatch(8) module for open(2) [or similar] entry $
+# $Title: dwatch(8) module for open[at](2) [or similar] entry $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
 # $FreeBSD$
 #
 ############################################################ DESCRIPTION
 #
-# Print arguments being passed to open(2) and/or similar
+# Print path being passed to open(2), openat(2), or similar
 #
 ############################################################ PROBE
 
@@ -20,6 +20,9 @@ esac
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
+	/*
+	 * Print path details
+	 */
 	this->at = strstr(probefunc, "at") ==
 		(probefunc + strlen(probefunc) - 2) ? 1 : 0;
 	printf("%s", copyinstr(this->at ? arg1 : arg0));
