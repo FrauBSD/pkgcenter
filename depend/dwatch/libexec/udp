@@ -49,14 +49,15 @@ exec 9<<EOF
 	/*
 	 * UDP addresses
 	 */
-	this->local = this->send ? args[2]->ip_saddr : args[2]->ip_daddr;
-	this->remote = this->send ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->reverse = this->send;
+	this->local = this->reverse ? args[2]->ip_saddr : args[2]->ip_daddr;
+	this->remote = this->reverse ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
 	 * UDP ports
 	 */
-	this->lport = this->send ? args[4]->udp_sport : args[4]->udp_dport;
-	this->rport = this->send ? args[4]->udp_dport : args[4]->udp_sport;
+	this->lport = this->reverse ? args[4]->udp_sport : args[4]->udp_dport;
+	this->rport = this->reverse ? args[4]->udp_dport : args[4]->udp_sport;
 
 	/*
 	 * IPv6 support

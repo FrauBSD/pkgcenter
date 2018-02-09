@@ -49,8 +49,9 @@ exec 9<<EOF
 	/*
 	 * IP addresses
 	 */
-	this->local = this->send ? args[2]->ip_saddr : args[2]->ip_daddr;
-	this->remote = this->send ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->reverse = this->send;
+	this->local = this->reverse ? args[2]->ip_saddr : args[2]->ip_daddr;
+	this->remote = this->reverse ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
 	 * I/O
