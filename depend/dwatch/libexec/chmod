@@ -20,7 +20,7 @@ chmod)
 		syscall::fchmodat:entry )}
 	;;
 *)
-	: ${PROBE:="syscall::$PROFILE:entry"}
+	: ${PROBE:=syscall::$PROFILE:entry}
 esac
 
 ############################################################ EVENT DETAILS

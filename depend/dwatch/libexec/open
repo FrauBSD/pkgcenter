@@ -13,8 +13,8 @@
 ############################################################ PROBE
 
 case "$PROFILE" in
-open) : ${PROBE:="syscall::open:entry, syscall::openat:entry"} ;;
-   *) : ${PROBE:="syscall::$PROFILE:entry"}
+open) : ${PROBE:=syscall::open:entry, syscall::openat:entry} ;;
+   *) : ${PROBE:=syscall::$PROFILE:entry}
 esac
 
 ############################################################ EVENT DETAILS

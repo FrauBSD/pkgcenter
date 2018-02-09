@@ -32,7 +32,7 @@ tcp-established)
 tcp-refused)
 	: ${PROBE:=tcp:::accept-refused, tcp:::connect-refused} ;;
 *)
-	: ${PROBE:="tcp:::$PROFILE"}
+	: ${PROBE:=tcp:::$PROFILE}
 esac
 
 ############################################################ GLOBALS
