@@ -1,0 +1,82 @@
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: dwatch(8) module for dtrace_sched(4) $
+# $Copyright: 2014-2018 Devin Teske. All rights reserved. $
+# $FreeBSD$
+#
+############################################################ DESCRIPTION
+#
+# Display process execution activity
+#
+############################################################ PROBE
+
+case "$PROFILE" in
+sched) : ${PROBE:=sched:::} ;;
+    *) : ${PROBE:=sched:::${PROFILE#sched-}}
+esac
+
+############################################################ ACTIONS
+
+exec 9<<EOF
+sched::: /* probe ID $ID */
+{${TRACE:+
+	printf("<$ID>");
+}
+	this->proc = NULL;
+	this->args_sched = this->args0;
+	this->curprio = 0;
+}
+
+sched:::change-pri, sched:::dequeue, sched:::enqueue,
+sched:::lend-pri, sched:::off-cpu, sched:::surrender,
+sched:::tick, sched:::wakeup /* probe ID $(( $ID + 1 )) */
+{${TRACE:+
+	printf("<$(( $ID + 1 ))>");
+}
+	$( pproc -P _sched "args[1]" )
+	this->curprio = args[0]->td_priority;
+}
+
+$PROBE /* probe ID $(( $ID + 2 )) */
+{${TRACE:+
+	printf("<$(( $ID + 2 ))>");
+}
+	/*
+	 * Which function triggered?
+	 */
+	this->change_pri  = probename == "change-pri"  ? 1 : 0;
+	this->enqueue     = probename == "enqueue"     ? 1 : 0;
+	this->lend_pri    = probename == "lend-pri"    ? 1 : 0;
+	this->load_change = probename == "load-change" ? 1 : 0;
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + 3 ))
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
+	/*
+	 * Print arguments
+	 */
+	printf("%s%s%s%s%s -- %s",
+		probename,
+		this->enqueue ? strjoin("-", arg3 == 0 ? "tail" : "head") : "",
+		this->change_pri || this->lend_pri ? strjoin(
+			strjoin(" ", lltostr(this->curprio)),
+			strjoin("->", lltostr(arg2))
+		) : "",
+		this->load_change ? strjoin(
+			strjoin(" CPU", lltostr(arg0)),
+			strjoin(" queue ", lltostr(arg1))) : "",
+		this->proc != NULL ?
+			strjoin(" pid ", lltostr(this->pid_sched)) : "",
+		this->args_sched);
+EOF
+EVENT_DETAILS=$( cat <&9 )
+
+################################################################################
+# END
+################################################################################

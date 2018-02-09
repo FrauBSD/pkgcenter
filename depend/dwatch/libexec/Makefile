@@ -10,6 +10,7 @@ FILES=		chmod \
 		open \
 		proc \
 		proc-signal \
+		sched \
 		tcp \
 		udp \
 		vop_create \
@@ -32,6 +33,19 @@ LINKS+=	${LIBEXECDIR}/dwatch/proc ${LIBEXECDIR}/dwatch/proc-exit
 LINKS+=	${LIBEXECDIR}/dwatch/proc-signal ${LIBEXECDIR}/dwatch/proc-signal-clear
 LINKS+=	${LIBEXECDIR}/dwatch/proc-signal ${LIBEXECDIR}/dwatch/proc-signal-discard
 LINKS+=	${LIBEXECDIR}/dwatch/proc-signal ${LIBEXECDIR}/dwatch/proc-signal-send
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-change-pri
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-dequeue
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-enqueue
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-lend-pri
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-load-change
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-off-cpu
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-on-cpu
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-preempt
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-remain-cpu
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-surrender
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-sleep
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-tick
+LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-wakeup
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/accept-established
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/accept-refused
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/connect-established
