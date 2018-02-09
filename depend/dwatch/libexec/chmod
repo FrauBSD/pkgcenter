@@ -33,12 +33,13 @@ exec 9<<EOF
 	this->at = strstr(probefunc, "at") ==
 		(probefunc + strlen(probefunc) - 2) ? 1 : 0;
 
+	this->mode = (mode_t)(this->at ? arg2 : arg1);
+	this->path = copyinstr(this->at ? arg1 : arg0);
+
 	/*
 	 * Print mode/path details
 	 */
-	printf("%04o %s",
-		(mode_t)(this->at ? arg2 : arg1),
-		copyinstr(this->at ? arg1 : arg0));
+	printf("%04o %s", this->mode, this->path);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

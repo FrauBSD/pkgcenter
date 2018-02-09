@@ -55,20 +55,23 @@ $PROBE /* probe ID $ID */
 			stringof(this->tvp->v_cache_dd->nc_name) : ""
 	) : "";
 
-$( awk -v MAX_DEPTH=$MAX_DEPTH '
-	buf = buf $0 "\n" { }
-	END {
-		for (DEPTH = 1; DEPTH <= MAX_DEPTH + 1; DEPTH++) {
+	$( awk -v MAX_DEPTH=$MAX_DEPTH '
+		{ sub(/^\\\t/, "\t") }
+		{ buf = buf "\t" $0 "\n" }
+		END {
+			sub(/\n$/, "", buf)
 			$0 = buf
-			gsub(/DEPTH/, DEPTH)
-			sub(/\n$/, "")
-			print
+			sub(/^[[:space:]]*/, "")
+			for (DEPTH = 1; DEPTH <= MAX_DEPTH + 1; DEPTH++) {
+				gsub(/DEPTH/, DEPTH)
+				print
+				$0 = buf
+			}
 		}
-	}
-' <<EOFDEPTH
+	' <<-EOFDEPTH
 	this->fnameDEPTH = this->tnameDEPTH = "";
-EOFDEPTH
-)
+	EOFDEPTH
+	)
 }
 
 $PROBE /this->fvp == 0 || this->ffi_fs == 0 ||
@@ -136,14 +139,14 @@ $PROBE /this->tname1 == 0 || this->tfi_fs == 0 ||
  */
 
 $( awk -v ID=$(( $ID + 7 )) -v MAX_DEPTH=$MAX_DEPTH '
-	buf = buf $0 "\n" { }
+	{ buf = buf $0 "\n" }
 	END {
+		sub(/\n$/, "", buf)
 		for (DEPTH = 2; DEPTH <= MAX_DEPTH; DEPTH++) {
 			$0 = buf
 			gsub(/DEPTH/, DEPTH)
 			gsub(/IDNUM1/, ID)
 			gsub(/IDNUM2/, ID + 1)
-			sub(/\n$/, "")
 			print
 			ID = ID + 2
 		}
@@ -205,66 +208,81 @@ EVENT_TEST="this->ffi_mount != 0 && this->tfi_mount != 0"
 
 exec 9<<EOF
 	/*
-	 * Print 'from' full path
-	 * NB: Up-to but not including the parent directory (printed below)
+	 * Join 'from' full path
+	 * NB: Up-to but not including the parent directory (joined below)
 	 */
-	printf("%s%s", this->ffi_mount, this->ffi_mount != 0 ? (
+	this->fpath = this->ffi_mount;
+	this->fpath = strjoin(this->fpath, this->ffi_mount != 0 ? (
 		this->ffi_mount == "/" ? "" : "/"
 	) : "/");
 	$( awk -v MAX_DEPTH=$MAX_DEPTH '
-		buf = buf $0 "\n" { }
+		{ sub(/^\\\t/, "\t") }
+		{ buf = buf "\t" $0 "\n" }
 		END {
+			sub(/\n$/, "", buf)
+			$0 = buf
+			sub(/^[[:space:]]*/, "")
 			for (N = MAX_DEPTH + 1; N > 0; N--) {
-				$0 = (N <= MAX_DEPTH ? "\t" : "") buf
 				gsub(/N/, N)
-				sub(/\n$/, "")
 				print
+				$0 = buf
 			}
 		}
 	' <<-EOFDEPTH
-	printf("%s%s", this->fname = this->fnameN, this->fname != "" ? "/" : "");
+	this->fpath = strjoin(this->fpath,
+	\	strjoin(this->fnameN, this->fnameN != "" ? "/" : ""));
 	EOFDEPTH
 	)
 
-	/* Print the 'from' parent directory name */
-	this->fname = this->fd_name != 0 ? this->fd_name : "";
-	printf("%s%s", this->fname, this->fname != "" ? "/" : "");
+	/* Join the 'from' parent directory name */
+	this->fpath = strjoin(this->fpath, strjoin(this->fname =
+		(this->fd_name != 0 ? this->fd_name : ""),
+		this->fname != "" ? "/" : ""));
 
-	/* Print the 'from' entry name */
-	this->fname = this->ffi_name != 0 ? this->ffi_name : "";
-	printf("%s", this->fname);
-
-	printf(" -> ");
+	/* Join the 'from' entry name */
+	this->fpath = strjoin(this->fpath,
+		this->fname = (this->ffi_name != 0 ? this->ffi_name : ""));
 
 	/*
-	 * Print 'to' full path
-	 * NB: Up-to but not including the parent directory (printed below)
+	 * Join 'to' full path
+	 * NB: Up-to but not including the parent directory (joined below)
 	 */
-	printf("%s%s", this->tfi_mount, this->tfi_mount != 0 ? (
+	this->tpath = this->tfi_mount;
+	this->tpath = strjoin(this->tpath, this->tfi_mount != 0 ? (
 		this->tfi_mount == "/" ? "" : "/"
 	) : "/");
 	$( awk -v MAX_DEPTH=$MAX_DEPTH '
-		buf = buf $0 "\n" { }
+		{ sub(/^\\\t/, "\t") }
+		{ buf = buf "\t" $0 "\n" }
 		END {
+			sub(/\n$/, "", buf)
+			$0 = buf
+			sub(/^[[:space:]]*/, "")
 			for (N = MAX_DEPTH + 1; N > 0; N--) {
-				$0 = (N <= MAX_DEPTH ? "\t" : "") buf
 				gsub(/N/, N)
-				sub(/\n$/, "")
 				print
+				$0 = buf
 			}
 		}
 	' <<-EOFDEPTH
-	printf("%s%s", this->tname = this->tnameN, this->tname != "" ? "/" : "");
+	this->tpath = strjoin(this->tpath,
+	\	strjoin(this->tnameN, this->tnameN != "" ? "/" : ""));
 	EOFDEPTH
 	)
 
-	/* Print the 'to' parent directory name */
-	this->tname = this->td_name != 0 ? this->td_name : "";
-	printf("%s%s", this->tname, this->tname != "" ? "/" : "");
+	/* Join the 'to' parent directory name */
+	this->tpath = strjoin(this->tpath, strjoin(this->tname =
+		(this->td_name != 0 ? this->td_name : ""),
+		this->tname != "" ? "/" : ""));
 
-	/* Print the 'to' entry name */
-	this->tname = this->tfi_name != 0 ? this->tfi_name : "";
-	printf("%s", this->tname);
+	/* Join the 'to' entry name */
+	this->tpath = strjoin(this->tpath,
+		this->tname = (this->tfi_name != 0 ? this->tfi_name : ""));
+
+	/*
+	 * Print 'from' and 'to' full paths
+	 */
+	printf("%s -> %s", this->fpath, this->tpath);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

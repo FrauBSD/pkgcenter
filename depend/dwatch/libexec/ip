@@ -55,6 +55,8 @@ exec 9<<EOF
 	/*
 	 * I/O
 	 */
+	this->flow = this->send ? "->" : "<-";
+	this->length = args[2]->ip_plength;
 	this->if_name = args[3]->if_name;
 
 	/*
@@ -63,9 +65,9 @@ exec 9<<EOF
 	printf("%s %s %s %s [%d bytes]",
 		this->if_name,
 		this->local,
-		this->send ? "->" : "<-",
+		this->flow,
 		this->remote,
-		args[2]->ip_plength);
+		this->length);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

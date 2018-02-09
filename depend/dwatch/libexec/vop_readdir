@@ -33,20 +33,23 @@ $PROBE /* probe ID $ID */
 	this->d_name = args[0]->v_cache_dd != NULL ?
 		stringof(args[0]->v_cache_dd->nc_name) : "";
 
-$( awk -v MAX_DEPTH=$MAX_DEPTH '
-	buf = buf $0 "\n" { }
-	END {
-		for (DEPTH = 1; DEPTH <= MAX_DEPTH + 1; DEPTH++) {
+	$( awk -v MAX_DEPTH=$MAX_DEPTH '
+		{ sub(/^\\\t/, "\t") }
+		{ buf = buf "\t" $0 "\n" }
+		END {
+			sub(/\n$/, "", buf)
 			$0 = buf
-			gsub(/DEPTH/, DEPTH)
-			sub(/\n$/, "")
-			print
+			sub(/^[[:space:]]*/, "")
+			for (DEPTH = 1; DEPTH <= MAX_DEPTH + 1; DEPTH++) {
+				gsub(/DEPTH/, DEPTH)
+				print
+				$0 = buf
+			}
 		}
-	}
-' <<EOFDEPTH
+	' <<-EOFDEPTH
 	this->nameDEPTH = "";
-EOFDEPTH
-)
+	EOFDEPTH
+	)
 }
 
 $PROBE /this->vp == 0 || this->fi_fs == 0 ||
@@ -85,13 +88,13 @@ $PROBE /this->name1 == 0 || this->fi_fs == 0 ||
  */
 
 $( awk -v ID=$(( $ID + 4 )) -v MAX_DEPTH=$MAX_DEPTH '
-	buf = buf $0 "\n" { }
+	{ buf = buf $0 "\n" }
 	END {
+		sub(/\n$/, "", buf)
 		for (DEPTH = 2; DEPTH <= MAX_DEPTH; DEPTH++) {
 			$0 = buf
 			gsub(/DEPTH/, DEPTH)
 			gsub(/IDNUM/, ID++)
-			sub(/\n$/, "")
 			print
 		}
 	}
@@ -134,30 +137,41 @@ EVENT_TEST="this->fi_mount != 0"
 
 exec 9<<EOF
 	/*
-	 * Print full path
-	 * NB: Up-to but not including the parent directory (printed below)
+	 * Join full path
+	 * NB: Up-to but not including the parent directory (joined below)
 	 */
-	printf("%s%s", this->fi_mount, this->fi_mount != 0 ? (
+	this->path = this->fi_mount;
+	this->path = strjoin(this->path, this->fi_mount != 0 ? (
 		this->fi_mount == "/" ? "" : "/"
 	) : "/");
 	$( awk -v MAX_DEPTH=$MAX_DEPTH '
-		buf = buf $0 "\n" { }
+		{ sub(/^\\\t/, "\t") }
+		{ buf = buf "\t" $0 "\n" }
 		END {
+			sub(/\n$/, "", buf)
+			$0 = buf
+			sub(/^[[:space:]]*/, "")
 			for (N = MAX_DEPTH + 1; N > 0; N--) {
-				$0 = (N <= MAX_DEPTH ? "\t" : "") buf
 				gsub(/N/, N)
-				sub(/\n$/, "")
 				print
+				$0 = buf
 			}
 		}
 	' <<-EOFDEPTH
-	printf("%s%s", this->name = this->nameN, this->name != "" ? "/" : "");
+	this->path = strjoin(this->path,
+	\	strjoin(this->nameN, this->nameN != "" ? "/" : ""));
 	EOFDEPTH
 	)
 
-	/* Print the parent directory name */
-	this->name = this->d_name != 0 ? this->d_name : "";
-	printf("%s%s", this->name, this->name != "" ? "/" : "");
+	/* Join the parent directory name */
+	this->path = strjoin(this->path, strjoin(this->name =
+		(this->d_name != 0 ? this->d_name : ""),
+		this->name != "" ? "/" : ""));
+
+	/*
+	 * Print full path
+	 */
+	printf("%s", this->path);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

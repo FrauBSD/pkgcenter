@@ -79,6 +79,12 @@ exec 9<<EOF
 	this->remote = this->reverse ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
+	 * TCP ports
+	 */
+	this->lport = this->reverse ? args[4]->tcp_sport : args[4]->tcp_dport;
+	this->rport = this->reverse ? args[4]->tcp_dport : args[4]->tcp_sport;
+
+	/*
 	 * IPv6 support
 	 */
 	this->local6 = strstr(this->local, ":") != NULL ? 1 : 0;
@@ -89,18 +95,23 @@ exec 9<<EOF
 		this->remote), this->remote6 ? "]" : "");
 
 	/*
+	 * I/O
+	 */
+	this->flow = this->connect ? (
+			this->request ? "-?" : (
+				this->refused ? "-X" : "->"
+			)
+		) : (this->refused ? "X-" : "<-");
+
+	/*
 	 * Print connection details (incl. TCP port)
 	 */
 	printf("%s:%u %s %s:%u",
 		this->local,
-		this->reverse ? args[4]->tcp_sport : args[4]->tcp_dport,
-		this->connect ? (
-			this->request ? "-?" : (
-				this->refused ? "-X" : "->"
-			)
-		) : (this->refused ? "X-" : "<-"),
+		this->lport,
+		this->flow,
 		this->remote,
-		this->reverse ? args[4]->tcp_dport : args[4]->tcp_sport);
+		this->rport);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

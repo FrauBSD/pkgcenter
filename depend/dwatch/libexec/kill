@@ -17,10 +17,13 @@
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
+	this->pid = (pid_t)arg0;
+	this->signal = (int)arg1;
+
 	/*
 	 * Print signal/pid details
 	 */
-	printf("signal %i to pid %d", (int)arg1, (pid_t)arg0);
+	printf("signal %i to pid %d", this->signal, this->pid);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

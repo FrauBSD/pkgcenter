@@ -27,10 +27,12 @@ exec 9<<EOF
 	this->at = strstr(probefunc, "at") ==
 		(probefunc + strlen(probefunc) - 2) ? 1 : 0;
 
+	this->path = copyinstr(this->at ? arg1 : arg0);
+
 	/*
 	 * Print path details
 	 */
-	printf("%s", copyinstr(this->at ? arg1 : arg0));
+	printf("%s", this->path);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

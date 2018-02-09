@@ -17,11 +17,12 @@
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
+	this->rqtp = (struct timespec *)copyin(arg0, sizeof(struct timespec));
+	this->rmtp = (struct timespec *)copyin(arg1, sizeof(struct timespec));
+
 	/*
 	 * Dump nanosleep(2) arguments
 	 */
-	this->rqtp = (struct timespec *)copyin(arg0, sizeof(struct timespec));
-	this->rmtp = (struct timespec *)copyin(arg1, sizeof(struct timespec));
 	printf("rqtp {%ds, %dns} rmtp {%ds, %dns}",
 		this->rqtp->tv_sec, this->rqtp->tv_nsec,
 		this->rmtp->tv_sec, this->rmtp->tv_nsec);

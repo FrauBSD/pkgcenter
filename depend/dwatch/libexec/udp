@@ -53,6 +53,12 @@ exec 9<<EOF
 	this->remote = this->send ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
+	 * UDP ports
+	 */
+	this->lport = this->send ? args[4]->udp_sport : args[4]->udp_dport;
+	this->rport = this->send ? args[4]->udp_dport : args[4]->udp_sport;
+
+	/*
 	 * IPv6 support
 	 */
 	this->local6 = strstr(this->local, ":") != NULL ? 1 : 0;
@@ -63,15 +69,21 @@ exec 9<<EOF
 		this->remote), this->remote6 ? "]" : "");
 
 	/*
+	 * I/O
+	 */
+	this->flow = this->send ? "->" : "<-";
+	this->length = args[4]->udp_length;
+
+	/*
 	 * Print connection details (incl. UDP port)
 	 */
 	printf("%s:%u %s %s:%u [%d bytes]",
 		this->local,
-		this->send ? args[4]->udp_sport : args[4]->udp_dport,
-		this->send ? "->" : "<-",
+		this->lport,
+		this->flow,
 		this->remote,
-		this->send ? args[4]->udp_dport : args[4]->udp_sport,
-		args[4]->udp_length);
+		this->rport,
+		this->length);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 
