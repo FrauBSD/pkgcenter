@@ -33,7 +33,10 @@ unset USER		# -u user
 
 ############################################################ EVENT TAG
 
-EVENT_TAG='printf("%s: ", args[3]->if_name);'
+exec 9<<EOF
+	printf("%s: ", "$PROFILE");
+EOF
+EVENT_TAG=$( cat <&9 )
 
 ############################################################ EVENT DETAILS
 
@@ -50,9 +53,15 @@ exec 9<<EOF
 	this->remote = this->send ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
+	 * I/O
+	 */
+	this->if_name = args[3]->if_name;
+
+	/*
 	 * Print I/O details
 	 */
-	printf("%s %s %s [%d bytes]",
+	printf("%s %s %s %s [%d bytes]",
+		this->if_name,
 		this->local,
 		this->send ? "->" : "<-",
 		this->remote,

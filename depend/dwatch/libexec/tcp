@@ -51,7 +51,10 @@ unset USER		# -u user
 
 ############################################################ EVENT TAG
 
-EVENT_TAG='printf(": ");'
+exec 9<<EOF
+	printf("%s: ", "$PROFILE");
+EOF
+EVENT_TAG=$( cat <&9 )
 
 ############################################################ EVENT DETAILS
 
