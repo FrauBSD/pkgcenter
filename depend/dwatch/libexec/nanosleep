@@ -18,14 +18,14 @@
 
 exec 9<<EOF
 	this->rqtp = (struct timespec *)copyin(arg0, sizeof(struct timespec));
-	this->rmtp = (struct timespec *)copyin(arg1, sizeof(struct timespec));
+	this->requested_sec  = this->rqtp->tv_sec;
+	this->requested_nsec = this->rqtp->tv_nsec;
 
 	/*
 	 * Dump nanosleep(2) arguments
 	 */
-	printf("rqtp {%ds, %dns} rmtp {%ds, %dns}",
-		this->rqtp->tv_sec, this->rqtp->tv_nsec,
-		this->rmtp->tv_sec, this->rmtp->tv_nsec);
+	printf("%d.%d seconds",
+		this->requested_sec, this->requested_nsec / 100000);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 
