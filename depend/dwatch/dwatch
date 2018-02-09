@@ -79,7 +79,7 @@ LIST_PROFILES=		# -Q
 MAX_ARGS=64		# -B num
 MAX_DEPTH=64		# -K num
 ONELINE=		# -1
-OUTPUT=			# -o output
+OUTPUT=			# -o file
 OUTPUT_CMD=		# -O cmd
 PID=			# -p pid
 PROBE_TYPE=		# -f -m -n -P
@@ -131,7 +131,7 @@ usage()
 	printf "Usage: %s [-1defFmnPqRvVwxy] [%s] [%s] [%s] [%s]\n" "$pgm" \
 		"-B num" "-E code" "-g group" "-j jail"
 	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
-		"-k name" "-K num" "-N count" "-o output" "-O cmd" "-p pid"
+		"-k name" "-K num" "-N count" "-o file" "-O cmd" "-p pid"
 	printf "\t      [%s] [%s] [%s] [%s] [%s] [%s]\n" \
 		"-r regex" "-t test" "-T time" "-u user" "-X profile" \
 		"-z regex"
@@ -169,7 +169,7 @@ usage()
 		"Enable probe matching the specified probe name."
 	printf "$optfmt" "-N count" \
 		"Exit after count matching entries (Default 0 for disabled)."
-	printf "$optfmt" "-o output" \
+	printf "$optfmt" "-o file" \
 		"Set output file. If \`-', the path \`/dev/stdout' is used."
 	printf "$optfmt" "-O cmd" \
 		"Execute cmd for each event."

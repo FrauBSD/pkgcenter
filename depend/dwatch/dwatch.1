@@ -24,7 +24,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd January 1, 2018
+.Dd February 8, 2018
 .Dt DWATCH 1
 .Os
 .Sh NAME
@@ -40,7 +40,7 @@
 .Op Fl k Ar name
 .Op Fl K Ar num
 .Op Fl N Ar count
-.Op Fl o Ar output
+.Op Fl o Ar file
 .Op Fl O Ar cmd
 .Op Fl p Ar pid
 .Op Fl r Ar regex
@@ -285,7 +285,7 @@ Exit after
 .Ar count
 matching entries
 .Pq Default 0 for disabled .
-.It Fl o Ar output
+.It Fl o Ar file
 Set output file.
 If
 .Ql Li - ,
