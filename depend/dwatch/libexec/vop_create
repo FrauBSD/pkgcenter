@@ -18,9 +18,9 @@
 ############################################################ ACTIONS
 
 exec 9<<EOF
-$PROBE /* probe ID 1 */
+$PROBE /* probe ID $ID */
 {${TRACE:+
-	printf("<1>");}
+	printf("<$ID>");}
 	this->vp = (struct vnode *)arg0;
 	this->ncp = this->vp != NULL ?
 		this->vp->v_cache_dst.tqh_first : 0;
@@ -55,17 +55,17 @@ EOFDEPTH
 
 $PROBE /this->vp == 0 || this->fi_fs == 0 ||
 	this->fi_fs == "devfs" || this->fi_fs == "" ||
-	this->fi_name == ""/ /* probe ID 2 */
+	this->fi_name == ""/ /* probe ID $(( $ID + 1 )) */
 {${TRACE:+
-	printf("<2>");}
+	printf("<$(( $ID + 1 ))>");}
 	this->ncp = 0;
 }
 
 /*********************************************************/
 
-$PROBE /this->ncp/ /* probe ID 3 (depth 1) */
+$PROBE /this->ncp/ /* probe ID $(( $ID + 2 )) (depth 1) */
 {${TRACE:+
-	printf("<3>");}
+	printf("<$(( $ID + 2 ))>");}
 	this->dvp = this->ncp->nc_dvp != NULL ?
 		this->ncp->nc_dvp->v_cache_dst.tqh_first : 0;
 	this->name1 = this->dvp != 0 ? (
@@ -75,9 +75,9 @@ $PROBE /this->ncp/ /* probe ID 3 (depth 1) */
 
 $PROBE /this->name1 == 0 || this->fi_fs == 0 ||
 	this->fi_fs == "devfs" || this->fi_fs == "" ||
-	this->name1 == "/" || this->name1 == ""/ /* probe ID 4 */
+	this->name1 == "/" || this->name1 == ""/ /* probe ID $(( $ID + 3 )) */
 {${TRACE:+
-	printf("<4>");}
+	printf("<$(( $ID + 3 ))>");}
 	this->dvp = 0;
 }
 
@@ -87,7 +87,7 @@ $PROBE /this->name1 == 0 || this->fi_fs == 0 ||
  * BEGIN Pathname-depth iterators
  */
 
-$( awk -v ID=5 -v MAX_DEPTH=$MAX_DEPTH '
+$( awk -v ID=$(( $ID + 4 )) -v MAX_DEPTH=$MAX_DEPTH '
 	buf = buf $0 "\n" { }
 	END {
 		for (DEPTH = 2; DEPTH <= MAX_DEPTH; DEPTH++) {
@@ -112,9 +112,9 @@ $PROBE /this->dvp/ /* probe ID IDNUM (depth DEPTH) */
 EOFDEPTH
 )
 
-$PROBE /this->dvp/ /* probe ID $(( $MAX_DEPTH + 4 )) */
+$PROBE /this->dvp/ /* probe ID $(( $ID + $MAX_DEPTH + 3 )) */
 {${TRACE:+
-	printf("<$(( $MAX_DEPTH + 4 ))>");}
+	printf("<$(( $ID + $MAX_DEPTH + 3 ))>");}
 	this->dvp = this->dvp->nc_dvp != NULL ?
 		this->dvp->nc_dvp->v_cache_dst.tqh_first : 0;
 	this->name$(( $MAX_DEPTH + 1 )) = this->dvp != 0 ? (
@@ -127,7 +127,7 @@ $PROBE /this->dvp/ /* probe ID $(( $MAX_DEPTH + 4 )) */
  */
 EOF
 ACTIONS=$( cat <&9 )
-ID=$(( $MAX_DEPTH + 5 ))
+ID=$(( $ID + $MAX_DEPTH + 4 ))
 
 ############################################################ EVENT ACTION
 
