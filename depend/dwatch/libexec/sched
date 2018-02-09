@@ -8,7 +8,7 @@
 #
 ############################################################ DESCRIPTION
 #
-# Display process execution activity
+# Display CPU scheduling activity
 #
 ############################################################ PROBE
 
