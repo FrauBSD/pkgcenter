@@ -1038,8 +1038,8 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 		function ans(seq) { return console ? "\033[" seq "m" : "" }
 		function runcmd() {
 			return system(sprintf("%s/bin/sh -c %s",
-				env("TAG", tag) \
-					env("DETAILS", details),
+				env("TAG", strip(tag)) \
+					env("DETAILS", strip(details)),
 				arg(cmd)))
 		}
 		function filter_block() {
