@@ -38,13 +38,14 @@ esac
 ############################################################ GLOBALS
 
 #
-# This profile does not support these dwatch command-line options
+# This profile does not support these dwatch features
 # NB: They are disabled here so they have no effect when profile is loaded
 #
 unset EXECNAME		# -k name
 unset EXECREGEX		# -z regex
 unset GROUP		# -g group
 unset PID		# -p pid
+unset PSARGS		# affects -d
 unset PSTREE		# -R
 unset USER		# -u user
 
