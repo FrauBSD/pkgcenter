@@ -13,10 +13,8 @@
 ############################################################ PROBE
 
 case "$PROFILE" in
-        udp) : ${PROBE:=udp:::send, udp:::receive} ;;
-   udp-send) : ${PROBE:=udp:::send} ;;
-udp-receive) : ${PROBE:=udp:::receive} ;;
-          *) : ${PROBE:=udp:::$PROFILE}
+udp) : ${PROBE:=udp:::send, udp:::receive} ;;
+  *) : ${PROBE:=udp:::${PROFILE#udp-}}
 esac
 
 ############################################################ GLOBALS

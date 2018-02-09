@@ -13,10 +13,8 @@
 ############################################################ PROBE
 
 case "$PROFILE" in
-        ip) : ${PROBE:=ip:::send, ip:::receive} ;;
-   ip-send) : ${PROBE:=ip:::send} ;;
-ip-receive) : ${PROBE:=ip:::receive} ;;
-         *) : ${PROBE:=ip:::$PROFILE}
+ip) : ${PROBE:=ip:::send, ip:::receive} ;;
+ *) : ${PROBE:=ip:::${PROFILE#ip-}}
 esac
 
 ############################################################ GLOBALS
