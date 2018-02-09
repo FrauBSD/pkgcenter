@@ -14,12 +14,22 @@
 
 : ${PROBE:=syscall::$PROFILE:entry}
 
+############################################################ ACTIONS
+
+exec 9<<EOF
+$PROBE /* probe ID $ID */
+{${TRACE:+
+	printf("<$ID>");}
+	this->pid = (pid_t)arg0;
+	this->signal = (int)arg1;
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + 1 ))
+
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
-	this->pid = (pid_t)arg0;
-	this->signal = (int)arg1;
-
 	/*
 	 * Print signal/pid details
 	 */

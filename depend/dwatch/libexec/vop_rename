@@ -196,17 +196,15 @@ $PROBE /this->tdvp/ /* probe ID $(( $ID + $MAX_DEPTH * 2 + 6 )) */
 /*
  * END Pathname-depth iterators
  */
-EOF
-ACTIONS=$( cat <&9 )
-ID=$(( $ID + $MAX_DEPTH * 2 + 7 ))
 
-############################################################ EVENT ACTION
+/*********************************************************/
 
-EVENT_TEST="this->ffi_mount != 0 && this->tfi_mount != 0"
-
-############################################################ EVENT DETAILS
-
-exec 9<<EOF
+$PROBE /this->ffi_mount != 0 && this->tfi_mount != 0/ /* probe ID $((
+	$ID + $MAX_DEPTH * 2 + 7
+)) */
+{${TRACE:+
+	printf("<$(( $ID + $MAX_DEPTH * 2 + 7 ))>");
+}
 	/*
 	 * Join 'from' full path
 	 * NB: Up-to but not including the parent directory (joined below)
@@ -278,7 +276,18 @@ exec 9<<EOF
 	/* Join the 'to' entry name */
 	this->tpath = strjoin(this->tpath,
 		this->tname = (this->tfi_name != 0 ? this->tfi_name : ""));
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + $MAX_DEPTH * 2 + 8 ))
 
+############################################################ EVENT ACTION
+
+EVENT_TEST="this->ffi_mount != 0 && this->tfi_mount != 0"
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
 	/*
 	 * Print 'from' and 'to' full paths
 	 */

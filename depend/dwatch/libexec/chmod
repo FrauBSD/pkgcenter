@@ -23,9 +23,13 @@ chmod)
 	: ${PROBE:=syscall::$PROFILE:entry}
 esac
 
-############################################################ EVENT DETAILS
+############################################################ ACTIONS
 
 exec 9<<EOF
+$PROBE /* probe ID $ID */
+{${TRACE:+
+	printf("<$ID>");
+}
 	/*
 	 * Should we expect the first argument to be a file descriptor?
 	 * NB: Based on probefunc ending in "at" (e.g., fchmodat(2))
@@ -35,7 +39,14 @@ exec 9<<EOF
 
 	this->mode = (mode_t)(this->at ? arg2 : arg1);
 	this->path = copyinstr(this->at ? arg1 : arg0);
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + 1 ))
 
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
 	/*
 	 * Print mode/path details
 	 */

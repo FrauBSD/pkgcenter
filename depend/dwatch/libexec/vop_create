@@ -128,17 +128,13 @@ $PROBE /this->dvp/ /* probe ID $(( $ID + $MAX_DEPTH + 3 )) */
 /*
  * END Pathname-depth iterators
  */
-EOF
-ACTIONS=$( cat <&9 )
-ID=$(( $ID + $MAX_DEPTH + 4 ))
 
-############################################################ EVENT ACTION
+/*********************************************************/
 
-EVENT_TEST="this->fi_mount != 0"
-
-############################################################ EVENT DETAILS
-
-exec 9<<EOF
+$PROBE /this->fi_mount != 0/ /* probe ID $(( $ID + $MAX_DEPTH + 4 )) */
+{${TRACE:+
+	printf("<$(( $ID + $MAX_DEPTH + 4 ))>");
+}
 	/*
 	 * Join full path
 	 * NB: Up-to but not including the parent directory (joined below)
@@ -174,7 +170,18 @@ exec 9<<EOF
 	/* Join the entry name */
 	this->path = strjoin(this->path,
 		this->name = (this->fi_name != 0 ? this->fi_name : ""));
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + $MAX_DEPTH + 5 ))
 
+############################################################ EVENT ACTION
+
+EVENT_TEST="this->fi_mount != 0"
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
 	/*
 	 * Print full path
 	 */

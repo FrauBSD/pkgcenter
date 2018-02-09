@@ -31,16 +31,13 @@ unset PSARGS		# affects -d
 unset PSTREE		# -R
 unset USER		# -u user
 
-############################################################ EVENT TAG
+############################################################ ACTIONS
 
 exec 9<<EOF
-	printf("%s: ", "$PROFILE");
-EOF
-EVENT_TAG=$( cat <&9 )
-
-############################################################ EVENT DETAILS
-
-exec 9<<EOF
+$PROBE /* probe ID $ID */
+{${TRACE:+
+	printf("<$ID>");
+}
 	/*
 	 * Which function triggered?
 	 */
@@ -59,7 +56,21 @@ exec 9<<EOF
 	this->flow = this->send ? "->" : "<-";
 	this->length = args[2]->ip_plength;
 	this->if_name = args[3]->if_name;
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + 1 ))
 
+############################################################ EVENT TAG
+
+exec 9<<EOF
+	printf("%s: ", "$PROFILE");
+EOF
+EVENT_TAG=$( cat <&9 )
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
 	/*
 	 * Print I/O details
 	 */
