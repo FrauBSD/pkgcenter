@@ -12,6 +12,7 @@ FILES=		chmod \
 		proc-signal \
 		sched \
 		tcp \
+		tcp-io \
 		udp \
 		vop_create \
 		vop_readdir \
@@ -55,6 +56,8 @@ LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-accept
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-connect
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-established
 LINKS+=	${LIBEXECDIR}/dwatch/tcp ${LIBEXECDIR}/dwatch/tcp-refused
+LINKS+=	${LIBEXECDIR}/dwatch/tcp-io ${LIBEXECDIR}/dwatch/tcp-receive
+LINKS+=	${LIBEXECDIR}/dwatch/tcp-io ${LIBEXECDIR}/dwatch/tcp-send
 LINKS+=	${LIBEXECDIR}/dwatch/udp ${LIBEXECDIR}/dwatch/udp-receive
 LINKS+=	${LIBEXECDIR}/dwatch/udp ${LIBEXECDIR}/dwatch/udp-send
 LINKS+=	${LIBEXECDIR}/dwatch/vop_create ${LIBEXECDIR}/dwatch/vop_lookup
