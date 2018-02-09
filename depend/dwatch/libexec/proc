@@ -1,0 +1,228 @@
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set filetype=sh tabstop=8 shiftwidth=8 noexpandtab :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: dwatch(8) module for dtrace_proc(4) exec activity $
+# $Copyright: 2014-2018 Devin Teske. All rights reserved. $
+# $FreeBSD$
+#
+############################################################ DESCRIPTION
+#
+# Display process execution activity
+#
+############################################################ PROBE
+
+case "$PROFILE" in
+proc)
+	: ${PROBE:=$( echo \
+		proc:::create, \
+		proc:::exec, \
+		proc:::exec-success, \
+		proc:::exec-failure, \
+		proc:::exit )}
+	;;
+*)
+	: ${PROBE:=proc:::${PROFILE#proc-}}
+esac
+
+############################################################ ACTIONS
+
+exec 9<<EOF
+enum errno {
+	ENOTCAPABLE = 93,
+	ECAPMODE,
+	ENOTRECOVERABLE,
+	EOWNERDEAD,
+	ERELOOKUP = -5
+};
+
+proc:::create /* probe ID $ID */
+{${TRACE:+
+	printf("<$ID>");
+}
+	$( pproc -P _create "args[0]" )
+}
+
+proc:::exec /* probe ID $(( $ID + 1 )) */
+{${TRACE:+
+	printf("<$(( $ID + 1 ))");
+}
+	this->exec_arg0 = stringof(arg0);
+}
+
+$PROBE /* probe ID $(( $ID + 2 )) */
+{${TRACE:+
+	printf("<$(( $ID + 2 ))>");
+}
+	/*
+	 * Which function triggered?
+	 */
+	this->create  = probename == "create"       ? 1 : 0;
+	this->exec    = probename == "exec"         ? 1 : 0;
+	this->exit    = probename == "exit"         ? 1 : 0;
+	this->failure = probename == "exec-failure" ? 1 : 0;
+	this->success = probename == "exec-success" ? 1 : 0;
+
+	/*
+	 * dtrace_proc(4)
+	 */
+	this->label =
+		(this->create  ? "FORK" :
+		(this->exec    ? "EXEC" :
+		(this->exit    ? "EXIT" :
+		(this->failure ? "FAIL" :
+		(this->success ? "INIT" :
+		                 "PROC"
+		)))));
+	this->exitstr = ! this->exit ? "" :
+		(arg0 == CLD_EXITED    ? "child exited" :
+		(arg0 == CLD_KILLED    ? "child terminated abnormally" :
+		(arg0 == CLD_DUMPED    ? "child core dumped" :
+		(arg0 == CLD_TRAPPED   ? "traced child trapped" :
+		(arg0 == CLD_STOPPED   ? "child stopped" :
+		(arg0 == CLD_CONTINUED ? "stopped child continued" :
+		                         "Unknown SIGCHLD code"
+		))))));
+	this->exitstr = ! this->exit ? this->exitstr : strjoin(this->exitstr,
+		strjoin(" (", strjoin(lltostr(arg0), ")")));
+
+	/*
+	 * Translate errno to errstr on failure
+	 */
+	this->errstr = ! this->failure ? "" :
+	(arg0 == EPERM         ? "Operation not permitted" :
+	(arg0 == ENOENT        ? "No such file or directory" :
+	(arg0 == ESRCH         ? "No such process" :
+	(arg0 == EINTR         ? "Interrupted system call" :
+	(arg0 == EIO           ? "Input/output error" :
+	(arg0 == ENXIO         ? "Device not configured" :
+	(arg0 == E2BIG         ? "Argument list too long" :
+	(arg0 == ENOEXEC       ? "Exec format error" :
+	(arg0 == EBADF         ? "Bad file descriptor" :
+	(arg0 == ECHILD        ? "No child processes" :
+	(arg0 == EDEADLK       ? "Resource deadlock avoided" :
+	(arg0 == ENOMEM        ? "Cannot allocate memory" :
+	(arg0 == EACCES        ? "Permission denied" :
+	(arg0 == EFAULT        ? "Bad address" :
+	(arg0 == ENOTBLK       ? "Block device required" :
+	(arg0 == EBUSY         ? "Device busy" :
+	(arg0 == EEXIST        ? "File exists" :
+	(arg0 == EXDEV         ? "Cross-device link" :
+	(arg0 == ENODEV        ? "Operation not supported by device" :
+	(arg0 == ENOTDIR       ? "Not a directory" :
+	(arg0 == EISDIR        ? "Is a directory" :
+	(arg0 == EINVAL        ? "Invalid argument" :
+	(arg0 == ENFILE        ? "Too many open files in system" :
+	(arg0 == EMFILE        ? "Too many open files" :
+	(arg0 == ENOTTY        ? "Inappropriate ioctl for device" :
+	(arg0 == ETXTBSY       ? "Text file busy" :
+	(arg0 == EFBIG         ? "File too large" :
+	(arg0 == ENOSPC        ? "No space left on device" :
+	(arg0 == ESPIPE        ? "Illegal seek" :
+	(arg0 == EROFS         ? "Read-only filesystem" :
+	(arg0 == EMLINK        ? "Too many links" :
+	(arg0 == EPIPE         ? "Broken pipe" :
+	(arg0 == EDOM          ? "Numerical argument out of domain" :
+	(arg0 == ERANGE        ? "Result too large" :
+	(arg0 == EAGAIN        ? "Resource temporarily unavailable" :
+	(arg0 == EINPROGRESS   ? "Operation now in progress" :
+	(arg0 == EALREADY      ? "Operation already in progress" :
+	(arg0 == ENOTSOCK      ? "Socket operation on non-socket" :
+	(arg0 == EDESTADDRREQ  ? "Destination address required" :
+	(arg0 == EMSGSIZE      ? "Message too long" :
+	(arg0 == EPROTOTYPE    ? "Protocol wrong type for socket" :
+	(arg0 == ENOPROTOOPT   ? "Protocol not available" :
+	(arg0 == EPROTONOSUPPORT ? "Protocol not supported" :
+	(arg0 == ESOCKTNOSUPPORT ? "Socket type not supported" :
+	(arg0 == EOPNOTSUPP    ? "Operation not supported" :
+	(arg0 == EPFNOSUPPORT  ? "Protocol family not supported" :
+	(arg0 == EAFNOSUPPORT  ? "Address family not supported by protocol family" :
+	(arg0 == EADDRINUSE    ? "Address already in use" :
+	(arg0 == EADDRNOTAVAIL ? "Can't assign requested address" :
+	(arg0 == ENETDOWN      ? "Network is down" :
+	(arg0 == ENETUNREACH   ? "Network is unreachable" :
+	(arg0 == ENETRESET     ? "Network dropped connection on reset" :
+	(arg0 == ECONNABORTED  ? "Software caused connection abort" :
+	(arg0 == ECONNRESET    ? "Connection reset by peer" :
+	(arg0 == ENOBUFS       ? "No buffer space available" :
+	(arg0 == EISCONN       ? "Socket is already connected" :
+	(arg0 == ENOTCONN      ? "Socket is not connected" :
+	(arg0 == ESHUTDOWN     ? "Can't send after socket shutdown" :
+	(arg0 == ETOOMANYREFS  ? "Too many references: can't splice" :
+	(arg0 == ETIMEDOUT     ? "Operation timed out" :
+	(arg0 == ECONNREFUSED  ? "Connection refused" :
+	(arg0 == ELOOP         ? "Too many levels of symbolic links" :
+	(arg0 == ENAMETOOLONG  ? "File name too long" :
+	(arg0 == EHOSTDOWN     ? "Host is down" :
+	(arg0 == EHOSTUNREACH  ? "No route to host" :
+	(arg0 == ENOTEMPTY     ? "Directory not empty" :
+	(arg0 == EPROCLIM      ? "Too many processes" :
+	(arg0 == EUSERS        ? "Too many users" :
+	(arg0 == EDQUOT        ? "Disc quota exceeded" :
+	(arg0 == ESTALE        ? "Stale NFS file handle" :
+	(arg0 == EREMOTE       ? "Too many levels of remote in path" :
+	(arg0 == EBADRPC       ? "RPC struct is bad" :
+	(arg0 == ERPCMISMATCH  ? "RPC version wrong" :
+	(arg0 == EPROGUNAVAIL  ? "RPC prog. not avail" :
+	(arg0 == EPROGMISMATCH ? "Program version wrong" :
+	(arg0 == EPROCUNAVAIL  ? "Bad procedure for program" :
+	(arg0 == ENOLCK        ? "No locks available" :
+	(arg0 == ENOSYS        ? "Function not implemented" :
+	(arg0 == EFTYPE        ? "Inappropriate file type or format" :
+	(arg0 == EAUTH         ? "Authentication error" :
+	(arg0 == ENEEDAUTH     ? "Need authenticator" :
+	(arg0 == EIDRM         ? "Identifier removed" :
+	(arg0 == ENOMSG        ? "No message of desired type" :
+	(arg0 == EOVERFLOW     ? "Value too large to be stored in data type" :
+	(arg0 == ECANCELED     ? "Operation canceled" :
+	(arg0 == EILSEQ        ? "Illegal byte sequence" :
+	(arg0 == ENOATTR       ? "Attribute not found" :
+	(arg0 == EDOOFUS       ? "Programming error" :
+	(arg0 == EBADMSG       ? "Bad message" :
+	(arg0 == EMULTIHOP     ? "Multihop attempted" :
+	(arg0 == ENOLINK       ? "Link has been severed" :
+	(arg0 == EPROTO        ? "Protocol error" :
+	(arg0 == ENOTCAPABLE   ? "Capabilities insufficient" :
+	(arg0 == ECAPMODE      ? "Not permitted in capability mode" :
+	(arg0 == ENOTRECOVERABLE ? "State not recoverable" :
+	(arg0 == EOWNERDEAD    ? "Previous owner died" :
+	(arg0 == ERESTART      ? "restart syscall" :
+	(arg0 == EJUSTRETURN   ? "don't modify regs, just return" :
+	(arg0 == ENOIOCTL      ? "ioctl not handled by this layer" :
+	(arg0 == EDIRIOCTL     ? "do direct ioctl in GEOM" :
+	(arg0 == ERELOOKUP     ? "retry the directory lookup" :
+				 "Unknown error"
+	)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+	))))))))))))))))))))))))))))));
+	this->errstr = ! this->failure ? this->errstr : strjoin(
+		this->errstr, strjoin(" (", strjoin(lltostr(arg0), ")")));
+}
+EOF
+ACTIONS=$( cat <&9 )
+ID=$(( $ID + 3 ))
+
+############################################################ EVENT DETAILS
+
+exec 9<<EOF
+	/*
+	 * Print arguments
+	 */
+	printf("%s%s%s%s%s%s",
+		this->label,
+		this->create ? strjoin(
+			strjoin(" pid ", lltostr(this->pid_create)),
+			strjoin(" -- ", this->args_create)
+		) : "",
+		this->exec ? strjoin(" ", stringof(arg0)) : "",
+		this->success ? strjoin(" ", this->args0) : "",
+		this->failure ? strjoin(
+			strjoin(" ", this->exec_arg0),
+			strjoin(": ", this->errstr)
+		) : "",
+		this->exit ? strjoin(" ", this->exitstr) : "");
+EOF
+EVENT_DETAILS=$( cat <&9 )
+
+################################################################################
+# END
+################################################################################
