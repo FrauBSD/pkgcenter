@@ -107,11 +107,9 @@ exec 9<<EOF
 	 * Print connection details (incl. TCP port)
 	 */
 	printf("%s:%u %s %s:%u",
-		this->local,
-		this->lport,
+		this->local, this->lport,
 		this->flow,
-		this->remote,
-		this->rport);
+		this->remote, this->rport);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

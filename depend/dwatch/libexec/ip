@@ -63,10 +63,7 @@ exec 9<<EOF
 	 * Print I/O details
 	 */
 	printf("%s %s %s %s [%d bytes]",
-		this->if_name,
-		this->local,
-		this->flow,
-		this->remote,
+		this->if_name, this->local, this->flow, this->remote,
 		this->length);
 EOF
 EVENT_DETAILS=$( cat <&9 )
