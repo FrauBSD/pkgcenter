@@ -3,6 +3,7 @@
 FILESDIR=	${LIBEXECDIR}/dwatch
 FILES=		chmod \
 		errno \
+		io \
 		ip \
 		kill \
 		nanosleep \
@@ -16,6 +17,8 @@ FILES=		chmod \
 
 LINKS=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/fchmodat
 LINKS+=	${LIBEXECDIR}/dwatch/chmod ${LIBEXECDIR}/dwatch/lchmod
+LINKS+=	${LIBEXECDIR}/dwatch/io ${LIBEXECDIR}/dwatch/io-done
+LINKS+=	${LIBEXECDIR}/dwatch/io ${LIBEXECDIR}/dwatch/io-start
 LINKS+=	${LIBEXECDIR}/dwatch/ip ${LIBEXECDIR}/dwatch/ip-receive
 LINKS+=	${LIBEXECDIR}/dwatch/ip ${LIBEXECDIR}/dwatch/ip-send
 LINKS+=	${LIBEXECDIR}/dwatch/open ${LIBEXECDIR}/dwatch/openat
