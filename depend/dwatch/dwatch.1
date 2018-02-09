@@ -24,7 +24,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd February 8, 2018
+.Dd February 9, 2018
 .Dt DWATCH 1
 .Os
 .Sh NAME
@@ -386,20 +386,44 @@ Print mode and path from
 .Xr fchmodat 2
 .It errno
 Print non-zero errno results from system calls
+.It io
+Print disk I/O details provided by
+.Xr dtrace_io 4
+.It ip
+Print IPv4 and IPv6 details provided by
+.Xr dtrace_ip 4
 .It kill
 Print signal and pid from
 .Xr kill 2
 .It nanosleep
-Print arguments being passed to
+Print requested time from
 .Xr nanosleep 2
 .It open
 Print path from
 .Xr open 2 ,
 .Xr openat 2
+.It proc
+Print process execution details provided by
+.Xr dtrace_proc 4
+.It proc-signal
+Print process signal details provided by
+.Xr dtrace_proc 4
+.It rw
+Print buffer contents from
+.Xr read 2 ,
+.Xr write 2
+.It sched
+Print CPU scheduling details provided by
+.Xr dtrace_sched 4
 .It tcp
-Print
+Print TCP address/port details provided by
 .Xr dtrace_tcp 4
-details
+.It tcp-io
+Print TCP I/O details provided by
+.Xr dtrace_tcp 4
+.It udp
+Print UDP I/O details provided by
+.Xr dtrace_udp 4
 .It vop_create
 Print filesystem paths being created by
 .Xr VOP_CREATE 9
@@ -515,16 +539,30 @@ Display only processes running inside the jail named
 dwatch -j myjail execve
 .Ed
 .Pp
-Watch syscall probe traversal by ruby processes.
+Watch syscall traversal by ruby processes.
 .Bd -literal -offset indent
 dwatch -k 'ruby*' -F syscall
 .Ed
 .Pp
-Watch syscall probe traversal by processes containing
+Watch syscall traversal by processes containing
 .Ql Li daemon
 in their name.
 .Bd -literal -offset indent
 dwatch -k '*daemon*' -F syscall
+.Ed
+.Pp
+Watch signals being passed to
+.Xr kill 2 .
+.Bd -literal -offset indent
+dwatch -X kill
+.Ed
+.Pp
+Watch signals being passed between
+.Xr bash 1
+and
+.Xr vi 1 .
+.Bd -literal -offset indent
+dwatch -k bash -k vi -X kill
 .Ed
 .Pp
 Display a list of unique functions available.
@@ -553,12 +591,6 @@ Watch paths being removed by
 .Xr VOP_REMOVE 9 .
 .Bd -literal -offset indent
 dwatch -X vop_remove
-.Ed
-.Pp
-Watch signals being passed to
-.Xr kill 2 .
-.Bd -literal -offset indent
-dwatch -X kill
 .Ed
 .Pp
 Watch the name
@@ -648,6 +680,19 @@ less than 10.
 dwatch -t 'arg2<10' -E 'printf("%d",arg2)' write
 .Ed
 .Pp
+Display
+.Xr write 2
+buffer when
+.Dq execname
+is not
+.Ql Li dtrace
+and
+.Dq nbytes
+is less than 10.
+.Bd -literal -offset indent
+dwatch -X write -t 'execname != "dtrace" && this->nbytes < 10'
+.Ed
+.Pp
 Watch
 .Ql Li statfs
 for 5 minutes and exit.
@@ -698,6 +743,18 @@ and
 calls only while pid 1234 is active.
 .Bd -literal -offset indent
 dwatch -X open -- -p 1234
+.Ed
+.Pp
+Watch probe traversal for a given command.
+Note that
+.Dq Li -c true
+is passed to
+.Xr dtrace 1
+since it appears after the
+.Nm
+probe argument.
+.Bd -literal -offset indent
+dwatch -F 'pid$target:::entry' -c true
 .Ed
 .Sh SEE ALSO
 .Xr dtrace 1
