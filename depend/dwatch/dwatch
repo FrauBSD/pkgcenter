@@ -107,9 +107,10 @@ EVENT_TAG='printf("%d.%d %s[%d]: ",
 		this->uid0, this->gid0, execname, this->pid0);'
 EVENT_TEST=
 FILE=
-ID=1
+ID=2
 MODULE_CHECKED=
 PROBE=
+PSARGS=1
 RGID=
 RUID=
 SUDO=
@@ -557,20 +558,23 @@ load_profile()
 pproc()
 {
 	local proc="curthread->td_proc"
+	local P=$1
 	[ $1 -gt 0 ] && proc="this->proc->p_pptr"
 
 	awk 'NR > 1 && $0 { $0 = "\t" $0 }
-		gsub(/\\\t/, "\t") || 1' <<-EOFPREAMBLE
+		gsub(/\\\t/, "\t") || 1
+	' <<-EOFPREAMBLE
 	this->proc = $proc;
-	this->pid$1 = this->proc->p_pid;
-	this->uid$1 = this->proc->p_ucred->cr_uid;
-	this->gid$1 = this->proc->p_ucred->cr_rgid;
-	this->jid$1 = this->proc->p_ucred->cr_prison->pr_id;
+	this->uid$P = this->proc->p_ucred->cr_uid;
+	this->gid$P = this->proc->p_ucred->cr_rgid;
+	this->pid$P = this->proc->p_pid;
+	this->jid$P = this->proc->p_ucred->cr_prison->pr_id;
+
 	this->p_args = this->proc ? this->proc->p_args : 0;
 	this->ar_length = this->p_args ? this->p_args->ar_length : 0;
 	this->ar_args = (char *)(this->p_args ? this->p_args->ar_args : 0);
 
-	this->arg${1}_0 = this->ar_length > 0 ?
+	this->args$P = this->arg${P}_$N = this->ar_length > 0 ?
 	\	this->ar_args : stringof(this->proc->p_comm);
 	this->len = this->ar_length > 0 ? strlen(this->ar_args) + 1 : 0;
 	this->ar_args += this->len;
@@ -578,7 +582,7 @@ pproc()
 
 	EOFPREAMBLE
 
-	awk -v P=$1 -v MAX_ARGS=$MAX_ARGS '
+	awk -v P=$P -v MAX_ARGS=$MAX_ARGS '
 		$0 { $0 = "\t" $0 }
 		buf = buf $0 "\n" { }
 		END {
@@ -586,78 +590,64 @@ pproc()
 				$0 = buf
 				gsub(/P/, P)
 				gsub(/N/, N)
+				gsub(/\\\t/, "\t")
 				sub(/\n$/, "")
 				print
 			}
 		}
 	' <<-EOFARGS
 	this->argP_N = this->ar_length > 0 ? this->ar_args : "";
+	this->argsP = strjoin(this->argsP,
+	\	strjoin(this->argP_N != "" ? " " : "", this->argP_N));
 	this->len = this->ar_length > 0 ? strlen(this->ar_args) + 1 : 0;
 	this->ar_args += this->len;
 	this->ar_length -= this->len;
 
 	EOFARGS
 
-	awk '$0 = "\t" $0' <<-EOFPROC
-	this->arg${1}_$(( $MAX_ARGS + 1 )) = this->ar_length > 0 ? "..." : "";
+	N=$(( $MAX_ARGS + 1 ))
+	awk 'sub(/^\\\t/, "\t") || 1, $0 = "\t" $0' <<-EOFPROC
+	this->arg${P}_$N = this->ar_length > 0 ? "..." : "";
+	this->args$P = strjoin(this->args$P,
+	\	strjoin(this->arg${P}_$N != "" ? " " : "", this->arg${P}_$N));
 	EOFPROC
 }
 
 pproc_dump()
 {
 	local OPTIND=1 OPTARG flag
-	local indent= nl=1 verbose=
+	local verbose=
 
-	while getopts inv flag; do
+	while getopts v flag; do
 		case "$flag" in
-		i) indent=1 ;;
-		n) nl= ;;
 		v) verbose=1 ;;
 		esac
 	done
 	shift $(( $OPTIND - 1 ))
 
-	echo
-
-	[ "$verbose" ] && awk -v indent=$indent -v P=$1 '
-		BEGIN { if (indent) printf "\t" }
-		NR > 1 && $0 { $0 = "\t" $0 }
-		buf = buf $0 "\n" { }
-		END {
-			$0 = buf
-			gsub(/S/, P < 3 ? sprintf("%" 7-2*(P+1) "s", "") : "")
-			gsub(/B/, P < 3 ? "\\" : "")
-			gsub(/\\\t/, "\t")
-			sub(/\n$/, "")
-			print
-		}
-	' <<-EOFPREAMBLE
-	printf(" SB-+= %05d %d.%d %s",
-	\	this->pid$1, this->uid$1, this->gid$1, this->arg${1}_0);
-	EOFPREAMBLE
-
-	awk -v indent=$indent -v P=$1 -v MAX_ARGS=$MAX_ARGS '
-		BEGIN { if (indent) printf "\t" }
-		$0 { $0 = "\t" $0 }
-		buf = buf $0 "\n" { }
-		END {
-			while (++N <= MAX_ARGS + 1) {
+	local P=$1
+	if [ "$verbose" ]; then
+		awk -v P=$P '
+			BEGIN { printf "\t" }
+			NR > 1 && $0 { $0 = "\t" $0 }
+			buf = buf $0 "\n" { }
+			END {
 				$0 = buf
-				if (N == 1) sub(/^\t/, "")
-				gsub(/P/, P)
-				gsub(/N/, N)
+				if (P < 3) S = sprintf("%" 7-2*(P+1) "s", "")
+				gsub(/S/, S)
+				gsub(/B/, P < 3 ? "\\" : "")
+				gsub(/\\\t/, "\t")
 				sub(/\n$/, "")
 				print
 			}
-		}
-	' <<-EOFARGS
-	printf("%s%s", this->argP_N != "" ? " " : "", this->argP_N);
-	EOFARGS
-
-	if [ "$nl" ]; then
-		awk '$0 = "\t" $0' <<-EOFTAIL
-		printf("%s", this->arg${1}_0 != "" ? "\\n" : "");
-		EOFTAIL
+		' <<-EOFPREAMBLE
+		printf(" SB-+= %05d %d.%d %s\n",
+		\	this->pid$P, this->uid$P, this->gid$P, this->args$P);
+		EOFPREAMBLE
+	else
+		cat <<-EOFPREAMBLE
+		printf("%s", this->args$P);
+		EOFPREAMBLE
 	fi
 }
 
@@ -831,9 +821,7 @@ fi
 #
 # Set default event details if `-E code' was not given
 #
-[ "$CUSTOM_DETAILS" ] || EVENT_DETAILS="printf(\"%s\", this->arg0_0);$(
-	pproc_dump -in 0
-)"
+[ "$CUSTOM_DETAILS" ] || EVENT_DETAILS=$( pproc_dump 0 )
 
 #
 # Load profile if given `-X profile'
@@ -861,7 +849,7 @@ case "$PROBE" in
 		EOF
 	)
 	PROBE="${PROBE%entry}return"
-	ID=2
+	ID=3
 	EVENT_TEST="execname != this->caller_execname${EVENT_TEST:+ &&
 		($EVENT_TEST)}"
 	EVENT_TAG='printf("%d.%d %s[%d]: ",
@@ -904,6 +892,39 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 # exit code returned by dtrace invocation). Otherwise, simply run script with
 # dtrace and then exit.
 #
+exec 9<<EOF
+$PROBE /* probe ID 1 */
+{${TRACE:+
+	printf("<1>");
+}
+	/*
+	 * Examine process, parent process, and grandparent process details
+	 */
+
+	/******************* CURPROC *******************/
+
+	$( pproc 0 )
+
+	/******************* PPARENT *******************/
+
+	$( if [ "$PSTREE" ]; then pproc 1; else echo -n \
+	"this->proc = this->proc->p_pptr;
+	this->pid1 = this->proc->p_pid;
+	this->uid1 = this->proc->p_ucred->cr_uid;
+	this->gid1 = this->proc->p_ucred->cr_rgid;
+	this->jid1 = this->proc->p_ucred->cr_prison->pr_id;"
+	fi )
+
+	/******************* GPARENT *******************/
+
+	$( [ "$PSTREE" ] && pproc 2 )
+
+	/******************* APARENT *******************/
+
+	$( [ "$PSTREE" ] && pproc 3 )
+}
+EOF
+PSARGS_ACTION=$( cat <&9 )
 [ "$OUTPUT" -a ! "$CONSOLE_FORCE" ] && CONSOLE=
 {
 	if [ "$DEBUG" ]; then
@@ -1196,6 +1217,10 @@ $( echo "$DTRACE_PRAGMA" | awk '
 int console;
 
 dtrace:::BEGIN { console = ${CONSOLE:-0} }
+
+/*********************************************************/
+
+${PSARGS:+$PSARGS_ACTION}
 ${ACTIONS:+
 /*********************************************************/
 
@@ -1207,37 +1232,7 @@ $PROBE${EVENT_TEST:+ /$EVENT_TEST/} /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");
 }
-	/*
-	 * Examine process, parent process, and grandparent process details
-	 */
-
-	/******************* CURPROC *******************/
-
-	$( pproc 0 )
-
-	/******************* PPARENT *******************/
-
-	$( if [ "$PSTREE" ]; then pproc 1; else echo -n \
-	"this->proc = this->proc->p_pptr;
-	this->pid1 = this->proc->p_pid;
-	this->uid1 = this->proc->p_ucred->cr_uid;
-	this->gid1 = this->proc->p_ucred->cr_rgid;
-	this->jid1 = this->proc->p_ucred->cr_prison->pr_id;"
-	fi )
-
-	/******************* GPARENT *******************/
-
-	$( [ "$PSTREE" ] && pproc 2 )
-
-	/******************* APARENT *******************/
-
-	$( [ "$PSTREE" ] && pproc 3 )
-
 	/***********************************************/
-
-	/*
-	 * Print process, parent, grandparent, and ancestor details
-	 */
 
 	printf("%s%Y%s ",
 		console ? "\033[32m" : "",
@@ -1263,12 +1258,15 @@ ${PROBE_COALESCE:+
 	/***********************************************/
 
 	printf("\\n");
-$( if [ "$PSTREE" ]; then
-	pproc_dump -iv 3
-	pproc_dump -iv 2
-	pproc_dump -iv 1
-	pproc_dump -iv 0
-fi )
+${PSTREE:+
+	/*
+	 * Print process, parent, grandparent, and ancestor details
+	 */
+$(	pproc_dump -v 3
+	pproc_dump -v 2
+	pproc_dump -v 1
+	pproc_dump -v 0
+)}
 }
 EOF
 
