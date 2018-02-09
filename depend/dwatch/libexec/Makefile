@@ -10,6 +10,7 @@ FILES=		chmod \
 		open \
 		proc \
 		proc-signal \
+		rw \
 		sched \
 		tcp \
 		tcp-io \
@@ -34,6 +35,8 @@ LINKS+=	${LIBEXECDIR}/dwatch/proc ${LIBEXECDIR}/dwatch/proc-exit
 LINKS+=	${LIBEXECDIR}/dwatch/proc-signal ${LIBEXECDIR}/dwatch/proc-signal-clear
 LINKS+=	${LIBEXECDIR}/dwatch/proc-signal ${LIBEXECDIR}/dwatch/proc-signal-discard
 LINKS+=	${LIBEXECDIR}/dwatch/proc-signal ${LIBEXECDIR}/dwatch/proc-signal-send
+LINKS+=	${LIBEXECDIR}/dwatch/rw ${LIBEXECDIR}/dwatch/read
+LINKS+=	${LIBEXECDIR}/dwatch/rw ${LIBEXECDIR}/dwatch/write
 LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-change-pri
 LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-dequeue
 LINKS+=	${LIBEXECDIR}/dwatch/sched ${LIBEXECDIR}/dwatch/sched-enqueue
