@@ -21,10 +21,15 @@ esac
 
 exec 9<<EOF
 	/*
-	 * Print path details
+	 * Should we expect the first argument to be a file descriptor?
+	 * NB: Based on probefunc ending in "at" (e.g., openat(2))
 	 */
 	this->at = strstr(probefunc, "at") ==
 		(probefunc + strlen(probefunc) - 2) ? 1 : 0;
+
+	/*
+	 * Print path details
+	 */
 	printf("%s", copyinstr(this->at ? arg1 : arg0));
 EOF
 EVENT_DETAILS=$( cat <&9 )

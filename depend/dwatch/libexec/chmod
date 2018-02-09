@@ -26,10 +26,16 @@ esac
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
+	/*
+	 * Should we expect the first argument to be a file descriptor?
+	 * NB: Based on probefunc ending in "at" (e.g., fchmodat(2))
+	 */
 	this->at = strstr(probefunc, "at") ==
 		(probefunc + strlen(probefunc) - 2) ? 1 : 0;
 
-	/* If probefunc ends in "at" [i.e., fchmodat] ignore first arg [fd] */
+	/*
+	 * Print mode/path details
+	 */
 	printf("%04o %s",
 		(mode_t)(this->at ? arg2 : arg1),
 		copyinstr(this->at ? arg1 : arg0));
