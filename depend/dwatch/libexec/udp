@@ -4,11 +4,11 @@
 #
 # $Title: dwatch(8) module for dtrace_udp(4) $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/udp 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
-# Display bytes sent/received when UDP I/O occurs
+# Display local/remote UDP addresses/ports and bytes sent/received for UDP I/O
 #
 ############################################################ PROBE
 
@@ -34,27 +34,38 @@ unset USER		# -u user
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this string	flow;
+this string	local;
+this string	remote;
+this u_char	local6;
+this u_char	recv;
+this u_char	remote6;
+this uint16_t	length;
+this uint16_t	lport;
+this uint16_t	rport;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");
 }
 	/*
-	 * Which function triggered?
+	 * dtrace_udp(4)
 	 */
-	this->send = probename == "send" ? 1 : 0;
+	this->recv = probename == "receive" ? 1 : 0;
+	this->flow = this->recv ? "<-" : "->";
 
 	/*
-	 * UDP addresses
+	 * ipinfo_t *
 	 */
-	this->reverse = this->send;
-	this->local = this->reverse ? args[2]->ip_saddr : args[2]->ip_daddr;
-	this->remote = this->reverse ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->local  = this->recv ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->remote = this->recv ? args[2]->ip_saddr : args[2]->ip_daddr;
 
 	/*
-	 * UDP ports
+	 * udpinfo_t *
 	 */
-	this->lport = this->reverse ? args[4]->udp_sport : args[4]->udp_dport;
-	this->rport = this->reverse ? args[4]->udp_dport : args[4]->udp_sport;
+	this->length = (uint16_t)args[4]->udp_length;
+	this->lport  = this->recv ? args[4]->udp_dport : args[4]->udp_sport;
+	this->rport  = this->recv ? args[4]->udp_sport : args[4]->udp_dport;
 
 	/*
 	 * IPv6 support
@@ -65,12 +76,6 @@ $PROBE /* probe ID $ID */
 		this->local), this->local6 ? "]" : "");
 	this->remote = strjoin(strjoin(this->remote6 ? "[" : "",
 		this->remote), this->remote6 ? "]" : "");
-
-	/*
-	 * I/O
-	 */
-	this->flow = this->send ? "->" : "<-";
-	this->length = args[4]->udp_length;
 }
 EOF
 ACTIONS=$( cat <&9 )
@@ -87,13 +92,14 @@ EVENT_TAG=$( cat <&9 )
 
 exec 9<<EOF
 	/*
-	 * Print connection details (incl. UDP port)
+	 * Print network I/O details
 	 */
-	printf("%s:%u %s %s:%u [%d bytes]",
+	printf("%s:%u %s %s:%u %d byte%s",
 		this->local, this->lport,
 		this->flow,
 		this->remote, this->rport,
-		this->length);
+		this->length,
+		this->length == 1 ? "" : "s");
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

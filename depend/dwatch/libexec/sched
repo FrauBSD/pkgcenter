@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for dtrace_sched(4) $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/sched 330672 2018-03-08 22:32:18Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -13,67 +13,92 @@
 ############################################################ PROBE
 
 case "$PROFILE" in
-sched) : ${PROBE:=sched:::} ;;
-    *) : ${PROBE:=sched:::${PROFILE#sched-}}
+sched)
+	: ${PROBE:=sched:::} ;;
+sched-cpu)
+	: ${PROBE:=sched:::off-cpu, sched:::on-cpu, sched:::remain-cpu} ;;
+sched-exec)
+	: ${PROBE:=sched:::sleep, sched:::wakeup} ;;
+sched-pri)
+	: ${PROBE:=sched:::change-pri, sched:::lend-pri} ;;
+sched-queue)
+	: ${PROBE:=sched:::dequeue, sched:::enqueue, sched:::load-change} ;;
+*)
+	: ${PROBE:=sched:::${PROFILE#sched-}}
 esac
 
 ############################################################ ACTIONS
 
 exec 9<<EOF
-sched::: /* probe ID $ID */
+this pid_t	pid;
+this string	args;
+this string	details;
+this u_char	curprio;
+
+$PROBE /* probe ID $ID */
 {${TRACE:+
-	printf("<$ID>");
-}
-	this->proc = NULL;
-	this->args_sched = this->args0;
-	this->curprio = 0;
+	printf("<$ID>");}
+	this->args = this->args0;
+	this->details = "";
+	this->pid = this->pid0;
 }
 
 sched:::change-pri, sched:::dequeue, sched:::enqueue,
 sched:::lend-pri, sched:::off-cpu, sched:::surrender,
 sched:::tick, sched:::wakeup /* probe ID $(( $ID + 1 )) */
 {${TRACE:+
-	printf("<$(( $ID + 1 ))>");
-}
-	$( pproc -P _sched "args[1]" )
-	this->curprio = args[0]->td_priority;
+	printf("<$(( $ID + 1 ))>");}
+	this->curprio = (u_char)((struct thread *)args[0])->td_priority;
+
+	$( pproc -P _sched "(struct proc *)args[1]" )
+
+	this->args = this->args_sched;
+	this->pid = this->pid_sched;
 }
 
-$PROBE /* probe ID $(( $ID + 2 )) */
+sched:::enqueue /* probe ID $(( $ID + 2 )) */
 {${TRACE:+
-	printf("<$(( $ID + 2 ))>");
+	printf("<$(( $ID + 2 ))>");}
+	/* details = "head" or "tail" */
+	this->details = (int)arg3 == 0 ? "tail" : "head";
 }
-	/*
-	 * Which function triggered?
-	 */
-	this->change_pri  = probename == "change-pri"  ? 1 : 0;
-	this->enqueue     = probename == "enqueue"     ? 1 : 0;
-	this->lend_pri    = probename == "lend-pri"    ? 1 : 0;
-	this->load_change = probename == "load-change" ? 1 : 0;
+
+sched:::change-pri, sched:::lend-pri /* probe ID $(( $ID + 3 )) */
+{${TRACE:+
+	printf("<$(( $ID + 3 ))>");}
+	/* details = "<curprio> -> <arg2>" */
+	this->details = strjoin(lltostr(this->curprio),
+		strjoin("->", lltostr((uint8_t)arg2)));
+}
+
+sched:::load-change /* probe ID $(( $ID + 4 )) */
+{${TRACE:+
+	printf("<$(( $ID + 4 ))>");}
+	/* details = "CPU<arg0> queue <arg1>" */
+	this->details = strjoin(strjoin("CPU", lltostr((int)arg0)),
+		strjoin(" queue ", lltostr((int)arg1)));
+}
+
+$PROBE /* probe ID $(( $ID + 5 )) */
+{${TRACE:+
+	printf("<$(( $ID + 5 ))>");}
+	/* details += " pid <pid> -- <proc args of pid>" */
+	this->details = strjoin(this->details, this->details == "" ? "" : " ");
+	this->details = strjoin(this->details, strjoin(
+		strjoin("pid ", lltostr(this->pid)),
+		strjoin(" -- ", this->args)));
 }
 EOF
 ACTIONS=$( cat <&9 )
-ID=$(( $ID + 3 ))
+ID=$(( $ID + 6 ))
 
 ############################################################ EVENT DETAILS
 
 exec 9<<EOF
 	/*
-	 * Print arguments
+	 * Print scheduling details
 	 */
-	printf("%s%s%s%s%s -- %s",
-		probename,
-		this->enqueue ? strjoin("-", arg3 == 0 ? "tail" : "head") : "",
-		this->change_pri || this->lend_pri ? strjoin(
-			strjoin(" ", lltostr(this->curprio)),
-			strjoin("->", lltostr(arg2))
-		) : "",
-		this->load_change ? strjoin(
-			strjoin(" CPU", lltostr(arg0)),
-			strjoin(" queue ", lltostr(arg1))) : "",
-		this->proc != NULL ?
-			strjoin(" pid ", lltostr(this->pid_sched)) : "",
-		this->args_sched);
+	printf("%s %s", probename, this->details);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

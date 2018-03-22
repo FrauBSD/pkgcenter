@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for open[at](2) [or similar] entry $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/open 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -20,6 +20,9 @@ esac
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this string path;
+this u_char at;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");

@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for read(2), write(2), or similar entry $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/rw 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -20,28 +20,29 @@ esac
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this size_t nbytes;
+this string bufstr;
+this string flow;
+this void * buf;
+this void * data;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");
 }
 	/*
-	 * Which function triggered?
-	 */
-	this->read = probefunc == "read" ? 1 : 0;
-
-	/*
 	 * R/W
 	 */
-	this->flow = this->read ? "<-" : "->";
-	this->buf = arg1;
-	this->nbytes = arg2;
+	this->flow = probefunc == "read" ? "<-" : "->";
+	this->buf = (void *)arg1;
+	this->nbytes = (size_t)arg2;
 
 	/*
 	 * Allocate temporary memory for, copy, and NUL-terminate the data
 	 */
 	this->data = alloca(this->nbytes + 1);
-	copyinto(this->buf, this->nbytes, this->data);
-	bcopy("\0", (void *)((uint64_t)this->data + this->nbytes), 1);
+	copyinto((uintptr_t)this->buf, this->nbytes, this->data);
+	bcopy("\0", (void *)((uintptr_t)this->data + this->nbytes), 1);
 
 	/*
 	 * Extract string from temporary memory

@@ -27,7 +27,7 @@
 ############################################################ IDENT(1)
 #
 # $Title: Watch processes as they trigger a particular DTrace probe $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/dwatch 330560 2018-03-06 23:58:53Z dteske $
 #
 ############################################################ CONFIGURATION
 
@@ -47,7 +47,7 @@ DTRACE_PRAGMA="
 
 ############################################################ GLOBALS
 
-VERSION='$Version: 1.0-beta-91 $' # -V
+VERSION='$Version: 1.0 $' # -V
 
 pgm="${0##*/}" # Program basename
 
@@ -107,7 +107,7 @@ EVENT_TAG='printf("%d.%d %s[%d]: ",
 		this->uid0, this->gid0, execname, this->pid0);'
 EVENT_TEST=
 FILE=
-ID=2
+ID=3
 MODULE_CHECKED=
 PROBE=
 PSARGS=1
@@ -252,6 +252,7 @@ dtrace_stderr_filter()
 	/processing aborted: Broken pipe/ { next }
 	/invalid address \(0x[[:xdigit:]]+\) in action #[[:digit:]]+/ { next }
 	/out of scratch space in action #[[:digit:]]+/ { next }
+	/^Bus error$/ { next }
 	{ print; fflush() }
 	' # END-QUOTE
 }
@@ -572,7 +573,7 @@ pproc()
 		if [ "$P" = "0" ]; then
 			proc="curthread->td_proc"
 		else
-			proc="this->proc->p_pptr"
+			proc="this->proc ? this->proc->p_pptr : NULL"
 		fi
 	fi
 
@@ -580,10 +581,10 @@ pproc()
 		gsub(/\\\t/, "\t") || 1
 	' <<-EOFPREAMBLE
 	this->proc = $proc;
-	this->uid$P = this->proc->p_ucred->cr_uid;
-	this->gid$P = this->proc->p_ucred->cr_rgid;
-	this->pid$P = this->proc->p_pid;
-	this->jid$P = this->proc->p_ucred->cr_prison->pr_id;
+	this->uid$P = this->proc ? this->proc->p_ucred->cr_uid : -1;
+	this->gid$P = this->proc ? this->proc->p_ucred->cr_rgid : -1;
+	this->pid$P = this->proc ? this->proc->p_pid : -1;
+	this->jid$P = this->proc ? this->proc->p_ucred->cr_prison->pr_id : -1;
 
 	this->p_args = this->proc ? this->proc->p_args : 0;
 	this->ar_length = this->p_args ? this->p_args->ar_length : 0;
@@ -856,15 +857,15 @@ case "$PROBE" in
 *,*) : fall-through ;;
 *:execve:entry|execve:entry)
 	ACTIONS=$( awk 'gsub(/\\\t/, "\t") || 1' <<-EOF
-		$PROBE /* probe ID 1 */
+		$PROBE /* probe ID $ID */
 		{${TRACE:+
-		\	printf("<1>");}
+		\	printf("<$ID>");}
 		\	this->caller_execname = execname;
 		}
 		EOF
 	)
 	PROBE="${PROBE%entry}return"
-	ID=3
+	ID=$(( $ID + 1 ))
 	EVENT_TEST="execname != this->caller_execname${EVENT_TEST:+ &&
 		($EVENT_TEST)}"
 	EVENT_TAG='printf("%d.%d %s[%d]: ",
@@ -908,9 +909,9 @@ EVENT_DETAILS="${EVENT_DETAILS%;}${EVENT_DETAILS:+;}"
 # dtrace and then exit.
 #
 exec 9<<EOF
-$PROBE /* probe ID 1 */
+$PROBE /* probe ID 2 */
 {${TRACE:+
-	printf("<1>");
+	printf("<2>");
 }
 	/*
 	 * Examine process, parent process, and grandparent process details
@@ -923,11 +924,11 @@ $PROBE /* probe ID 1 */
 	/******************* PPARENT *******************/
 
 	$( if [ "$PSTREE" ]; then pproc -P1; else echo -n \
-	"this->proc = this->proc->p_pptr;
-	this->pid1 = this->proc->p_pid;
-	this->uid1 = this->proc->p_ucred->cr_uid;
-	this->gid1 = this->proc->p_ucred->cr_rgid;
-	this->jid1 = this->proc->p_ucred->cr_prison->pr_id;"
+	"this->proc = this->proc ? this->proc->p_pptr : NULL;
+	this->pid1 = this->proc ? this->proc->p_pid : -1;
+	this->uid1 = this->proc ? this->proc->p_ucred->cr_uid : -1;
+	this->gid1 = this->proc ? this->proc->p_ucred->cr_rgid : -1;
+	this->jid1 = this->proc ? this->proc->p_ucred->cr_prison->pr_id : -1;"
 	fi )
 
 	/******************* GPARENT *******************/
@@ -982,11 +983,11 @@ PSARGS_ACTION=$( cat <&9 )
 		exit
 	fi
 
-	if [ ! "$QUIET" ]; then
-		# Prevent backslashes from being lost
-		FILTER=$( echo "$FILTER" | awk 'gsub(/\\/,"&&")||1' )
-		EXECREGEX=$( echo "$EXECREGEX" | awk 'gsub(/\\/,"&&")||1' )
+	# Prevent backslashes from being lost
+	FILTER=$( echo "$FILTER" | awk 'gsub(/\\/,"&&")||1' )
+	EXECREGEX=$( echo "$EXECREGEX" | awk 'gsub(/\\/,"&&")||1' )
 
+	if [ ! "$QUIET" ]; then
 		msg=Filtering
 		[ "$EXECREGEX" ] && msg="$msg execregex: $EXECREGEX"
 		[ "$FILTER" ] && msg="$msg filter: $FILTER"
@@ -1222,7 +1223,7 @@ PSARGS_ACTION=$( cat <&9 )
  * SUCH DAMAGE.
  *
  * $TITLE dtrace(1) script to log process(es) triggering $PROBE $
- * \$FreeBSD$
+ * \$FreeBSD: head/cddl/usr.sbin/dwatch/dwatch 330560 2018-03-06 23:58:53Z dteske $
  */
 
 $( echo "$DTRACE_PRAGMA" | awk '
@@ -1231,7 +1232,7 @@ $( echo "$DTRACE_PRAGMA" | awk '
 
 int console;
 
-dtrace:::BEGIN { console = ${CONSOLE:-0} }
+dtrace:::BEGIN { console = ${CONSOLE:-0} } /* probe ID 1 */
 
 /*********************************************************/
 

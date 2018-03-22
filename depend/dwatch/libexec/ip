@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for dtrace_ip(4) $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/ip 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -34,27 +34,33 @@ unset USER		# -u user
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this string	flow;
+this string	if_name;
+this string	local;
+this string	remote;
+this u_char	recv;
+this uint32_t	length;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");
 }
 	/*
-	 * Which function triggered?
+	 * dtrace_ip(4)
 	 */
-	this->send = probename == "send" ? 1 : 0;
+	this->recv = probename == "receive" ? 1 : 0;
+	this->flow = this->recv ? "<-" : "->";
 
 	/*
-	 * IP addresses
+	 * ipinfo_t *
 	 */
-	this->reverse = this->send;
-	this->local = this->reverse ? args[2]->ip_saddr : args[2]->ip_daddr;
-	this->remote = this->reverse ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->length = (uint32_t)args[2]->ip_plength;
+	this->local  = this->recv ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->remote = this->recv ? args[2]->ip_saddr : args[2]->ip_daddr;
 
 	/*
-	 * I/O
+	 * ifinfo_t *
 	 */
-	this->flow = this->send ? "->" : "<-";
-	this->length = args[2]->ip_plength;
 	this->if_name = args[3]->if_name;
 }
 EOF
@@ -72,11 +78,15 @@ EVENT_TAG=$( cat <&9 )
 
 exec 9<<EOF
 	/*
-	 * Print I/O details
+	 * Print network I/O details
 	 */
-	printf("%s %s %s %s [%d bytes]",
-		this->if_name, this->local, this->flow, this->remote,
-		this->length);
+	printf("%s %s %s %s %u byte%s",
+		this->if_name,
+		this->local,
+		this->flow,
+		this->remote,
+		this->length,
+		this->length == 1 ? "" : "s");
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

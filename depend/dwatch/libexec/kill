@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for kill(2) [or similar] entry $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/kill 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -17,11 +17,14 @@
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this int	sig;
+this pid_t	pid;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");}
 	this->pid = (pid_t)arg0;
-	this->signal = (int)arg1;
+	this->sig = (int)arg1;
 }
 EOF
 ACTIONS=$( cat <&9 )
@@ -33,7 +36,7 @@ exec 9<<EOF
 	/*
 	 * Print signal/pid details
 	 */
-	printf("signal %i to pid %d", this->signal, this->pid);
+	printf("signal %i to pid %d", this->sig, this->pid);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

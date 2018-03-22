@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for [l]chmod(2), fchmodat(2), or similar entry $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/chmod 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -26,6 +26,10 @@ esac
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this mode_t mode;
+this string path;
+this u_char at;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");

@@ -4,11 +4,11 @@
 #
 # $Title: dwatch(8) module for dtrace_tcp(4) connections $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/tcp 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
-# Print addresses when TCP connections are established
+# Display local/remote TCP addresses/ports and bytes sent/received for TCP I/O
 #
 ############################################################ PROBE
 
@@ -19,7 +19,10 @@ tcp)
 		tcp:::accept-refused, \
 		tcp:::connect-established, \
 		tcp:::connect-refused, \
-		tcp:::connect-request )} ;;
+		tcp:::connect-request, \
+		tcp:::receive, \
+		tcp:::send, \
+		tcp:::state-change )} ;;
 tcp-accept)
 	: ${PROBE:=tcp:::accept-established, tcp:::accept-refused} ;;
 tcp-connect)
@@ -29,8 +32,25 @@ tcp-connect)
 		tcp:::connect-request )} ;;
 tcp-established)
 	: ${PROBE:=tcp:::accept-established, tcp:::connect-established} ;;
+tcp-init)
+	: ${PROBE:=$( echo \
+		tcp:::accept-established, \
+		tcp:::accept-refused, \
+		tcp:::connect-established, \
+		tcp:::connect-refused, \
+		tcp:::connect-request )} ;;
+tcp-io)
+	: ${PROBE:=tcp:::send, tcp:::receive} ;;
 tcp-refused)
 	: ${PROBE:=tcp:::accept-refused, tcp:::connect-refused} ;;
+tcp-status)
+	: ${PROBE:=$( echo \
+		tcp:::accept-established, \
+		tcp:::accept-refused, \
+		tcp:::connect-established, \
+		tcp:::connect-refused, \
+		tcp:::connect-request, \
+		tcp:::state-change )} ;;
 *)
 	: ${PROBE:=tcp:::${PROFILE#tcp-}}
 esac
@@ -52,38 +72,87 @@ unset USER		# -u user
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this int32_t	from_state;
+this int32_t	to_state;
+this string	details;
+this string	flow;
+this string	local;
+this string	remote;
+this u_char	local6;
+this u_char	remote6;
+this u_char	slocal;
+this uint16_t	lport;
+this uint16_t	rport;
+this uint32_t	length;
+
+inline string probeflow[string name] =
+	name == "accept-established" ?	"<-" :
+	name == "accept-refused" ?	"X-" :
+	name == "connect-refused" ?	"-X" :
+	name == "connect-request" ?	"-?" :
+	name == "receive" ?		"<-" :
+	"->";
+
+inline u_char srclocal[string name] =
+	name == "accept-refused" ?	1 :
+	name == "connect-request" ?	1 :
+	name == "send" ?		1 :
+	0;
+
+/*
+ * TCPSTATES from <sys/netinet/tcp_fsm.h> used by netstat(1)
+ */
+inline string tcpstate[int32_t state] =
+        state == TCPS_CLOSED ?		"CLOSED" :
+        state == TCPS_LISTEN ?		"LISTEN" :
+        state == TCPS_SYN_SENT ?	"SYN_SENT" :
+        state == TCPS_SYN_RECEIVED ?	"SYN_RCVD" :
+        state == TCPS_ESTABLISHED ?	"ESTABLISHED" :
+        state == TCPS_CLOSE_WAIT ?	"CLOSE_WAIT" :
+        state == TCPS_FIN_WAIT_1 ?	"FIN_WAIT_1" :
+        state == TCPS_CLOSING ?		"CLOSING" :
+        state == TCPS_LAST_ACK ?	"LAST_ACK" :
+        state == TCPS_FIN_WAIT_2 ?	"FIN_WAIT_2" :
+        state == TCPS_TIME_WAIT ?	"TIME_WAIT" :
+        strjoin("UNKNOWN(", strjoin(lltostr(state), ")"));
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
-	printf("<$ID>");
+	printf("<$ID>");}
+	this->details = "";
+
+	/*
+	 * dtrace_tcp(4)
+	 */
+	this->flow = probeflow[probename];
+}
+
+tcp:::accept-established,
+tcp:::accept-refused,
+tcp:::connect-established,
+tcp:::connect-refused,
+tcp:::connect-request,
+tcp:::receive,
+tcp:::send /* probe ID $(( $ID + 1 )) */
+{${TRACE:+
+	printf("<$(( $ID + 1 ))>");
 }
 	/*
-	 * Which function triggered?
+	 * dtrace_tcp(4)
 	 */
-	this->send = probename == "send" ? 1 : 0;
-	this->receive = probename == "receive" ? 1 : 0;
-	this->io = this->send || this->receive ? 1 : 0;
-	this->connect = this->io ? 0 :
-		strstr(probename, "connect") != NULL ? 1 : 0;
-	this->request = this->connect ? (
-		strstr(probename, "request") != NULL ? 1 : 0
-	) : 0;
-	this->refused = this->request ? 0 : (
-		strstr(probename, "refused") != NULL ? 1 : 0
-	);
+	this->slocal = srclocal[probename];
 
 	/*
-	 * TCP addresses
+	 * ipinfo_t *
 	 */
-	this->reverse = this->send || this->request ||
-		(this->refused && ! this->connect) ? 1 : 0;
-	this->local = this->reverse ? args[2]->ip_saddr : args[2]->ip_daddr;
-	this->remote = this->reverse ? args[2]->ip_daddr : args[2]->ip_saddr;
+	this->local  = this->slocal ? args[2]->ip_saddr : args[2]->ip_daddr;
+	this->remote = this->slocal ? args[2]->ip_daddr : args[2]->ip_saddr;
 
 	/*
-	 * TCP ports
+	 * tcpinfo_t *
 	 */
-	this->lport = this->reverse ? args[4]->tcp_sport : args[4]->tcp_dport;
-	this->rport = this->reverse ? args[4]->tcp_dport : args[4]->tcp_sport;
+	this->lport = this->slocal ? args[4]->tcp_sport : args[4]->tcp_dport;
+	this->rport = this->slocal ? args[4]->tcp_dport : args[4]->tcp_sport;
 
 	/*
 	 * IPv6 support
@@ -94,22 +163,45 @@ $PROBE /* probe ID $ID */
 		this->local), this->local6 ? "]" : "");
 	this->remote = strjoin(strjoin(this->remote6 ? "[" : "",
 		this->remote), this->remote6 ? "]" : "");
+}
+
+tcp:::state-change /* probe ID $(( $ID + 2 )) */
+{${TRACE:+
+	printf("<$(( $ID + 2 ))>");
+}
+	/*
+	 * tcpsinfo_t *
+	 */
+	this->local    = args[3]->tcps_laddr;
+	this->lport    = (uint16_t)args[3]->tcps_lport;
+	this->remote   = args[3]->tcps_raddr;
+	this->rport    = (uint16_t)args[3]->tcps_rport;
+	this->to_state = (int32_t)args[3]->tcps_state;
 
 	/*
-	 * I/O
+	 * tcplsinfo_t *
 	 */
-	this->flow = this->connect ? (
-		this->request ? "-?" :	/* connect-request */
-		this->refused ? "-X" :	/* connect-refused */
-		"->"			/* connect-established */
-	) :	this->refused ? "X-" :	/* accept-refused */
-		this->send ? "->" :	/* send */
-		"<-";			/* accept-established, receive */
+	this->from_state = (int32_t)args[5]->tcps_state;
 
+	/* flow = "[from state]->[to state]" */
+	this->flow = strjoin(tcpstate[this->from_state],
+		strjoin("->", tcpstate[this->to_state]));
+}
+
+tcp:::send, tcp:::receive /* pribe ID $(( $ID + 3 )) */
+{${TRACE:+
+	printf("<$(( $ID + 3 ))>");}
+	this->length = (uint32_t)args[2]->ip_plength -
+		(uint8_t)args[4]->tcp_offset;
+
+	/* details = " <length> byte<s>" */
+	this->details = strjoin(
+		strjoin(" ", lltostr(this->length)),
+		strjoin(" byte", this->length == 1 ? "" : "s"));
 }
 EOF
 ACTIONS=$( cat <&9 )
-ID=$(( $ID + 1 ))
+ID=$(( $ID + 4 ))
 
 ############################################################ EVENT TAG
 
@@ -122,12 +214,13 @@ EVENT_TAG=$( cat <&9 )
 
 exec 9<<EOF
 	/*
-	 * Print connection details (incl. TCP port)
+	 * Print details
 	 */
-	printf("%s:%u %s %s:%u",
+	printf("%s:%u %s %s:%u%s",
 		this->local, this->lport,
 		this->flow,
-		this->remote, this->rport);
+		this->remote, this->rport,
+		this->details);
 EOF
 EVENT_DETAILS=$( cat <&9 )
 

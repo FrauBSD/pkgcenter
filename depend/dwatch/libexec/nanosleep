@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for nanosleep(2) [or similar] entry $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/nanosleep 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -17,12 +17,20 @@
 ############################################################ ACTIONS
 
 exec 9<<EOF
+this struct timespec *	rqtp;
+this time_t		requested_sec;
+this long		requested_nsec;
+
 $PROBE /* probe ID $ID */
 {${TRACE:+
-	print("<$ID>");}
+	print("<$ID>");
+}
+	/*
+	 * const struct timespec *
+	 */
 	this->rqtp = (struct timespec *)copyin(arg0, sizeof(struct timespec));
-	this->requested_sec  = this->rqtp->tv_sec;
-	this->requested_nsec = this->rqtp->tv_nsec;
+	this->requested_sec  = (time_t)this->rqtp->tv_sec;
+	this->requested_nsec = (long)this->rqtp->tv_nsec;
 }
 EOF
 ACTIONS=$( cat <&9 )

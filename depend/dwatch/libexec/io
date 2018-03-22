@@ -4,7 +4,7 @@
 #
 # $Title: dwatch(8) module for dtrace_io(4) $
 # $Copyright: 2014-2018 Devin Teske. All rights reserved. $
-# $FreeBSD$
+# $FreeBSD: head/cddl/usr.sbin/dwatch/libexec/io 330559 2018-03-06 23:44:19Z dteske $
 #
 ############################################################ DESCRIPTION
 #
@@ -17,104 +17,67 @@ io) : ${PROBE:=io:::start, io:::done} ;;
  *) : ${PROBE:=io:::${PROFILE#io-}}
 esac
 
+############################################################ EVENT ACTION
+
+[ "$CUSTOM_TEST" ] || EVENT_TEST='this->devinfo.dev_name != ""'
+
 ############################################################ ACTIONS
 
 exec 9<<EOF
-enum bio_cmd {
-	BIO_READ = 0x1,
-	BIO_WRITE,
-	BIO_DELETE,
-	BIO_GETATTR,
-	BIO_FLUSH,
-	BIO_CMD0,
-	BIO_CMD1,
-	BIO_CMD2,
-	BIO_ZONE
-};
+this bufinfo_t	bufinfo;
+this devinfo_t	devinfo;
+this int	b_flags;
+this long	bio_length;
+this string	bio_cmd;
+this string	bio_flags;
+this string	device_entry;
+this string	device_if;
+this string	device_type;
+this string	flow;
 
-enum bio_flags {
-	BIO_ERROR = 0x1,
-	BIO_DONE,
-	BIO_ONQUEUE = 0x4
-};
+inline string append_bio_flag[int flags, int flag] = this->bio_flags =
+	strjoin(this->bio_flags,
+	strjoin(this->bio_flags == "" ? "" : (flags & flag) == flag ? "|" : "",
+		bio_flag_string[flags & flag]));
 
-enum device_type {
-	DEVSTAT_TYPE_DIRECT     = 0x000,
-	DEVSTAT_TYPE_SEQUENTIAL = 0x001,
-	DEVSTAT_TYPE_PRINTER    = 0x002,
-	DEVSTAT_TYPE_PROCESSOR  = 0x003,
-	DEVSTAT_TYPE_WORM       = 0x004,
-	DEVSTAT_TYPE_CDROM      = 0x005,
-	DEVSTAT_TYPE_SCANNER    = 0x006,
-	DEVSTAT_TYPE_OPTICAL    = 0x007,
-	DEVSTAT_TYPE_CHANGER    = 0x008,
-	DEVSTAT_TYPE_COMM       = 0x00a,
-	DEVSTAT_TYPE_ASC0       = 0x00b,
-	DEVSTAT_TYPE_ASC1       = 0x00c,
-	DEVSTAT_TYPE_STORARRAY  = 0x00d,
-	DEVSTAT_TYPE_ENCLOSURE  = 0x00e,
-	DEVSTAT_TYPE_FLOPPY     = 0x00f,
-	DEVSTAT_TYPE_MASK       = 0x00f,
-	DEVSTAT_TYPE_IF_SCSI    = 0x010,
-	DEVSTAT_TYPE_IF_IDE     = 0x020,
-	DEVSTAT_TYPE_IF_OTHER   = 0x030,
-	DEVSTAT_TYPE_IF_MASK    = 0x0f0,
-	DEVSTAT_TYPE_PASS       = 0x100
-};
-
-$PROBE /* probe ID $ID */
+$PROBE /(struct bio *)args[0] != NULL/ /* probe ID $ID */
 {${TRACE:+
 	printf("<$ID>");
 }
 	/*
-	 * Which function triggered?
+	 * dtrace_io(4)
 	 */
-	this->start = probename == "start" ? 1 : 0;
+	this->flow = probefunc == "done" ? "<-" : "->";
 
 	/*
-	 * I/O
+	 * struct bio *
 	 */
-	this->devtype = args[1]->device_type & DEVSTAT_TYPE_MASK;
-	this->device_type = this->devtype == DEVSTAT_TYPE_DIRECT ? "DIRECT" :
-		(this->devtype == DEVSTAT_TYPE_SEQUENTIAL ? "SEQUENTIAL" :
-		(this->devtype == DEVSTAT_TYPE_PRINTER ? "PRINTER" :
-		(this->devtype == DEVSTAT_TYPE_PROCESSOR ? "PROCESSOR" :
-		(this->devtype == DEVSTAT_TYPE_WORM ? "WORM" :
-		(this->devtype == DEVSTAT_TYPE_CDROM ? "CDROM" :
-		(this->devtype == DEVSTAT_TYPE_SCANNER ? "SCANNER" :
-		(this->devtype == DEVSTAT_TYPE_OPTICAL ? "OPTICAL" :
-		(this->devtype == DEVSTAT_TYPE_CHANGER ? "CHANGER" :
-		(this->devtype == DEVSTAT_TYPE_COMM ? "COMM" :
-		(this->devtype == DEVSTAT_TYPE_ASC0 ? "ASC0" :
-		(this->devtype == DEVSTAT_TYPE_ASC1 ? "ASC1" :
-		(this->devtype == DEVSTAT_TYPE_STORARRAY ? "STORARRAY" :
-		(this->devtype == DEVSTAT_TYPE_ENCLOSURE ? "ENCLOSURE" :
-		(this->devtype == DEVSTAT_TYPE_FLOPPY ? "FLOPPY" :
-		"UNKNOWN"))))))))))))));
-	this->iftype = args[1]->device_type & DEVSTAT_TYPE_IF_MASK;
-	this->device_if = this->iftype == DEVSTAT_TYPE_IF_SCSI ? "SCSI" :
-		(this->iftype == DEVSTAT_TYPE_IF_IDE ? "IDE" :
-		(this->iftype == DEVSTAT_TYPE_IF_OTHER ? "OTHER" :
-		"ACCESS"));
-	this->device_name = stringof(args[1]->device_name);
-	this->unit_number = args[1]->unit_number;
-	this->flow = this->start ? "->" : "<-";
-	this->bio_cmd = args[0]->bio_cmd == BIO_READ ? "READ" :
-		(args[0]->bio_cmd == BIO_WRITE ? "WRITE" :
-		(args[0]->bio_cmd == BIO_DELETE ? "DELETE" :
-		(args[0]->bio_cmd == BIO_GETATTR ? "GETATTR" :
-		(args[0]->bio_cmd == BIO_FLUSH ? "FLUSH" :
-		(args[0]->bio_cmd == BIO_CMD0 ? "CMD0" :
-		(args[0]->bio_cmd == BIO_CMD1 ? "CMD1" :
-		(args[0]->bio_cmd == BIO_CMD2 ? "CMD2" :
-		(args[0]->bio_cmd == BIO_ZONE ? "ZONE" :
-		"NA"))))))));
-	this->bio_flags = args[0]->bio_flags == BIO_ERROR ? "ERROR" :
-		(args[0]->bio_flags == BIO_DONE ? "DONE" :
-		(args[0]->bio_flags == BIO_ONQUEUE ? "ONQUEUE" :
-		"OK"));
-	this->bio_error = args[0]->bio_error;
-	this->bio_completed = args[0]->bio_completed;
+	this->bufinfo = xlate <bufinfo_t> ((struct bio *)args[0]);
+	this->bio_cmd = bio_cmd_string[(int)this->bufinfo.b_cmd];
+	this->b_flags = (int)this->bufinfo.b_flags;
+	this->bio_flags = bio_flag_string[this->b_flags & BIO_ERROR];
+	this->bio_flags = strjoin(this->bio_flags, this->bufinfo.b_error ?
+		strjoin(this->bio_flags == "" ?
+			bio_flag_string[BIO_ERROR] : "",
+			strjoin("#", lltostr(this->bufinfo.b_error))) :
+		"");
+	append_bio_flag[this->b_flags, BIO_DONE];
+	append_bio_flag[this->b_flags, BIO_ONQUEUE];
+	append_bio_flag[this->b_flags, BIO_ORDERED];
+	append_bio_flag[this->b_flags, BIO_UNMAPPED];
+	append_bio_flag[this->b_flags, BIO_TRANSIENT_MAPPING];
+	append_bio_flag[this->b_flags, BIO_VLIST];
+	this->bio_flags = this->bio_flags == "" ? "-" : this->bio_flags;
+	this->bio_length = (long)this->bufinfo.b_bcount;
+
+	/*
+	 * struct devstat *
+	 */
+	this->devinfo = xlate <devinfo_t> ((struct devstat *)args[1]);
+	this->device_type = device_type[(int)this->devinfo.dev_type];
+	this->device_if = device_if[(int)this->devinfo.dev_type];
+	this->device_entry = strjoin(this->devinfo.dev_name,
+		lltostr(this->devinfo.dev_minor));
 }
 EOF
 ACTIONS=$( cat <&9 )
@@ -124,18 +87,17 @@ ID=$(( $ID + 1 ))
 
 exec 9<<EOF
 	/*
-	 * Print I/O details
+	 * Print disk I/O details
 	 */
-	printf("%s %s %s%d %s %s %s %d byte%s",
+	printf("%s %s %s %s %s %s %d byte%s",
+		this->flow,
 		this->device_type,
 		this->device_if,
-		this->device_name,
-		this->unit_number,
-		this->flow,
+		this->device_entry,
 		this->bio_cmd,
 		this->bio_flags,
-		this->bio_completed,
-		this->bio_completed == 1 ? "" : "s");
+		this->bio_length,
+		this->bio_length == 1 ? "" : "s");
 EOF
 EVENT_DETAILS=$( cat <&9 )
 
