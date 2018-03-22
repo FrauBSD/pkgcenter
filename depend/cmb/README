@@ -1,0 +1,8 @@
+Build:
+
+	% make
+
+Install (as root):
+
+	# make install
+
