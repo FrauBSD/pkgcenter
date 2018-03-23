@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-23 12:00:09 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-23 12:10:09 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -38,6 +38,75 @@ __FBSDID("$FreeBSD$");
 #include <string.h>
 
 #include "cmb.h"
+
+/*
+ * Takes pointer to `struct cmb_config' options and number of items. Returns
+ * total number of combinations according to options.
+ */
+uint cmb_count(struct cmb_config *config, int nitems)
+{
+	int nextset = 1;
+	uint count = 0;
+	uint curset;
+	uint setinit = 1;
+	uint setdone = nitems;
+
+	if (config != NULL) {
+		if (config->range_min == 0 && config->range_max == 0) {
+			setinit = 1;
+			setdone = nitems;
+		} else {
+			setinit = config->range_min;
+			setdone = config->range_max;
+		}
+	}
+
+	/* Adjust values to be non-zero (mathematical constraint) */
+	if (setinit == 0) setinit = 1;
+	if (setdone == 0) setdone = 1;
+
+	/* Enforce limits so we don't run over bounds */
+	if (setinit > setdone) setdone = setinit;
+	if (setinit > (uint)nitems) setinit = nitems;
+	if (setdone > (uint)nitems) setdone = nitems;
+
+	/* Set the direction of flow (incrementing vs. decrementing) */
+	if (setinit > setdone) nextset = -1;
+
+	/*
+	 * Loop over each `set' in the configured direction until we are done
+	 */
+	for (curset = setinit; curset <= setdone; curset += nextset) {
+		uint n;
+		uint ncombos;
+		uint nsubsets;
+		uint64_t d;
+		uint64_t z;
+
+		/*
+		 * Calculate number of subsets, based on the number of items in
+		 * the current set we're working on.
+		 */
+		nsubsets = nitems - curset + 1;
+
+		/*
+		 * Calculate number of combinations based on number of subsets
+		 */
+		z = d = 1;
+		for (n = 0; n < curset; n++) {
+			z *= nsubsets + n;
+			d *= n + 1;
+		}
+		ncombos = z / d;
+
+		/*
+		 * Add the number of combinations in this set to the total
+		 */
+		count += ncombos;
+	}
+
+	return (count);
+}
 
 /*
  * Takes pointer to `struct cmb_config' options, number of items, and array of
