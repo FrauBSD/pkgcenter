@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-23 11:30:28 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-23 11:58:08 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -76,8 +76,8 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 
 	/* Enforce limits so we don't run over bounds */
 	if (setinit > setdone) setdone = setinit;
-	if (setinit > nitems) setinit = nitems;
-	if (setdone > nitems) setdone = nitems;
+	if (setinit > (uint)nitems) setinit = nitems;
+	if (setdone > (uint)nitems) setdone = nitems;
 
 	/* Set the direction of flow (incrementing vs. decrementing) */
 	if (setinit > setdone) nextset = -1;

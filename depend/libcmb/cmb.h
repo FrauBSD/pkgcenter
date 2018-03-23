@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-23 11:30:28 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-23 11:58:08 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -32,7 +32,7 @@
 
 #include <sys/types.h>
 
-static char *cmb_print_delimiter = " ";
+static const char *cmb_print_delimiter = " ";
 
 /*
  * Anatomy of config option to pass as cmb() config argument
