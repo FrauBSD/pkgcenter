@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-22 16:54:09 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-23 12:11:21 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -34,6 +34,22 @@
 
 #include "cmb.h"
 
+#define CMB_COUNT 0
+
+#if CMB_COUNT
+int
+main(int argc, char *argv[]__attribute__((unused)))
+{
+	int nitems = argc - 1;
+	struct cmb_config *config = NULL;
+
+	config = (struct cmb_config *)malloc(sizeof(struct cmb_config));
+	bzero(config, sizeof(struct cmb_config));
+
+	printf("%u\n", cmb_count(config, nitems));
+	return (0);
+}
+#else
 int
 main(int argc, char *argv[])
 {
@@ -47,3 +63,4 @@ main(int argc, char *argv[])
 	cmb(config, nitems, items);
 	return (0);
 }
+#endif
