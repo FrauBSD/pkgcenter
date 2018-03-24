@@ -23,44 +23,107 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-23 12:11:21 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-24 13:45:42 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
+#include <sys/cdefs.h>
+#ifdef __FBSDID
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 13:45:42 -0700 freebsdfrau $");
+__FBSDID("$FreeBSD$");
+#endif
+
+#include <cmb.h>
+#include <err.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#include "cmb.h"
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
 
-#define CMB_COUNT 0
+/* Environment */
+static char *pgm; /* set to argv[0] by main() */
 
-#if CMB_COUNT
-int
-main(int argc, char *argv[]__attribute__((unused)))
-{
-	int nitems = argc - 1;
-	struct cmb_config *config = NULL;
+/* Function prototypes */
+static void	usage(void);
 
-	config = (struct cmb_config *)malloc(sizeof(struct cmb_config));
-	bzero(config, sizeof(struct cmb_config));
-
-	printf("%u\n", cmb_count(config, nitems));
-	return (0);
-}
-#else
 int
 main(int argc, char *argv[])
 {
-	int nitems = argc - 1;
-	char **items = nitems > 0 ? &argv[1] : NULL;
+	uint8_t opt_total = FALSE;
+	char *cp;
+	int ch;
+	int retval = EXIT_SUCCESS;
+	size_t config_size = sizeof(struct cmb_config);
 	struct cmb_config *config = NULL;
 
-	config = (struct cmb_config *)malloc(sizeof(struct cmb_config));
+	pgm = argv[0]; /* store a copy of invocation name */
+
+	/* Allocate config structure */
+	if ((config = malloc(config_size)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
 	bzero(config, sizeof(struct cmb_config));
 
-	cmb(config, nitems, items);
-	return (0);
+	/*
+	 * Process command-line options
+	 */
+	while ((ch = getopt(argc, argv, "tr:")) != -1) {
+		switch(ch) {
+		case 'r': /* range */
+			config->range_min =
+			    (uint)strtol(optarg, (char **)NULL, 10);
+			if ((cp = strstr(optarg, "..")) != NULL) {
+				config->range_max =
+				    (uint)strtol(cp + 2, (char **)NULL, 10);
+			} else if ((cp = strstr(optarg, "-")) != NULL) {
+				config->range_max =
+				    (uint)strtol(cp + 1, (char **)NULL, 10);
+			} else {
+				config->range_max = config->range_min;
+			}
+			break;
+		case 't': /* total */
+			opt_total = TRUE;
+			break;
+		default: /* unhandled argument (based on switch) */
+			usage();
+			/* NOTREACHED */
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	/*
+	 * Calculate combinations
+	 */
+	if (opt_total) {
+		printf("%u\n", cmb_count(config, argc));
+	} else {
+		retval = cmb(config, argc, argv);
+	}
+
+	return (retval);
 }
-#endif
+
+/*
+ * Print short usage statement to stderr and exit with error status.
+ */
+static void
+usage(void)
+{
+	fprintf(stderr, "Usage: %s [options] item1 item2 ...\n", pgm);
+	fprintf(stderr, "OPTIONS:\n");
+#define OPTFMT "\t%-11s %s\n"
+	fprintf(stderr, OPTFMT, "-r range",
+	    "Number or range of numbers for combination set(s).");
+	fprintf(stderr, OPTFMT, "-t",
+	    "Print total number of combinations and exit.");
+	exit(EXIT_FAILURE);
+}

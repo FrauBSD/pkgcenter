@@ -44,6 +44,20 @@ one per line
 .Pq default ,
 separated by space
 .Pq default .
+.Pp
+Available options:
+.Bl -tag -width ".Fl r Ar range"
+.It Fl r Ar range
+Number or range
+.Pq Qo min..max Qc or Qo min-max Qc
+of how many items appear in each combination.
+A value of
+.Ql 0
+.Pq default
+calculates all combinations.
+.It Fl t
+Print total number of combinations and exit.
+.El
 .Sh HISTORY
 The
 .Nm
