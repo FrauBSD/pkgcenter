@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 14:41:30 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 15:21:17 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -51,6 +51,7 @@ uint cmb_count(struct cmb_config *config, int nitems)
 	uint setinit = 1;
 	uint setdone = nitems;
 
+	if (nitems <= 0) return 0;
 	if (config != NULL) {
 		if (config->range_min == 0 && config->range_max == 0) {
 			setinit = 1;
@@ -128,6 +129,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 	uint *setnums_backend;
 	int (*action)(int nitems, char *items[]) = cmb_print;
 
+	if (nitems <= 0) return 0;
 	if (config != NULL) {
 		if (config->action != NULL) action = config->action;
 		if (config->delimiter != NULL)
