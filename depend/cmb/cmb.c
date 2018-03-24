@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-24 13:45:42 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-24 14:14:43 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 13:45:42 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 14:14:43 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -74,8 +74,11 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-	while ((ch = getopt(argc, argv, "tr:")) != -1) {
+	while ((ch = getopt(argc, argv, "d:tr:")) != -1) {
 		switch(ch) {
+		case 'd': /* delimiter */
+			config->delimiter = optarg;
+			break;
 		case 'r': /* range */
 			config->range_min =
 			    (uint)strtol(optarg, (char **)NULL, 10);
@@ -121,6 +124,8 @@ usage(void)
 	fprintf(stderr, "Usage: %s [options] item1 item2 ...\n", pgm);
 	fprintf(stderr, "OPTIONS:\n");
 #define OPTFMT "\t%-11s %s\n"
+	fprintf(stderr, OPTFMT, "-d text",
+	    "Delimiter for separating items. Default is space.");
 	fprintf(stderr, OPTFMT, "-r range",
 	    "Number or range of numbers for combination set(s).");
 	fprintf(stderr, OPTFMT, "-t",
