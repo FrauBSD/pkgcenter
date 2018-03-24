@@ -24,7 +24,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd March 23, 2018
+.Dd March 24, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -50,10 +50,7 @@ Available options:
 .It Fl d Ar text
 Delimiter for separating items.
 Default is space.
-.It Fl p Ar text
-Prefix each combination with
-.Ar text .
-.It Fl r Ar range
+.It Fl k Ar range
 Number or range
 .Pq Qo min..max Qc or Qo min-max Qc
 of how many items appear in each combination.
@@ -61,6 +58,9 @@ A value of
 .Ql 0
 .Pq default
 calculates all combinations.
+.It Fl p Ar text
+Prefix each combination with
+.Ar text .
 .It Fl s Ar text
 Suffix each combination with
 .Ar text .
