@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-23 18:07:32 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 13:44:58 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -66,7 +66,6 @@ uint cmb_count(struct cmb_config *config, int nitems)
 	if (setdone == 0) setdone = 1;
 
 	/* Enforce limits so we don't run over bounds */
-	if (setinit > setdone) setdone = setinit;
 	if (setinit > (uint)nitems) setinit = nitems;
 	if (setdone > (uint)nitems) setdone = nitems;
 
@@ -76,7 +75,9 @@ uint cmb_count(struct cmb_config *config, int nitems)
 	/*
 	 * Loop over each `set' in the configured direction until we are done
 	 */
-	for (curset = setinit; curset <= setdone; curset += nextset) {
+	for (curset = setinit;
+	    nextset > 0 ? curset <= setdone : curset >= setdone;
+	    curset += nextset) {
 		uint n;
 		uint ncombos;
 		uint nsubsets;
@@ -121,6 +122,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 	uint curset;
 	uint setinit = 0;
 	uint setdone = nitems;
+	uint setmax;
 	char **curitems;
 	uint *setnums;
 	uint *setnums_backend;
@@ -144,7 +146,6 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 	if (setdone == 0) setdone = 1;
 
 	/* Enforce limits so we don't run over bounds */
-	if (setinit > setdone) setdone = setinit;
 	if (setinit > (uint)nitems) setinit = nitems;
 	if (setdone > (uint)nitems) setdone = nitems;
 
@@ -154,18 +155,21 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 	/*
 	 * Allocate memory
 	 */
-	if ((curitems = (char **)malloc(sizeof(char *) * setdone)) == NULL)
+	setmax = setdone > setinit ? setdone : setinit;
+	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums = (uint *)malloc(sizeof(uint) * setdone)) == NULL)
+	if ((setnums = (uint *)malloc(sizeof(uint) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums_backend = (uint *)malloc(sizeof(uint) * setdone)) == NULL)
+	if ((setnums_backend = (uint *)malloc(sizeof(uint) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done
 	 * NB: Each `set' can represent a single item or multiple items
 	 */
-	for (curset = setinit; curset <= setdone; curset += nextset) {
+	for (curset = setinit;
+	    nextset > 0 ?  curset <= setdone : curset >= setdone;
+	    curset += nextset) {
 		uint combo;
 		uint i;
 		uint n;
