@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-23 12:10:09 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 14:41:30 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -32,13 +32,19 @@
 
 #include <sys/types.h>
 
+#include <stddef.h>
+
 static const char *cmb_print_delimiter = " ";
+static const char *cmb_print_prefix = NULL;
+static const char *cmb_print_suffix = NULL;
 
 /*
  * Anatomy of config option to pass as cmb() config argument
  */
 struct cmb_config {
 	char	*delimiter;	/* Item separator (default is " ") */
+	char	*prefix;	/* Prefix for each combination */
+	char	*suffix;	/* Suffix for each combination */
 	uint	range_min;	/* Minimum number of elements in combination */
 	uint	range_max;	/* Maximum number of elements in combination */
 

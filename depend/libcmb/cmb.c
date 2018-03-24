@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 13:44:58 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 14:41:30 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -132,6 +132,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		if (config->action != NULL) action = config->action;
 		if (config->delimiter != NULL)
 			cmb_print_delimiter = config->delimiter;
+		if (config->prefix != NULL) cmb_print_prefix = config->prefix;
 		if (config->range_min == 0 && config->range_max == 0) {
 			setinit = 1;
 			setdone = nitems;
@@ -139,6 +140,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 			setinit = config->range_min;
 			setdone = config->range_max;
 		}
+		if (config->suffix != NULL) cmb_print_suffix = config->suffix;
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
@@ -306,11 +308,13 @@ cmb_print(int nitems, char *items[])
 {
 	int n;
 
+	if (cmb_print_prefix != NULL) printf("%s", cmb_print_prefix);
 	for (n = 0; n < nitems; n++) {
 		printf("%s", items[n]);
 		if (n < nitems - 1 && cmb_print_delimiter != NULL)
 			printf("%s", cmb_print_delimiter);
 	}
+	if (cmb_print_suffix != NULL) printf("%s", cmb_print_suffix);
 	printf("\n");
 
 	return (0);
