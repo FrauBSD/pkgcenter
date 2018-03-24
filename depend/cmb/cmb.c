@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-24 14:14:43 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-24 14:19:26 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 14:14:43 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 14:19:26 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -74,7 +74,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-	while ((ch = getopt(argc, argv, "d:tr:")) != -1) {
+	while ((ch = getopt(argc, argv, "d:r:t")) != -1) {
 		switch(ch) {
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
