@@ -29,26 +29,21 @@
 .Os
 .Sh NAME
 .Nm cmb
-.Nd combinatorics library
-.Sh LIBRARY
-.Lb libcmb
+.Nd combinatorics utility
 .Sh SYNOPSIS
-.In cmb.h
-.Ft int
-.Fo cmb
-.Fa "struct cmb_config *config"
-.Fa "int nitems"
-.Fa "char *items[]"
-.Fc
-.Ft int
-.Fo cmb_items_print
-.Fa "int nitems"
-.Fa "char *items[]"
-.Fc
+.Nm
+.Op options
+.Ar item1
+.Ar item2
+.Ar ...
 .Sh DESCRIPTION
 The
 .Nm
-utility provides a light-weight, portable, and fast combinatorics engine.
+utility prints combinations,
+one per line
+.Pq default ,
+separated by space
+.Pq default .
 .Sh HISTORY
 The
 .Nm
