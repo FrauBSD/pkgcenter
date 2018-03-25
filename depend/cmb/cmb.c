@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-24 17:39:04 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-24 17:54:24 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 17:39:04 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 17:54:24 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,8 +67,11 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-	while ((ch = getopt(argc, argv, "c:d:i:k:p:s:t")) != -1) {
+	while ((ch = getopt(argc, argv, "0c:d:i:k:p:s:t")) != -1) {
 		switch(ch) {
+		case '0': /* NUL terminate */
+			config->nul_terminate = TRUE;
+			break;
 		case 'c': /* count */
 			config->count =
 			    (uint)strtoul(optarg, (char **)NULL, 10);
@@ -131,6 +134,8 @@ usage(void)
 	fprintf(stderr, "Usage: %s [options] item1 item2 ...\n", pgm);
 	fprintf(stderr, "OPTIONS:\n");
 #define OPTFMT "\t%-11s %s\n"
+	fprintf(stderr, OPTFMT, "-0",
+	    "Terminate combinations with ASCII NUL instead of newline.");
 	fprintf(stderr, OPTFMT, "-c num", "Produce num combinations.");
 	fprintf(stderr, OPTFMT, "-d text",
 	    "Delimiter for separating items. Default is space.");

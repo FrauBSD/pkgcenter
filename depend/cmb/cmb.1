@@ -47,6 +47,13 @@ separated by space
 .Pp
 Available options:
 .Bl -tag -width ".Fl r Ar range"
+.It Fl 0
+Terminate combinations with ASCII NUL
+.Pq character code 0
+instead of newline.
+Use in conjuction with
+.Dq Li xargs -0
+for example.
 .It Fl c Ar num
 Produce
 .Ar num

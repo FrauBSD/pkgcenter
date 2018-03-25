@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 17:39:04 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 17:54:24 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -41,6 +41,7 @@
 #define FALSE 0
 #endif
 
+static uint8_t cmb_print_nul = FALSE;
 static const char *cmb_print_delimiter = " ";
 static const char *cmb_print_prefix = NULL;
 static const char *cmb_print_suffix = NULL;
@@ -49,6 +50,7 @@ static const char *cmb_print_suffix = NULL;
  * Anatomy of config option to pass as cmb() config argument
  */
 struct cmb_config {
+	uint8_t	nul_terminate;	/* Terminate combinations with ASCII NUL */
 	char	*delimiter;	/* Item separator (default is " ") */
 	char	*prefix;	/* Prefix for each combination */
 	char	*suffix;	/* Suffix for each combination */
