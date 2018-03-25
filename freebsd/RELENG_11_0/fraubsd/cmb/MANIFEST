@@ -1,0 +1,65 @@
+// -*- tab-width: 4 -*-        ;; Emacs
+// vi: set noexpandtab         :: Vi/ViM
+// vi: set filetype=javascript ::
+{
+	//////////////////////////////////////////////////// HEADER
+
+	"name":"cmb",
+	"origin":"fraubsd/cmb",
+	"categories":["fraubsd"],
+
+	"comment":"Combinatorics library/utility",
+	"licenselogic":"single",
+	"licenses":["BSD"],
+	"version":"0.2",
+
+	"maintainer":"dteske@freebsd.org",
+	"www":"https://www.fraubsd.org/",
+
+	"arch":"freebsd:11:amd64",
+	"prefix":"/",
+
+	//////////////////////////////////////////////////// DESCRIPTION
+
+	"desc":"The cmb library/utility is used to generate combinations.
+
+WWW: https://www.fraubsd.org/",
+
+	//////////////////////////////////////////////////// FILES
+
+	"files":[
+		"/usr/bin/cmb",
+		"/usr/include/cmb.h",
+		"/usr/lib/debug/usr/lib/libcmb.so.0.debug",
+		"/usr/lib/libcmb.a",
+		"/usr/lib/libcmb.so",
+		"/usr/lib/libcmb.so.0",
+		"/usr/lib/libcmb_p.a",
+		"/usr/share/man/man1/cmb.1.gz",
+		"/usr/share/man/man3/cmb.3.gz",
+	],
+
+	//////////////////////////////////////////////////// DIRECTORIES
+
+	"directories":{
+		"/usr":"n",
+		"/usr/bin":"n",
+		"/usr/include":"n",
+		"/usr/lib":"n",
+		"/usr/lib/debug":"n",
+		"/usr/lib/debug/usr":"n",
+		"/usr/lib/debug/usr/lib":"n",
+		"/usr/share":"n",
+		"/usr/share/man":"n",
+		"/usr/share/man/man1":"n",
+		"/usr/share/man/man3":"n",
+	},
+}
+////////////////////////////////////////////////////////////////////////////////
+// END
+////////////////////////////////////////////////////////////////////////////////
+//
+// $Copyright: 2016-2018 Devin Teske. All rights reserved. $
+// $FrauBSD: freebsd/RELENG_11_0/fraubsd/cmb/MANIFEST 2018-03-24 18:24:25 -0700 freebsdfrau $
+//
+////////////////////////////////////////////////////////////////////////////////
