@@ -189,7 +189,7 @@ taglist:
 
 .PHONY: import commit pull
 
-import: stage
+import:
 	@$(ENVIRON) $(PKGCENTER)/Mk/git_import
 
 commit:
