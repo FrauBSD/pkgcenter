@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 15:21:17 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:23:12 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -118,9 +118,11 @@ uint cmb_count(struct cmb_config *config, int nitems)
  */
 int cmb(struct cmb_config *config, int nitems, char *items[])
 {
+	uint8_t doseek = FALSE;
 	int nextset = 1;
 	int retval = 0;
 	uint curset;
+	uint seek = 0;
 	uint setinit = 0;
 	uint setdone = nitems;
 	uint setmax;
@@ -141,6 +143,10 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		} else {
 			setinit = config->range_min;
 			setdone = config->range_max;
+		}
+		if (config->start > 1) {
+			doseek = TRUE;
+			seek = config->start;
 		}
 		if (config->suffix != NULL) cmb_print_suffix = config->suffix;
 	}
@@ -201,6 +207,18 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		ncombos = z / d;
 
 		/*
+		 * Jump to the next set if requested start is beyond this one.
+		 */
+		if (doseek) {
+			if (seek > ncombos) {
+				seek -= ncombos;
+				continue;
+			} else if (seek == 1) {
+				doseek = FALSE;
+			}
+		}
+
+		/*
 		 * Fill array with the initial positional arguments
 		 */
 		for (n = 0; n < curset; n++) curitems[n] = items[n];
@@ -208,7 +226,10 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		/*
 		 * Produce results with the first set of items
 		 */
-		if ((retval = action(curset, curitems)) != 0) goto cmb_return;
+		if (!doseek) {
+			if ((retval = action(curset, curitems)) != 0)
+				goto cmb_return;
+		}
 
 		/*
 		 * Prefill two arrays used for matrix calculations.
@@ -291,8 +312,15 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 			/*
 			 * Produce results with this set of items
 			 */
-			if ((retval = action(curset, curitems)) != 0)
-				goto cmb_return;
+			if (doseek) {
+				seek--;
+				if (seek == 1) doseek = FALSE;
+			}
+			if (!doseek || seek == 1) {
+				doseek = FALSE;
+				if ((retval = action(curset, curitems)) != 0)
+					goto cmb_return;
+			}
 
 		} /* for combo */
 

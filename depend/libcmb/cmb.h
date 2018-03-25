@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 14:41:30 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 17:23:12 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -33,6 +33,13 @@
 #include <sys/types.h>
 
 #include <stddef.h>
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+#ifndef FALSE
+#define FALSE 0
+#endif
 
 static const char *cmb_print_delimiter = " ";
 static const char *cmb_print_prefix = NULL;
@@ -47,6 +54,7 @@ struct cmb_config {
 	char	*suffix;	/* Suffix for each combination */
 	uint	range_min;	/* Minimum number of elements in combination */
 	uint	range_max;	/* Maximum number of elements in combination */
+	uint	start;		/* Starting combination */
 
 	/*
 	 * Function pointer; action to perform for each combination (default is
