@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:23:12 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:24:52 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -174,8 +174,8 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		errx(EXIT_FAILURE, "Out of memory?!");
 
 	/*
-	 * Loop over each `set' in the configured direction until we are done
-	 * NB: Each `set' can represent a single item or multiple items
+	 * Loop over each `set' in the configured direction until we are done.
+	 * NB: Each `set' can represent a single item or multiple items.
 	 */
 	for (curset = setinit;
 	    nextset > 0 ?  curset <= setdone : curset >= setdone;
@@ -197,7 +197,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		nsubsets = nitems - curset + 1;
 
 		/*
-		 * Calculate number of combinations based on number of subsets
+		 * Calculate number of combinations based on number of subsets.
 		 */
 		z = d = 1;
 		for (n = 0; n < curset; n++) {
@@ -224,7 +224,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		for (n = 0; n < curset; n++) curitems[n] = items[n];
 
 		/*
-		 * Produce results with the first set of items
+		 * Produce results with the first set of items.
 		 */
 		if (!doseek) {
 			if ((retval = action(curset, curitems)) != 0)
@@ -251,7 +251,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		for (n = curset; n > 0; n--) setnums_backend[i++] = nitems - n;
 
 		/*
-		 * Process remaining self-similar combinations in the set
+		 * Process remaining self-similar combinations in the set.
 		 */
 		for (combo = 1; combo < ncombos; combo++) {
 			uint seed;
