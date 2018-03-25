@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-24 17:54:24 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-24 18:51:43 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 17:54:24 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 18:51:43 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -53,6 +53,7 @@ main(int argc, char *argv[])
 	uint8_t opt_total = FALSE;
 	char *cp;
 	int ch;
+	int nitems = 0;
 	int retval = EXIT_SUCCESS;
 	size_t config_size = sizeof(struct cmb_config);
 	struct cmb_config *config = NULL;
@@ -67,7 +68,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-	while ((ch = getopt(argc, argv, "0c:d:i:k:p:s:t")) != -1) {
+	while ((ch = getopt(argc, argv, "0c:d:i:k:n:p:s:t")) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
 			config->nul_terminate = TRUE;
@@ -96,6 +97,9 @@ main(int argc, char *argv[])
 				config->range_max = config->range_min;
 			}
 			break;
+		case 'n': /* args */
+			nitems = (int)strtol(optarg, (char **)NULL, 10);
+			break;
 		case 'p': /* prefix */
 			config->prefix = optarg;
 			break;
@@ -116,10 +120,11 @@ main(int argc, char *argv[])
 	/*
 	 * Calculate combinations
 	 */
+	if (nitems == 0) nitems = argc;
 	if (opt_total) {
-		printf("%u\n", cmb_count(config, argc));
+		printf("%u\n", cmb_count(config, nitems));
 	} else {
-		retval = cmb(config, argc, argv);
+		retval = cmb(config, nitems, argv);
 	}
 
 	return (retval);
