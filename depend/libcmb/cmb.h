@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 17:54:24 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 19:11:55 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -61,8 +61,8 @@ struct cmb_config {
 
 	/*
 	 * Function pointer; action to perform for each combination (default is
-	 * cmb_items_print()). If the return from action() is non-zero, cmb()
-	 * will stop calculation. The cmb() return value is the first non-zero
+	 * cmb_print()). If the return from action() is non-zero, cmb() will
+	 * stop calculation. The cmb() return value is the first non-zero
 	 * result from action(), zero otherwise.
 	 */
 	int (*action)(int nitems, char *items[]);
