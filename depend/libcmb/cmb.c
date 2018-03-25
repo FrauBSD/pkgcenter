@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:25:23 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:39:04 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -118,9 +118,11 @@ uint cmb_count(struct cmb_config *config, int nitems)
  */
 int cmb(struct cmb_config *config, int nitems, char *items[])
 {
+	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	int nextset = 1;
 	int retval = 0;
+	uint count = 0;
 	uint curset;
 	uint seek = 0;
 	uint setinit = 0;
@@ -134,6 +136,10 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 	if (nitems <= 0) return 0;
 	if (config != NULL) {
 		if (config->action != NULL) action = config->action;
+		if (config->count != 0) {
+			docount = TRUE;
+			count = config->count;
+		}
 		if (config->delimiter != NULL)
 			cmb_print_delimiter = config->delimiter;
 		if (config->prefix != NULL) cmb_print_prefix = config->prefix;
@@ -229,6 +235,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 		if (!doseek) {
 			if ((retval = action(curset, curitems)) != 0)
 				goto cmb_return;
+			if (docount && --count == 0) goto cmb_return;
 		}
 
 		/*
@@ -320,6 +327,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 				doseek = FALSE;
 				if ((retval = action(curset, curitems)) != 0)
 					goto cmb_return;
+				if (docount && --count == 0) goto cmb_return;
 			}
 
 		} /* for combo */

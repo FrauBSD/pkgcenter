@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 17:23:12 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 17:39:04 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -52,6 +52,7 @@ struct cmb_config {
 	char	*delimiter;	/* Item separator (default is " ") */
 	char	*prefix;	/* Prefix for each combination */
 	char	*suffix;	/* Suffix for each combination */
+	uint	count;		/* Number of combinations */
 	uint	range_min;	/* Minimum number of elements in combination */
 	uint	range_max;	/* Maximum number of elements in combination */
 	uint	start;		/* Starting combination */
