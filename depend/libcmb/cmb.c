@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:24:52 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-24 17:25:23 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -178,7 +178,7 @@ int cmb(struct cmb_config *config, int nitems, char *items[])
 	 * NB: Each `set' can represent a single item or multiple items.
 	 */
 	for (curset = setinit;
-	    nextset > 0 ?  curset <= setdone : curset >= setdone;
+	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
 		uint combo;
 		uint i;
