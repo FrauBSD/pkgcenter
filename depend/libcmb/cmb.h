@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-24 19:11:55 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-26 09:08:23 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -69,9 +69,9 @@ struct cmb_config {
 };
 
 __BEGIN_DECLS
-int	cmb(struct cmb_config *_config, int _nitems, char *_items[]);
-uint	cmb_count(struct cmb_config *_config, int _nitems);
-int	cmb_print(int _nitems, char *_items[]);
+int		cmb(struct cmb_config *_config, int _nitems, char *_items[]);
+uint64_t	cmb_count(struct cmb_config *_config, int _nitems);
+int		cmb_print(int _nitems, char *_items[]);
 __END_DECLS
 
 #endif /* !_CMB_H_ */
