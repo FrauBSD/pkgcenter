@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-26 09:03:55 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-26 09:06:16 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 uint
 cmb_count(struct cmb_config *config, int nitems)
 {
-	int nextset = 1;
+	int8_t nextset = 1;
 	uint count = 0;
 	uint curset;
 	uint setinit = 1;
@@ -122,7 +122,7 @@ cmb(struct cmb_config *config, int nitems, char *items[])
 {
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
-	int nextset = 1;
+	int8_t nextset = 1;
 	int retval = 0;
 	uint count = 0;
 	uint curset;
