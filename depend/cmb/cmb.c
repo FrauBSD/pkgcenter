@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-24 18:51:43 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-26 09:13:23 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-24 18:51:43 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-26 09:13:23 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -122,7 +122,7 @@ main(int argc, char *argv[])
 	 */
 	if (nitems == 0) nitems = argc;
 	if (opt_total) {
-		printf("%u\n", cmb_count(config, nitems));
+		printf("%lu\n", cmb_count(config, nitems));
 	} else {
 		retval = cmb(config, nitems, argv);
 	}
