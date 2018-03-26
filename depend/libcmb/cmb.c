@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-26 09:08:23 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-26 09:09:42 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -113,9 +113,9 @@ cmb_count(struct cmb_config *config, int nitems)
 
 /*
  * Takes pointer to `struct cmb_config' options, number of items, and array of
- * `char *'. Calculates combinations according to options and either prints
- * combinations to stdout (default) or runs `action' if passed-in as function
- * pointer member of `config' argument.
+ * `char *' items. Calculates combinations according to options and either
+ * prints combinations to stdout (default) or runs `action' if passed-in as
+ * function pointer member of `config' argument.
  */
 int
 cmb(struct cmb_config *config, int nitems, char *items[])

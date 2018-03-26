@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-26 09:08:23 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-26 09:09:42 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -47,7 +47,7 @@ static const char *cmb_print_prefix = NULL;
 static const char *cmb_print_suffix = NULL;
 
 /*
- * Anatomy of config option to pass as cmb() config argument
+ * Anatomy of config option to pass as cmb*() config argument
  */
 struct cmb_config {
 	uint8_t	nul_terminate;	/* Terminate combinations with ASCII NUL */
