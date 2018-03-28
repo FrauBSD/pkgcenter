@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-27 18:57:52 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-28 11:17:41 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-27 18:57:52 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-28 11:17:41 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -45,11 +45,11 @@ __FBSDID("$FreeBSD$");
 #include <string.h>
 #include <unistd.h>
 
-#ifdef __FreeBSD_version
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#elif defined(__FreeBSD_version)
 #define HAVE_OPENSSL_BN_H 1
 #define HAVE_OPENSSL_CRYPTO_H 1
-#elif defined(HAVE_CONFIG_H)
-#include "config.h"
 #endif
 
 #ifdef HAVE_OPENSSL_BN_H
