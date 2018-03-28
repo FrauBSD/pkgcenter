@@ -6,7 +6,7 @@ BINDIR?=	/usr/bin
 
 CFLAGS+=	-I${.CURDIR}
 
-LDADD=		-lcmb
+LDADD=		-lcmb -lcrypto
 
 WARNS?=		6
 

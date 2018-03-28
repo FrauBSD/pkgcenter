@@ -1,0 +1,100 @@
+# $FrauBSD: depend/cmb/configure.in 2018-03-27 17:01:01 -0700 freebsdfrau $
+
+AC_INIT
+############################################################ CONFIGURATION
+
+#
+# AC_PREREQ (VERSION)
+# 	Minimum version of autoconf required to generate `configure'.
+#
+AC_PREREQ(2.13)
+
+#
+# AC_REVISION (REVISION-INFO)
+# 	Place static version identifier information into autoconf-generated
+# 	`configure' for source-code tracking purposes.
+#
+AC_REVISION($Revision: 1.0 $)
+
+#
+# AC_CONFIG_HEADERS (HEADER ..., [CMDS], [INIT-CMDS])
+# 	Define header containing C preprocessor #define statements.
+#
+AC_CONFIG_HEADERS(config.h)
+
+#
+# AC_CONFIG_AUX_DIR (DIR)
+# 	Use auxiliary build tools (e.g., `install-sh', `config.sub',
+# 	`config.guess', etc.) in directory DIR.
+#
+AC_CONFIG_AUX_DIR(cfgaux)
+
+############################################################ TESTS
+
+#
+# Change prefix to suitable default if none given
+#
+[[ "${prefix#NONE}" ]] || prefix=/usr/local
+if [[ "$prefix" != /usr ]]; then
+	CFLAGS="$CFLAGS -I$prefix/include"
+	LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi
+
+#
+# Compute the canonical host-system type variable (`host') and its three
+# individual parts `host_cpu', `host_vendor', and `host_os'.
+#
+AC_CANONICAL_HOST
+
+#
+# Generic header checks
+#
+# AC_CHECK_HEADER (HEADER-FILE, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# 	Define HAVE_* for if header-file exists.
+#
+AC_CHECK_HEADER(openssl/bn.h, [AC_DEFINE(HAVE_OPENSSL_BN_H, 1)])
+AC_CHECK_HEADER(openssl/crypto.h, [AC_DEFINE(HAVE_OPENSSL_CRYPTO_H, 1)])
+
+#
+# Library checks
+#
+# AC_CHECK_LIB (LIB, FUNC, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND], [LIBS])
+# 	Prepend `-l<LIB>' to LIBS if library provides function.
+#
+AC_CHECK_LIB(crypto, BN_new)
+
+############################################################ OUTPUTS
+
+#
+# Compiler/linker flags
+#
+case "$host_os" in
+darwin*)
+	CFLAGS="$CFLAGS -mmacosx-version-min=\$(OSX_MIN)"
+	LDFLAGS="$LDFLAGS -isysroot /"
+	if [[ "$ac_cv_lib_crypto_BN_new" = no ]] &&
+	   [[ "$ac_cv_header_openssl_bn_h" = yes ]]
+	then
+		if [[ -e "/usr/lib/libcrypto.dylib" ]] ||
+		   [[ "$prefix/lib/libcrypto.dylib "]]
+		then
+			LIBS="$LIBS -lcrypto"
+		fi
+	fi
+	;;
+esac
+
+#
+# AC_CONFIG_FILES (FILE ..., [COMMANDS], [INIT-CMDS])
+# 	Files to instantiate.
+#
+AC_CONFIG_FILES(GNUmakefile)
+
+#
+# Generate/launch `config.status' (which in-turn generates makefiles, etc).
+#
+AC_OUTPUT
+
+################################################################################
+# END
+################################################################################

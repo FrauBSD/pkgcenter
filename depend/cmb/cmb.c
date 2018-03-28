@@ -23,23 +23,41 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/cmb/cmb.c 2018-03-26 09:13:23 -0700 freebsdfrau $
+ * $FrauBSD: depend/cmb/cmb.c 2018-03-27 17:01:01 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-26 09:13:23 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/cmb/cmb.c 2018-03-27 17:01:01 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
+#include <sys/param.h>
+
 #include <cmb.h>
 #include <err.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef __FreeBSD_version
+#define HAVE_OPENSSL_BN_H 1
+#define HAVE_OPENSSL_CRYPTO_H 1
+#elif defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
+#ifdef HAVE_OPENSSL_BN_H
+#include <openssl/bn.h>
+#endif
+#ifdef HAVE_OPENSSL_CRYPTO_H
+#include <openssl/crypto.h>
+#endif
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -53,8 +71,8 @@ main(int argc, char *argv[])
 	uint8_t opt_total = FALSE;
 	char *cp;
 	int ch;
-	int nitems = 0;
 	int retval = EXIT_SUCCESS;
+	uint64_t nitems = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	struct cmb_config *config = NULL;
 
@@ -74,31 +92,29 @@ main(int argc, char *argv[])
 			config->nul_terminate = TRUE;
 			break;
 		case 'c': /* count */
-			config->count =
-			    (uint)strtoul(optarg, (char **)NULL, 10);
+			config->count = strtoull(optarg, (char **)NULL, 10);
 			break;
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
 			break;
 		case 'i': /* start */
-			config->start =
-			    (uint)strtoul(optarg, (char **)NULL, 10);
+			config->start = strtoull(optarg, (char **)NULL, 10);
 			break;
 		case 'k': /* range */
 			config->range_min =
-			    (uint)strtol(optarg, (char **)NULL, 10);
+			    strtoull(optarg, (char **)NULL, 10);
 			if ((cp = strstr(optarg, "..")) != NULL) {
 				config->range_max =
-				    (uint)strtol(cp + 2, (char **)NULL, 10);
+				    strtoull(cp + 2, (char **)NULL, 10);
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
 				config->range_max =
-				    (uint)strtol(cp + 1, (char **)NULL, 10);
+				    strtoull(cp + 1, (char **)NULL, 10);
 			} else {
 				config->range_max = config->range_min;
 			}
 			break;
 		case 'n': /* args */
-			nitems = (int)strtol(optarg, (char **)NULL, 10);
+			nitems = strtoull(optarg, (char **)NULL, 10);
 			break;
 		case 'p': /* prefix */
 			config->prefix = optarg;
@@ -120,11 +136,27 @@ main(int argc, char *argv[])
 	/*
 	 * Calculate combinations
 	 */
-	if (nitems == 0) nitems = argc;
+	if (nitems == 0) nitems = (uint64_t)argc;
 	if (opt_total) {
-		printf("%lu\n", cmb_count(config, nitems));
+#if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
+		BIGNUM *count;
+		char *count_str;
+
+		count = cmb_count_bn(config, nitems);
+		count_str = BN_bn2dec(count);
+		printf("%s\n", count_str);
+		OPENSSL_free(count_str);
+
+		BN_free(count);
+#else
+		printf("%"PRIu64"\n", cmb_count(config, nitems));
+#endif
 	} else {
+#ifdef HAVE_OPENSSL_BN_H
+		retval = cmb_bn(config, nitems, argv);
+#else
 		retval = cmb(config, nitems, argv);
+#endif
 	}
 
 	return (retval);

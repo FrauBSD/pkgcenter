@@ -1,0 +1,54 @@
+# $FrauBSD: depend/cmb/GNUmakefile.in 2018-03-27 17:01:01 -0700 freebsdfrau $
+
+PROG=		cmb
+MAN=		cmb.1
+
+OSX_MIN=	10.8
+
+DEFS=		@DEFS@
+CC=		@CC@
+CFLAGS=		-Wall -I. @CFLAGS@ $(DEFS)
+LIBS=		-lc -lcmb @LIBS@
+LDFLAGS=	@LDFLAGS@ $(LIBS)
+
+PREFIX=		@prefix@
+BINDIR=		$(PREFIX)/bin
+DATADIR=	$(PREFIX)/share
+MANDIR=		$(DATADIR)/man
+
+SRCS=		cmb.c
+OBJS=		cmb.o
+
+all: GNUmakefile $(PROG) $(MAN).gz
+
+GNUmakefile: configure config.status GNUmakefile.in
+	./config.status --recheck
+	./config.status
+	$(MAKE) $(MFLAGS) clean
+
+$(PROG): $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) -o $(@)
+
+$(MAN).gz: $(MAN)
+	gzip -c $(MAN) > $(@)
+
+$(OBJS): $(SRCS)
+	$(CC) $(CFLAGS) -c $(?) -o $(@)
+
+install: $(PROG)
+	install -d -o 0 -g 0 -m 755 $(BINDIR) $(MANDIR)/man1
+	install -C -o 0 -g 0 -m 555 $(PROG) $(BINDIR)/
+	install -C -o 0 -g 0 -m 444 $(MAN).gz $(MANDIR)/man1/
+
+uninstall:
+	rm -f $(BINDIR)/$(PROG) $(MANDIR)/man1/$(MAN).gz
+
+clean:
+	rm -f $(OBJS) $(MAN).gz $(MAN).cat.gz
+	rm -f $(PROG) $(PROG).full $(PROG).debug
+
+cleandepend:
+	rm -f .depend .depend.* GPATH GRTAGS GSYMS GTAGS
+
+cleandir: clean cleandepend
+	rm -Rf GNUmakefile autom4te.cache/ config.h config.log config.status
