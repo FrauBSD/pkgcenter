@@ -23,16 +23,28 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-26 09:09:42 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-27 17:00:01 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #ifndef _CMB_H_
 #define _CMB_H_
 
+#include <sys/param.h>
 #include <sys/types.h>
 
 #include <stddef.h>
+#include <stdint.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#elif defined(__FreeBSD_version)
+#define HAVE_OPENSSL_BN_H 1
+#endif
+
+#ifdef HAVE_OPENSSL_BN_H
+#include <openssl/bn.h>
+#endif
 
 #ifndef TRUE
 #define TRUE 1
@@ -54,10 +66,15 @@ struct cmb_config {
 	char	*delimiter;	/* Item separator (default is " ") */
 	char	*prefix;	/* Prefix for each combination */
 	char	*suffix;	/* Suffix for each combination */
-	uint	count;		/* Number of combinations */
-	uint	range_min;	/* Minimum number of elements in combination */
-	uint	range_max;	/* Maximum number of elements in combination */
-	uint	start;		/* Starting combination */
+	uint64_t range_min;	/* Minimum number of elements in combination */
+	uint64_t range_max;	/* Maximum number of elements in combination */
+
+	uint64_t count;		/* Number of combinations */
+	uint64_t start;		/* Starting combination */
+#ifdef HAVE_OPENSSL_BN_H
+	BIGNUM	*count_bn;	/* bn(3) number of combinations */
+	BIGNUM	*start_bn;	/* bn(3) starting combination */
+#endif
 
 	/*
 	 * Function pointer; action to perform for each combination (default is
@@ -65,13 +82,17 @@ struct cmb_config {
 	 * stop calculation. The cmb() return value is the first non-zero
 	 * result from action(), zero otherwise.
 	 */
-	int (*action)(int nitems, char *items[]);
+	int (*action)(uint64_t nitems, char *items[]);
 };
 
 __BEGIN_DECLS
-int		cmb(struct cmb_config *_config, int _nitems, char *_items[]);
-uint64_t	cmb_count(struct cmb_config *_config, int _nitems);
-int		cmb_print(int _nitems, char *_items[]);
+int		cmb(struct cmb_config *_config, uint64_t _nitems, char *_items[]);
+int		cmb_print(uint64_t _nitems, char *_items[]);
+uint64_t	cmb_count(struct cmb_config *_config, uint64_t _nitems);
+#ifdef HAVE_OPENSSL_BN_H
+int		cmb_bn(struct cmb_config *_config, uint64_t _nitems, char *_items[]);
+BIGNUM *	cmb_count_bn(struct cmb_config *_config, uint64_t _nitems);
+#endif
 __END_DECLS
 
 #endif /* !_CMB_H_ */

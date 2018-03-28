@@ -1,0 +1,6 @@
+/*-
+ * $FrauBSD: depend/libcmb/config.h.in 2018-03-27 17:00:01 -0700 freebsdfrau $
+ */
+
+/* Define to 1 if you have the <openssl/bn.h> header file. */
+#undef HAVE_OPENSSL_BN_H

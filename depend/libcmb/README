@@ -1,6 +1,10 @@
 Build:
 
+	On FreeBSD:
 	% make
+
+	Other:
+	% ./configure && make
 
 Install (as root):
 
