@@ -26,13 +26,12 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:51:58 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:57:18 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
-#include <sys/limits.h>
-
 #include <err.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
