@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: depend/libcmb/cmb.h 2018-03-27 17:00:01 -0700 freebsdfrau $
+ * $FrauBSD: depend/libcmb/cmb.h 2018-03-29 15:27:50 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -66,8 +66,8 @@ struct cmb_config {
 	char	*delimiter;	/* Item separator (default is " ") */
 	char	*prefix;	/* Prefix for each combination */
 	char	*suffix;	/* Suffix for each combination */
-	uint64_t range_min;	/* Minimum number of elements in combination */
-	uint64_t range_max;	/* Maximum number of elements in combination */
+	uint32_t range_min;	/* Minimum number of elements in combination */
+	uint32_t range_max;	/* Maximum number of elements in combination */
 
 	uint64_t count;		/* Number of combinations */
 	uint64_t start;		/* Starting combination */
@@ -82,16 +82,16 @@ struct cmb_config {
 	 * stop calculation. The cmb() return value is the first non-zero
 	 * result from action(), zero otherwise.
 	 */
-	int (*action)(uint64_t nitems, char *items[]);
+	int (*action)(uint32_t nitems, char *items[]);
 };
 
 __BEGIN_DECLS
-int		cmb(struct cmb_config *_config, uint64_t _nitems, char *_items[]);
-int		cmb_print(uint64_t _nitems, char *_items[]);
-uint64_t	cmb_count(struct cmb_config *_config, uint64_t _nitems);
+int		cmb(struct cmb_config *_config, uint32_t _nitems, char *_items[]);
+int		cmb_print(uint32_t _nitems, char *_items[]);
+uint64_t	cmb_count(struct cmb_config *_config, uint32_t _nitems);
 #ifdef HAVE_OPENSSL_BN_H
-int		cmb_bn(struct cmb_config *_config, uint64_t _nitems, char *_items[]);
-BIGNUM *	cmb_count_bn(struct cmb_config *_config, uint64_t _nitems);
+int		cmb_bn(struct cmb_config *_config, uint32_t _nitems, char *_items[]);
+BIGNUM *	cmb_count_bn(struct cmb_config *_config, uint32_t _nitems);
 #endif
 __END_DECLS
 

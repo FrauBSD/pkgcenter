@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 15:20:14 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 15:27:50 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,12 +46,12 @@ __FBSDID("$FreeBSD$");
  * total number of combinations according to config options.
  */
 uint64_t
-cmb_count(struct cmb_config *config, uint64_t nitems)
+cmb_count(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
-	uint64_t curset;
-	uint64_t setinit = 1;
-	uint64_t setdone = nitems;
+	uint32_t curset;
+	uint32_t setinit = 1;
+	uint32_t setdone = nitems;
 	uint64_t count = 0;
 	uint64_t d, z;
 	uint64_t ncombos;
@@ -81,8 +81,8 @@ cmb_count(struct cmb_config *config, uint64_t nitems)
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
-		uint64_t n;
-		uint64_t nsubsets;
+		uint32_t n;
+		uint32_t nsubsets;
 
 		/*
 		 * Calculate number of subsets, based on the number of items in
@@ -118,22 +118,22 @@ cmb_count(struct cmb_config *config, uint64_t nitems)
  * function pointer member of `config' argument.
  */
 int
-cmb(struct cmb_config *config, uint64_t nitems, char *items[])
+cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
 	uint64_t count = 0;
-	uint64_t curset;
+	uint32_t curset;
 	uint64_t seek = 0;
-	uint64_t setdone = nitems;
-	uint64_t setinit = 1;
-	uint64_t setmax;
+	uint32_t setdone = nitems;
+	uint32_t setinit = 1;
+	uint32_t setmax;
 	char **curitems;
-	uint64_t *setnums;
-	uint64_t *setnums_backend;
-	int (*action)(uint64_t nitems, char *items[]) = cmb_print;
+	uint32_t *setnums;
+	uint32_t *setnums_backend;
+	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
 	if (nitems == 0) return (0);
 	if (config != NULL) {
@@ -174,10 +174,10 @@ cmb(struct cmb_config *config, uint64_t nitems, char *items[])
 	setmax = setdone > setinit ? setdone : setinit;
 	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums = (uint64_t *)malloc(sizeof(uint64_t) * setmax)) == NULL)
+	if ((setnums = (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 	if ((setnums_backend =
-	    (uint64_t *)malloc(sizeof(uint64_t) * setmax)) == NULL)
+	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 
 	/*
@@ -190,12 +190,12 @@ cmb(struct cmb_config *config, uint64_t nitems, char *items[])
 	{
 		uint64_t combo;
 		uint64_t d, z;
-		uint64_t i;
-		uint64_t n;
+		uint32_t i;
+		uint32_t n;
 		uint64_t ncombos;
-		uint64_t nsubsets;
-		uint64_t setpos;
-		uint64_t setpos_backend;
+		uint32_t nsubsets;
+		uint32_t setpos;
+		uint32_t setpos_backend;
 
 		/*
 		 * Calculate number of subsets, based on the number of items in
@@ -261,8 +261,8 @@ cmb(struct cmb_config *config, uint64_t nitems, char *items[])
 		 * Process remaining self-similar combinations in the set.
 		 */
 		for (combo = 1; combo < ncombos; combo++) {
-			uint64_t seed;
-			uint64_t setnums_last = curset;
+			uint32_t seed;
+			uint32_t setnums_last = curset;
 
 			/*
 			 * Using self-similarity (matrix) theorem, determine
@@ -343,9 +343,9 @@ cmb_return:
 }
 
 int
-cmb_print(uint64_t nitems, char *items[])
+cmb_print(uint32_t nitems, char *items[])
 {
-	uint64_t n;
+	uint32_t n;
 
 	if (cmb_print_prefix != NULL) printf("%s", cmb_print_prefix);
 	for (n = 0; n < nitems; n++) {
@@ -369,12 +369,12 @@ cmb_print(uint64_t nitems, char *items[])
  * as openssl bn(3) BIGNUM type.
  */
 BIGNUM *
-cmb_count_bn(struct cmb_config *config, uint64_t nitems)
+cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
-	uint64_t curset;
-	uint64_t setinit = 1;
-	uint64_t setdone = nitems;
+	uint32_t curset;
+	uint32_t setinit = 1;
+	uint32_t setdone = nitems;
 	BIGNUM *count = NULL;
 	BIGNUM *d = NULL, *z = NULL;
 	BIGNUM *ncombos = NULL;
@@ -419,8 +419,8 @@ cmb_count_bn(struct cmb_config *config, uint64_t nitems)
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
-		uint64_t n;
-		uint64_t nsubsets;
+		uint32_t n;
+		uint32_t nsubsets;
 
 		/*
 		 * Calculate number of subsets, based on the number of items in
@@ -462,26 +462,26 @@ cmb_count_bn_return:
  * bn(3) BIGNUM type.
  */
 int
-cmb_bn(struct cmb_config *config, uint64_t nitems, char *items[])
+cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
-	uint64_t curset;
-	uint64_t setdone = nitems;
-	uint64_t setinit = 1;
-	uint64_t setmax;
+	uint32_t curset;
+	uint32_t setdone = nitems;
+	uint32_t setinit = 1;
+	uint32_t setmax;
 	char **curitems;
-	uint64_t *setnums;
-	uint64_t *setnums_backend;
+	uint32_t *setnums;
+	uint32_t *setnums_backend;
 	BIGNUM *combo = NULL;
 	BIGNUM *count = NULL;
 	BIGNUM *d = NULL, *z = NULL;
 	BIGNUM *ncombos = NULL;
 	BIGNUM *seek = NULL;
 	BN_CTX *ctx = NULL;
-	int (*action)(uint64_t nitems, char *items[]) = cmb_print;
+	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
 	if (nitems == 0) return (0);
 	if (config != NULL) {
@@ -529,10 +529,10 @@ cmb_bn(struct cmb_config *config, uint64_t nitems, char *items[])
 	setmax = setdone > setinit ? setdone : setinit;
 	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums = (uint64_t *)malloc(sizeof(uint64_t) * setmax)) == NULL)
+	if ((setnums = (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 	if ((setnums_backend =
-	    (uint64_t *)malloc(sizeof(uint64_t) * setmax)) == NULL)
+	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 
 	/*
@@ -543,11 +543,11 @@ cmb_bn(struct cmb_config *config, uint64_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		uint64_t i;
-		uint64_t n;
-		uint64_t nsubsets;
-		uint64_t setpos;
-		uint64_t setpos_backend;
+		uint32_t i;
+		uint32_t n;
+		uint32_t nsubsets;
+		uint32_t setpos;
+		uint32_t setpos_backend;
 
 		/*
 		 * Calculate number of subsets, based on the number of items in
@@ -617,8 +617,8 @@ cmb_bn(struct cmb_config *config, uint64_t nitems, char *items[])
 		 */
 		if (!BN_one(combo)) break;
 		for (; BN_ucmp(combo, ncombos) < 0; ) {
-			uint64_t seed;
-			uint64_t setnums_last = curset;
+			uint32_t seed;
+			uint32_t setnums_last = curset;
 
 			/*
 			 * Using self-similarity (matrix) theorem, determine
