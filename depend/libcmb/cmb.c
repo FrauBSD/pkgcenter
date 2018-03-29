@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:38:30 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:44:37 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -50,6 +50,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
 	uint32_t curset;
+	uint32_t i;
+	uint32_t n;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	uint64_t count = 0;
@@ -81,8 +83,6 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
-		uint32_t i;
-		uint32_t n;
 
 		/*
 		 * Calculate number of combinations
@@ -117,11 +117,20 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
+	uint32_t i;
+	uint32_t n;
+	uint32_t seed;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	uint32_t setmax;
+	uint32_t setnums_last;
+	uint32_t setpos;
+	uint32_t setpos_backend;
+	uint64_t combo;
 	uint64_t count = 0;
+	uint64_t ncombos;
 	uint64_t seek = 0;
+	long double z;
 	char **curitems;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
@@ -180,13 +189,6 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		uint32_t i;
-		uint32_t n;
-		uint32_t setpos;
-		uint32_t setpos_backend;
-		uint64_t combo;
-		uint64_t ncombos;
-		long double z;
 
 		/*
 		 * Calculate number of combinations based on number of subsets.
@@ -244,8 +246,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		 * Process remaining self-similar combinations in the set.
 		 */
 		for (combo = 1; combo < ncombos; combo++) {
-			uint32_t seed;
-			uint32_t setnums_last = curset;
+			setnums_last = curset;
 
 			/*
 			 * Using self-similarity (matrix) theorem, determine
@@ -356,6 +357,8 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
 	uint32_t curset;
+	uint32_t i;
+	uint32_t n;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	BIGNUM *count = NULL;
@@ -397,8 +400,6 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
-		uint32_t i;
-		uint32_t n;
 
 		/*
 		 * Calculate number of combinations
@@ -438,9 +439,13 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
+	uint32_t i;
+	uint32_t n;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	uint32_t setmax;
+	uint32_t setpos;
+	uint32_t setpos_backend;
 	char **curitems;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
@@ -507,10 +512,6 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		uint32_t i;
-		uint32_t n;
-		uint32_t setpos;
-		uint32_t setpos_backend;
 
 		/*
 		 * Calculate number of combinations
