@@ -26,9 +26,11 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 15:18:02 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 15:20:14 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
+
+#include <sys/limits.h>
 
 #include <err.h>
 #include <stddef.h>
@@ -101,6 +103,8 @@ cmb_count(struct cmb_config *config, uint64_t nitems)
 		/*
 		 * Add number of combinations in this set to total
 		 */
+		if (ncombos > ULLONG_MAX - count)
+			errx(EXIT_FAILURE, "Number too large!");
 		count += ncombos;
 	}
 
