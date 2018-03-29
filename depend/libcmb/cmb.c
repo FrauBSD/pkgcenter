@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:47:05 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:47:41 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -412,7 +412,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		 * Add number of combinations in this set to total
 		 */
 		if (!BN_add(count, count, ncombos)) break;
-	} /* curset */
+	}
 
 cmb_count_bn_return:
 	BN_free(ncombos);
