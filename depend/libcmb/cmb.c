@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:47:41 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:49:08 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -437,9 +437,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint32_t curset;
 	uint32_t i;
 	uint32_t n;
+	uint32_t seed;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	uint32_t setmax;
+	uint32_t setnums_last;
 	uint32_t setpos;
 	uint32_t setpos_backend;
 	char **curitems;
@@ -570,8 +572,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		 */
 		if (!BN_one(combo)) break;
 		for (; BN_ucmp(combo, ncombos) < 0; ) {
-			uint32_t seed;
-			uint32_t setnums_last = curset;
+			setnums_last = curset;
 
 			/*
 			 * Using self-similarity (matrix) theorem, determine
