@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:27:21 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:30:57 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -53,7 +53,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	uint32_t setinit = 1;
 	uint32_t setdone = nitems;
 	uint64_t count = 0;
-	uint64_t d, z;
+	long double z;
 	uint64_t ncombos;
 
 	if (nitems == 0) return (0);
@@ -81,24 +81,16 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
+		uint32_t i;
 		uint32_t n;
-		uint32_t nsubsets;
-
-		/*
-		 * Calculate number of subsets, based on the number of items in
-		 * the current set we're working on.
-		 */
-		nsubsets = nitems - curset + 1;
 
 		/*
 		 * Calculate number of combinations
 		 */
-		z = d = 1;
-		for (n = 0; n < curset; n++) {
-			z *= nsubsets + n;
-			d *= n + 1;
-		}
-		ncombos = z / d;
+		z = i = nitems;
+		for (n = 2; n <= curset; n++) z = (z * --i) / n;
+		if ((ncombos = z) == 0)
+			errx(EXIT_FAILURE, "Number too large!");
 
 		/*
 		 * Add number of combinations in this set to total
@@ -189,29 +181,20 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    curset += nextset)
 	{
 		uint64_t combo;
-		uint64_t d, z;
+		long double z;
 		uint32_t i;
 		uint32_t n;
 		uint64_t ncombos;
-		uint32_t nsubsets;
 		uint32_t setpos;
 		uint32_t setpos_backend;
 
 		/*
-		 * Calculate number of subsets, based on the number of items in
-		 * the current set we're working on.
-		 */
-		nsubsets = nitems - curset + 1;
-
-		/*
 		 * Calculate number of combinations based on number of subsets.
 		 */
-		z = d = 1;
-		for (n = 0; n < curset; n++) {
-			z *= nsubsets + n;
-			d *= n + 1;
-		}
-		ncombos = z / d;
+		z = i = nitems;
+		for (n = 2; n <= curset; n++) z = (z * --i) / n;
+		if ((ncombos = z) == 0)
+			errx(EXIT_FAILURE, "Number too large!");
 
 		/*
 		 * Jump to the next set if requested start is beyond this one.
@@ -376,9 +359,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	uint32_t setinit = 1;
 	uint32_t setdone = nitems;
 	BIGNUM *count = NULL;
-	BIGNUM *d = NULL, *z = NULL;
 	BIGNUM *ncombos = NULL;
-	BN_CTX *ctx = NULL;
 
 	if (nitems == 0) return (NULL);
 	if (config != NULL) {
@@ -408,10 +389,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	/*
 	 * Allocate memory
 	 */
-	if ((ctx =	BN_CTX_new()) == NULL)	goto cmb_count_bn_return;
-	if ((d =	BN_new()) == NULL)	goto cmb_count_bn_return;
-	if ((ncombos =	BN_new()) == NULL)	goto cmb_count_bn_return;
-	if ((z =	BN_new()) == NULL)	goto cmb_count_bn_return;
+	if ((ncombos = BN_new()) == NULL) goto cmb_count_bn_return;
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done
@@ -419,24 +397,18 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset) {
+		uint32_t i;
 		uint32_t n;
-		uint32_t nsubsets;
-
-		/*
-		 * Calculate number of subsets, based on the number of items in
-		 * the current set we're working on.
-		 */
-		nsubsets = nitems - curset + 1;
 
 		/*
 		 * Calculate number of combinations
 		 */
-		if (!BN_one(z) || !BN_one(d)) break;
-		for (n = 0; n < curset; n++) {
-			if (!BN_mul_word(z, nsubsets + n)) break;
-			if (!BN_mul_word(d, n + 1)) break;
+		if (!BN_set_word(ncombos, nitems)) break;
+		i = nitems;
+		for (n = 2; n <= curset; n++) {
+			if (!BN_mul_word(ncombos, --i)) break;
+			if (BN_div_word(ncombos, n) == (BN_ULONG)-1) break;
 		}
-		if (!BN_div(ncombos, NULL, z, d, ctx)) break;
 
 		/*
 		 * Add number of combinations in this set to total
@@ -446,10 +418,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	} /* curset */
 
 cmb_count_bn_return:
-	BN_CTX_free(ctx);
-	BN_free(d);
 	BN_free(ncombos);
-	BN_free(z);
 
 	return (count);
 }
@@ -477,10 +446,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint32_t *setnums_backend;
 	BIGNUM *combo = NULL;
 	BIGNUM *count = NULL;
-	BIGNUM *d = NULL, *z = NULL;
 	BIGNUM *ncombos = NULL;
 	BIGNUM *seek = NULL;
-	BN_CTX *ctx = NULL;
 	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
 	if (nitems == 0) return (0);
@@ -521,11 +488,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	/*
 	 * Allocate memory
 	 */
-	if ((combo =	BN_new()) == NULL)	goto cmb_bn_return;
-	if ((ctx =	BN_CTX_new()) == NULL)	goto cmb_bn_return;
-	if ((d =	BN_new()) == NULL)	goto cmb_bn_return;
-	if ((ncombos =	BN_new()) == NULL)	goto cmb_bn_return;
-	if ((z =	BN_new()) == NULL)	goto cmb_bn_return;
+	if ((combo = BN_new()) == NULL) goto cmb_bn_return;
+	if ((ncombos = BN_new()) == NULL) goto cmb_bn_return;
 	setmax = setdone > setinit ? setdone : setinit;
 	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
@@ -545,25 +509,18 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	{
 		uint32_t i;
 		uint32_t n;
-		uint32_t nsubsets;
 		uint32_t setpos;
 		uint32_t setpos_backend;
 
 		/*
-		 * Calculate number of subsets, based on the number of items in
-		 * the current set we're working on.
-		 */
-		nsubsets = nitems - curset + 1;
-
-		/*
 		 * Calculate number of combinations
 		 */
-		if (!BN_one(z) || !BN_one(d)) break;
-		for (n = 0; n < curset; n++) {
-			if (!BN_mul_word(z, nsubsets + n)) break;
-			if (!BN_mul_word(d, n + 1)) break;
+		if (!BN_set_word(ncombos, nitems)) break;
+		i = nitems;
+		for (n = 2; n <= curset; n++) {
+			if (!BN_mul_word(ncombos, --i)) break;
+			if (BN_div_word(ncombos, n) == (BN_ULONG)-1) break;
 		}
-		if (!BN_div(ncombos, NULL, z, d, ctx)) break;
 
 		/*
 		 * Jump to the next set if requested start is beyond this one.
@@ -698,13 +655,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	} /* for curset */
 
 cmb_bn_return:
-	BN_CTX_free(ctx);
 	BN_free(combo);
 	BN_free(count);
-	BN_free(d);
 	BN_free(ncombos);
 	BN_free(seek);
-	BN_free(z);
 
 	return (retval);
 }
