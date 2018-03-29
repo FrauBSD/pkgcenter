@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:30:57 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:38:30 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -50,8 +50,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
 	uint32_t curset;
-	uint32_t setinit = 1;
 	uint32_t setdone = nitems;
+	uint32_t setinit = 1;
 	uint64_t count = 0;
 	long double z;
 	uint64_t ncombos;
@@ -116,12 +116,12 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint8_t doseek = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
-	uint64_t count = 0;
 	uint32_t curset;
-	uint64_t seek = 0;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	uint32_t setmax;
+	uint64_t count = 0;
+	uint64_t seek = 0;
 	char **curitems;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
@@ -180,13 +180,13 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		uint64_t combo;
-		long double z;
 		uint32_t i;
 		uint32_t n;
-		uint64_t ncombos;
 		uint32_t setpos;
 		uint32_t setpos_backend;
+		uint64_t combo;
+		uint64_t ncombos;
+		long double z;
 
 		/*
 		 * Calculate number of combinations based on number of subsets.
@@ -356,8 +356,8 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
 	uint32_t curset;
-	uint32_t setinit = 1;
 	uint32_t setdone = nitems;
+	uint32_t setinit = 1;
 	BIGNUM *count = NULL;
 	BIGNUM *ncombos = NULL;
 
