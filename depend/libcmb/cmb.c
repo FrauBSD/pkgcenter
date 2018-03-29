@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 15:27:50 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-29 16:27:21 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -429,7 +429,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		nsubsets = nitems - curset + 1;
 
 		/*
-		 * Calculate number of combinations based on number of subsets
+		 * Calculate number of combinations
 		 */
 		if (!BN_one(z) || !BN_one(d)) break;
 		for (n = 0; n < curset; n++) {
@@ -439,7 +439,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		if (!BN_div(ncombos, NULL, z, d, ctx)) break;
 
 		/*
-		 * Add the number of combinations in this set to the total
+		 * Add number of combinations in this set to total
 		 */
 		if (!BN_add(count, count, ncombos)) break;
 
@@ -556,7 +556,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		nsubsets = nitems - curset + 1;
 
 		/*
-		 * Calculate number of combinations based on number of subsets.
+		 * Calculate number of combinations
 		 */
 		if (!BN_one(z) || !BN_one(d)) break;
 		for (n = 0; n < curset; n++) {
