@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-03-31 10:50:49 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 16:20:02 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -49,12 +49,13 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
 	uint32_t curset;
-	uint32_t i;
+	uint32_t i = nitems;
 	uint32_t n;
+	uint32_t p;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	uint64_t count = 0;
-	long double z;
+	long double z = 1;
 	uint64_t ncombos;
 
 	if (nitems == 0) return (0);
@@ -82,6 +83,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	/*
 	 * Loop over each `set' in the configured direction until we are done
 	 */
+	p = nextset > 0 ? setinit - 1 : setinit;
+	for (n = 1; n <= p; n++) z = (z * i--) / n;
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
@@ -89,8 +92,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		/*
 		 * Calculate number of combinations
 		 */
-		z = i = nitems;
-		for (n = 2; n <= curset; n++) z = (z * --i) / n;
+		if (nextset > 0) z = (z * i--) / n++;
 		if ((ncombos = z) == 0)
 			errx(EXIT_FAILURE, "Number too large!");
 
@@ -100,6 +102,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		if (ncombos > ULLONG_MAX - count)
 			errx(EXIT_FAILURE, "Number too large!");
 		count += ncombos;
+		if (nextset < 0) z = (z * --n) / ++i;
 	}
 
 	return (count);
