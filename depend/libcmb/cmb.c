@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 16:20:02 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 16:51:05 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -361,8 +361,9 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 {
 	int8_t nextset = 1;
 	uint32_t curset;
-	uint32_t i;
+	uint32_t i = nitems;
 	uint32_t n;
+	uint32_t p;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
 	BIGNUM *count = NULL;
@@ -400,10 +401,17 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	 * Allocate memory
 	 */
 	if ((ncombos = BN_new()) == NULL) goto cmb_count_bn_return;
+	if (!BN_one(ncombos)) goto cmb_count_bn_return;
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done
 	 */
+	p = nextset > 0 ? setinit - 1 : setinit;
+	for (n = 1; n <= p; n++) {
+		if (!BN_mul_word(ncombos, i--)) goto cmb_count_bn_return;
+		if (BN_div_word(ncombos, n) == (BN_ULONG)-1)
+			goto cmb_count_bn_return;
+	}
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
@@ -411,17 +419,19 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		/*
 		 * Calculate number of combinations
 		 */
-		if (!BN_set_word(ncombos, nitems)) break;
-		i = nitems;
-		for (n = 2; n <= curset; n++) {
-			if (!BN_mul_word(ncombos, --i)) break;
-			if (BN_div_word(ncombos, n) == (BN_ULONG)-1) break;
+		if (nextset > 0) {
+			if (!BN_mul_word(ncombos, i--)) break;
+			if (BN_div_word(ncombos, n++) == (BN_ULONG)-1) break;
 		}
 
 		/*
 		 * Add number of combinations in this set to total
 		 */
 		if (!BN_add(count, count, ncombos)) break;
+		if (nextset < 0) {
+			if (!BN_mul_word(ncombos, --n)) break;
+			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
+		}
 	}
 
 cmb_count_bn_return:
