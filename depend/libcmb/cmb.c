@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 16:51:05 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 17:11:32 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -50,7 +50,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	int8_t nextset = 1;
 	uint32_t curset;
 	uint32_t i = nitems;
-	uint32_t n;
+	uint32_t k;
 	uint32_t p;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
@@ -84,7 +84,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	 * Loop over each `set' in the configured direction until we are done
 	 */
 	p = nextset > 0 ? setinit - 1 : setinit;
-	for (n = 1; n <= p; n++) z = (z * i--) / n;
+	for (k = 1; k <= p; k++) z = (z * i--) / k;
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
@@ -92,7 +92,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		/*
 		 * Calculate number of combinations
 		 */
-		if (nextset > 0) z = (z * i--) / n++;
+		if (nextset > 0) z = (z * i--) / k++;
 		if ((ncombos = z) == 0)
 			errx(EXIT_FAILURE, "Number too large!");
 
@@ -102,7 +102,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		if (ncombos > ULLONG_MAX - count)
 			errx(EXIT_FAILURE, "Number too large!");
 		count += ncombos;
-		if (nextset < 0) z = (z * --n) / ++i;
+		if (nextset < 0) z = (z * --k) / ++i;
 	}
 
 	return (count);
@@ -362,7 +362,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	int8_t nextset = 1;
 	uint32_t curset;
 	uint32_t i = nitems;
-	uint32_t n;
+	uint32_t k;
 	uint32_t p;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
@@ -407,9 +407,9 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	 * Loop over each `set' in the configured direction until we are done
 	 */
 	p = nextset > 0 ? setinit - 1 : setinit;
-	for (n = 1; n <= p; n++) {
+	for (k = 1; k <= p; k++) {
 		if (!BN_mul_word(ncombos, i--)) goto cmb_count_bn_return;
-		if (BN_div_word(ncombos, n) == (BN_ULONG)-1)
+		if (BN_div_word(ncombos, k) == (BN_ULONG)-1)
 			goto cmb_count_bn_return;
 	}
 	for (curset = setinit;
@@ -421,7 +421,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		 */
 		if (nextset > 0) {
 			if (!BN_mul_word(ncombos, i--)) break;
-			if (BN_div_word(ncombos, n++) == (BN_ULONG)-1) break;
+			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1) break;
 		}
 
 		/*
@@ -429,7 +429,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		 */
 		if (!BN_add(count, count, ncombos)) break;
 		if (nextset < 0) {
-			if (!BN_mul_word(ncombos, --n)) break;
+			if (!BN_mul_word(ncombos, --k)) break;
 			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
 		}
 	}
