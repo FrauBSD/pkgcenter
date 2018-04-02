@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 17:12:45 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 17:23:24 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -460,8 +460,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
-	uint32_t i;
+	uint32_t i = nitems;
+	uint32_t k;
 	uint32_t n;
+	uint32_t p;
 	uint32_t seed;
 	uint32_t setdone = nitems;
 	uint32_t setinit = 1;
@@ -518,6 +520,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	 */
 	if ((combo = BN_new()) == NULL) goto cmb_bn_return;
 	if ((ncombos = BN_new()) == NULL) goto cmb_bn_return;
+	if (!BN_one(ncombos)) goto cmb_bn_return;
 	setmax = setdone > setinit ? setdone : setinit;
 	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
@@ -531,6 +534,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	 * Loop over each `set' in the configured direction until we are done.
 	 * NB: Each `set' can represent a single item or multiple items.
 	 */
+	p = nextset > 0 ? setinit - 1 : setinit;
+	for (k = 1; k <= p; k++) {
+		if (!BN_mul_word(ncombos, i--)) goto cmb_bn_return;
+		if (BN_div_word(ncombos, k) == (BN_ULONG)-1)
+			goto cmb_bn_return;
+	}
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
@@ -538,11 +547,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		/*
 		 * Calculate number of combinations
 		 */
-		if (!BN_set_word(ncombos, nitems)) break;
-		i = nitems;
-		for (n = 2; n <= curset; n++) {
-			if (!BN_mul_word(ncombos, --i)) break;
-			if (BN_div_word(ncombos, n) == (BN_ULONG)-1) break;
+		if (nextset > 0) {
+			if (!BN_mul_word(ncombos, i--)) break;
+			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1) break;
 		}
 
 		/*
@@ -588,9 +595,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		 * operating on a set-of-2, and nitems is 8, setnums_backend is
 		 * set to 7, 8.
 		 */
-		i = 0;
+		p = 0;
 		for (n = 0; n < curset; n++) setnums[n] = n;
-		for (n = curset; n > 0; n--) setnums_backend[i++] = nitems - n;
+		for (n = curset; n > 0; n--) setnums_backend[p++] = nitems - n;
 
 		/*
 		 * Process remaining self-similar combinations in the set.
@@ -673,6 +680,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if (!BN_add_word(combo, 1)) goto cmb_bn_return;
 
 		} /* for combo */
+
+		if (nextset < 0) {
+			if (!BN_mul_word(ncombos, --k)) break;
+			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
+		}
 
 	} /* for curset */
 
