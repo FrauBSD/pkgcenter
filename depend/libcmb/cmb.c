@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-02 20:46:55 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-03 10:38:24 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -59,6 +59,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	uint64_t ncombos;
 
 	if (nitems == 0) return (0);
+
+	/* Process config options */
 	if (config != NULL) {
 		if (config->range_min != 0 || config->range_max != 0) {
 			setinit = config->range_min;
@@ -94,19 +96,17 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		/*
-		 * Calculate number of combinations
-		 */
+		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) z = (z * i--) / k++;
+
+		/* Add number of combinations in this set to total */
 		if ((ncombos = z) == 0)
 			errx(EXIT_FAILURE, "Number too large!");
-
-		/*
-		 * Add number of combinations in this set to total
-		 */
 		if (ncombos > ULLONG_MAX - count)
 			errx(EXIT_FAILURE, "Number too large!");
 		count += ncombos;
+
+		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0) z = (z * --k) / ++i;
 	}
 
@@ -149,6 +149,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
 	if (nitems == 0) return (0);
+
+	/* Process config options */
 	if (config != NULL) {
 		cmb_print_nul = config->nul_terminate;
 		if (config->action != NULL) action = config->action;
@@ -181,9 +183,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	/* Set the direction of flow (incrementing vs. decrementing) */
 	if (setinit > setdone) nextset = -1;
 
-	/*
-	 * Allocate memory
-	 */
+	/* Allocate memory */
 	setmax = setdone > setinit ? setdone : setinit;
 	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
@@ -203,16 +203,14 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		/*
-		 * Calculate number of combinations based on number of subsets.
-		 */
+		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) z = (z * i--) / k++;
+
+		/* Cast number of combinations in set to integer */
 		if ((ncombos = z) == 0)
 			errx(EXIT_FAILURE, "Number too large!");
 
-		/*
-		 * Jump to the next set if requested start is beyond this one.
-		 */
+		/* Jump to next set if requested start is beyond this one */
 		if (doseek) {
 			if (seek > ncombos) {
 				seek -= ncombos;
@@ -222,14 +220,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 		}
 
-		/*
-		 * Fill array with the initial positional arguments
-		 */
+		/* Fill array with the initial positional arguments */
 		for (n = 0; n < curset; n++) curitems[n] = items[n];
 
-		/*
-		 * Produce results with the first set of items.
-		 */
+		/* Produce results with the first set of items */
 		if (!doseek) {
 			if ((retval = action(curset, curitems)) != 0) break;
 			if (docount && --count == 0) break;
@@ -306,15 +300,11 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			for (n = setnums_last; n <= curset; n++)
 				setnums[n] = seed + n - setnums_last + 1;
 
-			/*
-			 * Now map the new setnums into values stored in items
-			 */
+			/* Now map new setnums into values stored in items */
 			for (n = 0; n < curset; n++)
 				curitems[n] = items[setnums[n]];
 
-			/*
-			 * Produce results with this set of items
-			 */
+			/* Produce results with this set of items */
 			if (doseek) {
 				seek--;
 				if (seek == 1) doseek = FALSE;
@@ -328,6 +318,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		} /* for combo */
 
+		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0) z = (z * --k) / i++;
 
 	} /* for curset */
@@ -380,6 +371,8 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	BIGNUM *ncombos = NULL;
 
 	if (nitems == 0) return (NULL);
+
+	/* Process config options */
 	if (config != NULL) {
 		if (config->range_min != 0 || config->range_max != 0) {
 			setinit = config->range_min;
@@ -401,9 +394,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	/* Set the direction of flow (incrementing vs decrementing) */
 	if (setinit > setdone) nextset = -1;
 
-	/*
-	 * Initialize count
-	 */
+	/* Initialize count */
 	if ((count = BN_new()) == NULL)	return (NULL);
 	if (!BN_zero(count)) goto cmb_count_bn_return;
 
@@ -416,9 +407,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 		goto cmb_count_bn_return;
 	}
 
-	/*
-	 * Allocate memory
-	 */
+	/* Allocate memory */
 	if ((ncombos = BN_new()) == NULL) goto cmb_count_bn_return;
 	if (!BN_one(ncombos)) goto cmb_count_bn_return;
 
@@ -435,18 +424,16 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		/*
-		 * Calculate number of combinations
-		 */
+		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
 			if (!BN_mul_word(ncombos, i--)) break;
 			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1) break;
 		}
 
-		/*
-		 * Add number of combinations in this set to total
-		 */
+		/* Add number of combinations in this set to total */
 		if (!BN_add(count, count, ncombos)) break;
+
+		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0) {
 			if (!BN_mul_word(ncombos, --k)) break;
 			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
@@ -495,6 +482,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
 	if (nitems == 0) return (0);
+
+	/* Process config options */
 	if (config != NULL) {
 		cmb_print_nul = config->nul_terminate;
 		if (config->action != NULL) action = config->action;
@@ -529,9 +518,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	/* Set the direction of flow (incrementing vs. decrementing) */
 	if (setinit > setdone) nextset = -1;
 
-	/*
-	 * Allocate memory
-	 */
+	/* Allocate memory */
 	if ((combo = BN_new()) == NULL) goto cmb_bn_return;
 	if ((ncombos = BN_new()) == NULL) goto cmb_bn_return;
 	if (!BN_one(ncombos)) goto cmb_bn_return;
@@ -558,17 +545,13 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
-		/*
-		 * Calculate number of combinations
-		 */
+		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
 			if (!BN_mul_word(ncombos, i--)) break;
 			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1) break;
 		}
 
-		/*
-		 * Jump to the next set if requested start is beyond this one.
-		 */
+		/* Jump to next set if requested start is beyond this one */
 		if (doseek) {
 			if (BN_ucmp(seek, ncombos) > 0) {
 				if (!BN_sub(seek, seek, ncombos)) break;
@@ -578,14 +561,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 		}
 
-		/*
-		 * Fill array with the initial positional arguments
-		 */
+		/* Fill array with the initial positional arguments */
 		for (n = 0; n < curset; n++) curitems[n] = items[n];
 
-		/*
-		 * Produce results with the first set of items.
-		 */
+		/* Produce results with the first set of items */
 		if (!doseek) {
 			if ((retval = action(curset, curitems)) != 0) break;
 			if (docount) {
@@ -666,15 +645,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			for (n = setnums_last; n <= curset; n++)
 				setnums[n] = seed + n - setnums_last + 1;
 
-			/*
-			 * Now map the new setnums into values stored in items
-			 */
+			/* Now map new setnums into values stored in items */
 			for (n = 0; n < curset; n++)
 				curitems[n] = items[setnums[n]];
 
-			/*
-			 * Produce results with this set of items
-			 */
+			/* Produce results with this set of items */
 			if (doseek) {
 				if (!BN_sub_word(seek, 1)) goto cmb_bn_return;
 				if (BN_is_one(seek)) doseek = FALSE;
@@ -695,6 +670,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		} /* for combo */
 
+		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0) {
 			if (!BN_mul_word(ncombos, --k)) break;
 			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
