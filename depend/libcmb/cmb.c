@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-01 17:23:24 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: depend/libcmb/cmb.c 2018-04-02 20:46:55 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -76,6 +76,11 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	/* Enforce limits so we don't run over bounds */
 	if (setinit > nitems) setinit = nitems;
 	if (setdone > nitems) setdone = nitems;
+
+	/* If entire set is requested, return 2^N-1 */
+	if ((setinit == 1 && setdone == nitems) ||
+	    (setinit == nitems && setdone == 1))
+		return (ULLONG_MAX >> (64 - nitems));
 
 	/* Set the direction of flow (incrementing vs. decrementing) */
 	if (setinit > setdone) nextset = -1;
@@ -401,6 +406,15 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	 */
 	if ((count = BN_new()) == NULL)	return (NULL);
 	if (!BN_zero(count)) goto cmb_count_bn_return;
+
+	/* If entire set is requested, return 2^N-1 */
+	if ((setinit == 1 && setdone == nitems) ||
+	    (setinit == nitems && setdone == 1)) {
+		if (!BN_lshift(count, BN_value_one(), nitems))
+			goto cmb_count_bn_return;
+		if (!BN_sub_word(count, 1)) goto cmb_count_bn_return;
+		goto cmb_count_bn_return;
+	}
 
 	/*
 	 * Allocate memory
