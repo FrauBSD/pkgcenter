@@ -3,7 +3,7 @@
 #
 # $Title: Script to enable client side hooks $
 # $Copyright: 2017 Devin Teske. All rights reserved. $
-# $FrauBSD: .git-hooks/install.sh 2017-11-15 13:12:41 -0800 freebsdfrau $
+# $FrauBSD: .git-hooks/install.sh 2018-05-12 04:43:07 +0000 freebsdfrau $
 #
 ############################################################ GLOBALS
 
@@ -96,9 +96,9 @@ for file in $( find "$progdir" \
 	-not -name '*.sh' \
 	-and -not -name '.*' \
 	-and -not -name '*[^[:alnum:]_-]*' \
-	-and -perm +0111 \
 	| sed -e 's#.*/##'
 ); do
+	[ -x "$progdir/$file" ] || continue
 	link="$linkdir/$file"
 	target="../../.git-hooks/$file"
 	if [ ! "$FORCE" ] && have readlink && [ -L "$link" ]; then
