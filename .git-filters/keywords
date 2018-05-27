@@ -24,10 +24,10 @@ KEYWORDS="
 _Author='$NAME'
 _Branch='$BRANCH'
 _Date='$DATE'
-_FrauBSD='$gitfile $DATE $NAME'
+_FrauBSD='${REPO#FrauBSD/}/$gitfile $DATE $NAME'
 _Header='$gitfile $DATE $NAME'
 _Origin='$ORIGIN'
-_Project='${ORIGIN##*:}'
+_Project='$PROJECT'
 _RCSfile='${gitfile##*/}'
 _Source='$gitfile'
 
@@ -76,6 +76,12 @@ shift $(( $OPTIND - 1 ))
 # Get origin URL
 #
 ORIGIN=$( git config remote.origin.url )
+
+#
+# Repository name
+#
+PROJECT="${ORIGIN##*:}"
+REPO="${PROJECT%.[Gg][Ii][Tt]}"
 
 #
 # Get current branch name (required by `-d' to delete keywords)
@@ -188,7 +194,7 @@ done
 # END
 ################################################################################
 #
-# $Copyright: 2015-2017 The FrauBSD Project. All rights reserved. $
-# $FrauBSD: .git-filters/keywords 2017-07-23 16:13:30 -0700 freebsdfrau $
+# $Copyright: 2015-2018 The FrauBSD Project. All rights reserved. $
+# $FrauBSD: pkgcenter/.git-filters/keywords 2018-05-27 23:49:52 +0000 freebsdfrau $
 #
 ################################################################################
