@@ -82,6 +82,6 @@ pull:
 ################################################################################
 #
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/Makefile 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/freebsd/Makefile 2017-07-23 16:16:24 -0700 freebsdfrau $
 #
 ################################################################################

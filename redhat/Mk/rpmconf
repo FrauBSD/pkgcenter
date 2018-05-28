@@ -5,7 +5,7 @@
 #
 # $Title: Script to update pkgcenter.conf file $
 # $Copyright: 2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/Mk/rpmconf 2017-11-15 14:21:09 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/redhat/Mk/rpmconf 2017-11-15 14:21:09 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

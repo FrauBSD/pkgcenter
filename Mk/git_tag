@@ -5,7 +5,7 @@
 #
 # $Title: Script for tagging git repositories from Makefiles $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: Mk/git_tag 2017-07-25 13:18:10 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/Mk/git_tag 2017-07-25 13:18:10 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

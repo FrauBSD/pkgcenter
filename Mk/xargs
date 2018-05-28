@@ -5,7 +5,7 @@
 #
 # $Title: Script for using xargs(1) from Makefiles $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: Mk/xargs 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/Mk/xargs 2017-07-23 16:16:24 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

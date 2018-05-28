@@ -5,7 +5,7 @@
 #
 # $Title: Script for getting the package tag name from an RPM SPEC-file $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/Mk/rpmtagname 2017-07-25 13:18:10 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/redhat/Mk/rpmtagname 2017-07-25 13:18:10 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

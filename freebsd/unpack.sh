@@ -5,7 +5,7 @@
 #
 # $Title: Script to unpack a FreeBSD package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/unpack.sh 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/freebsd/unpack.sh 2017-07-23 16:16:24 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

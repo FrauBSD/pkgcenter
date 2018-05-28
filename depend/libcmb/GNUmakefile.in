@@ -1,4 +1,4 @@
-# $FrauBSD: depend/libcmb/GNUmakefile.in 2018-03-27 17:00:01 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/GNUmakefile.in 2018-03-27 17:00:01 -0700 freebsdfrau $
 
 LIB=		cmb
 SHLIB_MAJOR=	0

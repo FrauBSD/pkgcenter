@@ -5,7 +5,7 @@
 #
 # $Title: Script for getting the package tag from an RPM name $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/Mk/rpmtag 2017-11-15 13:49:53 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/redhat/Mk/rpmtag 2017-11-15 13:49:53 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

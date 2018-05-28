@@ -5,7 +5,7 @@
 #
 # $Title: Script for getting the package tag from a package name $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/Mk/pkgtag 2017-07-25 13:18:10 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/freebsd/Mk/pkgtag 2017-07-25 13:18:10 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

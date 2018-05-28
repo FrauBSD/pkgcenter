@@ -1,4 +1,4 @@
-# $FrauBSD: depend/cmb/GNUmakefile.in 2018-03-27 17:01:01 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/GNUmakefile.in 2018-03-27 17:01:01 -0700 freebsdfrau $
 
 PROG=		cmb
 MAN=		cmb.1

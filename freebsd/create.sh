@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/create.sh 2017-07-25 13:28:33 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/freebsd/create.sh 2017-07-25 13:28:33 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

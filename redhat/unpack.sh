@@ -5,7 +5,7 @@
 #
 # $Title: Script to unpack a Linux RPM package $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/unpack.sh 2017-11-15 13:38:20 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/redhat/unpack.sh 2017-11-15 13:38:20 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

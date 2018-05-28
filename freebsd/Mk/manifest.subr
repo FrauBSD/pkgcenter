@@ -5,7 +5,7 @@
 #
 # $Title: sh(1) subroutines for parsing pkg(1) MANIFEST files $
 # $Copyright: 2014-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: freebsd/Mk/manifest.subr 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/freebsd/Mk/manifest.subr 2017-07-23 16:16:24 -0700 freebsdfrau $
 #
 ############################################################ CONFIGURATION
 

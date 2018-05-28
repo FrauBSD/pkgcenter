@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new RPM $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/create.sh 2017-11-15 13:22:49 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/redhat/create.sh 2017-11-15 13:22:49 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

@@ -5,7 +5,7 @@
 #
 # $Title: Script for creating a list of directories from Makefiles $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: Mk/make_directories 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/Mk/make_directories 2017-07-23 16:16:24 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

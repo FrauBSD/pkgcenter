@@ -1,4 +1,4 @@
-[//]: # ($FrauBSD: README.md 2017-10-03 15:42:32 -0700 freebsdfrau $)
+[//]: # ($FrauBSD: pkgcenter/README.md 2017-10-03 15:42:32 -0700 freebsdfrau $)
 
 # Welcome to FrauBSD pkgcenter!
 

@@ -81,6 +81,6 @@ pull:
 ################################################################################
 #
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: redhat/rhel7-x86_64/Makefile 2017-11-15 13:39:54 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/redhat/rhel7-x86_64/Makefile 2017-11-15 13:39:54 -0800 freebsdfrau $
 #
 ################################################################################
