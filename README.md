@@ -1,4 +1,4 @@
-[//]: # ($FrauBSD: pkgcenter/README.md 2017-10-03 15:42:32 -0700 freebsdfrau $)
+[//]: # ($FrauBSD: pkgcenter/README.md 2018-06-17 23:01:02 +0000 freebsdfrau $)
 
 # Welcome to FrauBSD pkgcenter!
 
@@ -10,8 +10,6 @@ RedHat/CentOS Linux.
 
 The following is required before using `git commit` in this project.
 
-> `$ git config user.name USERNAME`  
-> `$ git config user.email USERNAME@fraubsd.org`  
 > `$ .git-hooks/install.sh`
 
 This will ensure the FrauBSD keyword is expanded/updated for each commit.
