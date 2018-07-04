@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 21:17:40 +0000 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 21:29:15 +0000 freebsdfrau $
 .\"
 .Dd July 4, 2018
 .Dt CMB 3
@@ -57,9 +57,8 @@ library provides a light-weight,
 portable,
 and fast interface for enumerating combinations.
 .Pp
-Anatomy of struct to pass as
-.Fn cmb*
-config argument:
+Anatomy of config argument to
+.Fn cmb* :
 .Bd -literal -offset indent
 struct cmb_config {
     uint8_t nul_terminate; /* Terminate combinations with NUL */
