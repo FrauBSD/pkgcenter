@@ -92,13 +92,23 @@ main(int argc, char *argv[])
 			config->nul_terminate = TRUE;
 			break;
 		case 'c': /* count */
+#ifdef HAVE_OPENSSL_BN_H
+			if (BN_dec2bn(&(config->count_bn), optarg) == 0)
+				errx(EXIT_FAILURE, "OpenSSL Error?!");
+#else
 			config->count = strtoull(optarg, (char **)NULL, 10);
+#endif
 			break;
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
 			break;
 		case 'i': /* start */
+#ifdef HAVE_OPENSSL_BN_H
+			if (BN_dec2bn(&(config->start_bn), optarg) == 0)
+				errx(EXIT_FAILURE, "OpenSSL Error?!");
+#else
 			config->start = strtoull(optarg, (char **)NULL, 10);
+#endif
 			break;
 		case 'k': /* range */
 			config->range_min =

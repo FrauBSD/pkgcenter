@@ -353,7 +353,7 @@ cmb_print(uint32_t nitems, char *items[])
 
 #ifdef HAVE_OPENSSL_BN_H
 /*
- * Takes pointer to `struct cmb_config_bn' options and number of items. Returns
+ * Takes pointer to `struct cmb_config' options and number of items. Returns
  * total number of combinations according to config options. Numbers formatted
  * as openssl bn(3) BIGNUM type.
  */
@@ -447,7 +447,7 @@ cmb_count_bn_return:
 }
 
 /*
- * Takes pointer to `struct cmb_config_bn' options, number of items, and array
+ * Takes pointer to `struct cmb_config' options, number of items, and array
  * of `char *' items. Calculates combinations according to options and either
  * prints combinations to stdout (default) or runs `action' if passed-in as
  * function pointer member of `config' argument. Numbers formatted as openssl
@@ -487,7 +487,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (config != NULL) {
 		cmb_print_nul = config->nul_terminate;
 		if (config->action != NULL) action = config->action;
-		if (config->count_bn != NULL) {
+		if (config->count_bn != NULL &&
+		    !BN_is_negative(config->count_bn) &&
+		    !BN_is_zero(config->count_bn))
+		{
 			docount = TRUE;
 			if ((count = BN_dup(config->count_bn)) == NULL)
 				goto cmb_bn_return;
@@ -499,7 +502,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			setinit = config->range_min;
 			setdone = config->range_max;
 		}
-		if (config->start_bn != NULL) {
+		if (config->start_bn != NULL &&
+		    !BN_is_negative(config->start_bn) &&
+		    !BN_is_zero(config->start_bn) &&
+		    !BN_is_one(config->start_bn))
+		{
 			doseek = TRUE;
 			if ((seek = BN_dup(config->start_bn)) == NULL)
 				goto cmb_bn_return;
