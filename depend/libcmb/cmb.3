@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:23:52 +0000 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:27:35 +0000 freebsdfrau $
 .\"
 .Dd July 4, 2018
 .Dt CMB 3
@@ -118,6 +118,11 @@ Only combinations containing at minimum
 items and at most
 .Ar range_max
 items will be calculated.
+.Pp
+To limit the number of combinations that are calculated,
+set
+.Ar count
+to a non-zero value.
 .Sh HISTORY
 The
 .Nm
