@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 21:29:15 +0000 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 21:49:47 +0000 freebsdfrau $
 .\"
 .Dd July 4, 2018
 .Dt CMB 3
@@ -84,6 +84,16 @@ struct cmb_config {
     int (*action)(uint32_t nitems, char *items[]);
 };
 .Ed
+.Pp
+If nul_terminate is non-zero,
+.Fn cmb_print
+will print combination items separated by ASCII NUL character
+.Pq character code 0 .
+Otherwise,
+if nul_terminate is zero
+.Pq default ,
+delimiter is used and if unset,
+combinations are separated by space.
 .Sh HISTORY
 The
 .Nm
