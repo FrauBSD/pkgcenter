@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-03-29 16:34:16 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-07-04 22:56:58 +0000 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-03-29 16:34:16 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-07-04 22:56:58 +0000 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -143,6 +143,9 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
+	/* At least one non-option argument is required */
+	if (argc == 0) usage(); /* NOTREACHED */
+
 	/*
 	 * Calculate combinations
 	 */
@@ -179,23 +182,7 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-	fprintf(stderr, "Usage: %s [options] item1 item2 ...\n", pgm);
-	fprintf(stderr, "OPTIONS:\n");
-#define OPTFMT "\t%-11s %s\n"
-	fprintf(stderr, OPTFMT, "-0",
-	    "Terminate combinations with ASCII NUL instead of newline.");
-	fprintf(stderr, OPTFMT, "-c num", "Produce num combinations.");
-	fprintf(stderr, OPTFMT, "-d text",
-	    "Delimiter for separating items. Default is space.");
-	fprintf(stderr, OPTFMT, "-i num",
-	    "Set starting position in combination set. Default is 1.");
-	fprintf(stderr, OPTFMT, "-k range",
-	    "Number or range of numbers for combination set(s).");
-	fprintf(stderr, OPTFMT, "-p text",
-	    "Prefix each combination with text.");
-	fprintf(stderr, OPTFMT, "-s text",
-	    "Suffix each combination with text.");
-	fprintf(stderr, OPTFMT, "-t",
-	    "Print total number of combinations and exit.");
+	fprintf(stderr, "usage: %s %s item1 ...\n", pgm,
+		"[-0t] [-c #] [-d str] [-i #] [-k range] [-p str] [-s str]");
 	exit(EXIT_FAILURE);
 }
