@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:16:52 +0000 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:23:52 +0000 freebsdfrau $
 .\"
 .Dd July 4, 2018
 .Dt CMB 3
@@ -107,6 +107,17 @@ is non-NULL it is printed before the first item and
 if
 .Ar suffix
 is non-NULL it is printed after the last item.
+.Pp
+To operate on only a subset or range of subsets,
+use
+.Ar range_min
+and
+.Ar range_max .
+Only combinations containing at minimum
+.Ar range_min
+items and at most
+.Ar range_max
+items will be calculated.
 .Sh HISTORY
 The
 .Nm
