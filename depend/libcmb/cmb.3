@@ -22,9 +22,9 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FreeBSD$
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 21:12:16 +0000 freebsdfrau $
 .\"
-.Dd March 17, 2018
+.Dd July 4, 2018
 .Dt CMB 3
 .Os
 .Sh NAME
@@ -35,24 +35,63 @@
 .Sh SYNOPSIS
 .In cmb.h
 .Ft int
-.Fo cmb
-.Fa "struct cmb_config *config"
-.Fa "int nitems"
-.Fa "char *items[]"
-.Fc
+.Fn cmb "struct cmb_config *config" "uint32_t nitems" "char *items[]"
 .Ft int
-.Fo cmb_items_print
-.Fa "int nitems"
-.Fa "char *items[]"
-.Fc
+.Fn cmb_print "uint32_t nitems" "char *items[]"
+.Ft uint64_t
+.Fn cmb_count "struct cmb_config *config" "uint32_t nitems"
+.Pp
+/* OpenSSL
+.Xr bn 3
+support */
+.Pp
+.Ft int
+.Fn cmb_bn "struct cmb_config *config" "uint32_t nitems" "char *items[]"
+.Ft "BIGNUM *"
+.Fn cmb_count_bn "struct cmb_config *config" "uint32_t nitems"
+#endif
 .Sh DESCRIPTION
 The
 .Nm
-library provides a light-weight, portable, and fast combinatorics engine.
+library provides a light-weight,
+portable,
+and fast interface for enumerating combinations.
+.Pp
+The
+.Fn .Nm
+config argument properties for configuring operation:
+.Bd -literal -offset indent
+/*
+ * Anatomy of config option to pass as cmb*() config argument
+ */
+struct cmb_config {
+    uint8_t nul_terminate; /* Terminate combinations with NUL */
+    char    *delimiter;    /* Item separator (default is " ") */
+    char    *prefix;       /* Prefix for each combination */
+    char    *suffix;       /* Suffix for each combination */
+    uint32_t range_min;    /* Minimum elements in combination */
+    uint32_t range_max;    /* Maximum elements in combination */
+
+    uint64_t count;        /* Number of combinations */
+    uint64_t start;        /* Starting combination */
+
+    /* OpenSSL bn(3) support */
+    BIGNUM  *count_bn;     /* Number of combinations */
+    BIGNUM  *start_bn;     /* Starting combination */
+
+    /*
+     * Function pointer; action to perform for each combination
+     * (default is cmb_print()). If the return from action() is non-
+     * zero, cmb() will stop calculation. The cmb() return value is
+     * the first non-zero result from action(), zero otherwise.
+     */
+    int (*action)(uint32_t nitems, char *items[]);
+};
+.Ed
 .Sh HISTORY
 The
 .Nm
 library first appeared in
-.Fx 12.0-CURRENT .
+.Fx 12.0 .
 .Sh AUTHORS
 .An Devin Teske Aq Mt dteske@FreeBSD.org
