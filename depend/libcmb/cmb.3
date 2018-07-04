@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:27:35 +0000 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:32:14 +0000 freebsdfrau $
 .\"
 .Dd July 4, 2018
 .Dt CMB 3
@@ -123,6 +123,13 @@ To limit the number of combinations that are calculated,
 set
 .Ar count
 to a non-zero value.
+.Pp
+If
+.Ar start
+is greater than one,
+the
+.Nm
+library will seek to that number combination before starting.
 .Sh HISTORY
 The
 .Nm
