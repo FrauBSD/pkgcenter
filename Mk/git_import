@@ -5,7 +5,7 @@
 #
 # $Title: Script for importing current working directory to git $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/Mk/git_import 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/Mk/git_import 2018-07-04 04:06:08 +0000 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -34,19 +34,33 @@ eval2()
 
 ############################################################ MAIN
 
+set -e
+
+#
+# Clean before import to prevent importing +MANIFEST et al.
+#
+make clean
+
 #
 # Import src directory without verification
 #
-if [ -d "$STAGEDIR" ]; then
-	eval2 $GIT add "$STAGEDIR"
-	eval2 $GIT commit --no-verify
+if [ -d "$SRCDIR" ]; then
+	echo $GIT add -v "$SRCDIR"
+	added=$( $GIT add -v "$SRCDIR" )
+	[ ! "$added" ] || eval2 $GIT commit --no-verify
 fi
+
+#
+# Clean everything else to prevent importing compiled package
+#
+make distclean
 
 #
 # Import everything else
 #
-eval2 $GIT add .
-eval2 $GIT commit
+echo $GIT add -v .
+added=$( $GIT add -v . )
+[ ! "$added" ] || eval2 $GIT commit
 
 ################################################################################
 # END
