@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 21:55:31 +0000 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-07-04 22:15:30 +0000 freebsdfrau $
 .\"
 .Dd July 4, 2018
 .Dt CMB 3
@@ -85,19 +85,28 @@ struct cmb_config {
 };
 .Ed
 .Pp
-If nul_terminate is non-zero,
+If
+.Ar nul_terminate
+is non-zero,
 .Fn cmb_print
 will print combination items separated by ASCII NUL character
 .Pq character code 0 .
 Otherwise,
-if nul_terminate is zero
+if
+.Ar nul_terminate
+is zero
 .Pq default ,
-delimiter is used and if unset,
+.Ar delimiter
+is used and if unset,
 combinations are separated by space.
 .Pp
 For each combination,
-if prefix is non-NULL it is printed before the first item and
-if suffix is non-NULL it is printed after the last item.
+if
+.Ar prefix
+is non-NULL it is printed before the first item and
+if
+.Ar suffix
+is non-NULL it is printed after the last item.
 .Sh HISTORY
 The
 .Nm
