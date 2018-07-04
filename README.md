@@ -1,6 +1,6 @@
-[//]: # ($FrauBSD: pkgcenter/README.md 2018-07-04 06:40:33 +0000 freebsdfrau $)
+[//]: # ($FrauBSD: pkgcenter/README.md 2018-07-04 06:41:42 +0000 freebsdfrau $)
 
-# Welcome to [FrauBSD.org/pkgcenter]!
+# Welcome to [FrauBSD.org/pkgcenter](https://fraubsd.org/pkgcenter)!
 
 pkgcenter (pronounced "package center") is a cross-platform framework for
 creating and/or remastering native packages for NetBSD, FreeBSD, and
