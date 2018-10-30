@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-10-30 12:53:46 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-10-30 13:03:44 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -56,11 +56,6 @@
 #ifndef FALSE
 #define FALSE 0
 #endif
-
-static uint8_t cmb_print_nul = FALSE;
-static const char *cmb_print_delimiter = " ";
-static const char *cmb_print_prefix = NULL;
-static const char *cmb_print_suffix = NULL;
 
 /*
  * Anatomy of config option to pass as cmb*() config argument

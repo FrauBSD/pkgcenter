@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-04-03 10:38:24 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 13:03:44 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -39,6 +39,11 @@ __FBSDID("$FreeBSD$");
 #include <string.h>
 
 #include "cmb.h"
+
+static uint8_t cmb_print_nul = FALSE;
+static const char *cmb_print_delimiter = " ";
+static const char *cmb_print_prefix = NULL;
+static const char *cmb_print_suffix = NULL;
 
 /*
  * Takes pointer to `struct cmb_config' options and number of items. Returns
