@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 12:41:13 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 12:45:14 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 12:41:13 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 12:45:14 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -154,7 +154,7 @@ main(int argc, char *argv[])
 	/*
 	 * Calculate combinations
 	 */
-	if (nitems == 0) nitems = (uint64_t)argc;
+	if (nitems == 0 || nitems > (uint64_t)argc) nitems = (uint64_t)argc;
 	if (opt_total) {
 #if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
 		BIGNUM *count;
