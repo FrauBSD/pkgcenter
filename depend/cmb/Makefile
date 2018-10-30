@@ -8,6 +8,4 @@ CFLAGS+=	-I${.CURDIR}
 
 LIBADD=		cmb crypto
 
-WARNS?=		6
-
 .include <bsd.prog.mk>
