@@ -10,6 +10,4 @@ CFLAGS+=	-I${.CURDIR}
 
 SRCS=		cmb.c
 
-WARNS?=		6
-
 .include <bsd.lib.mk>
