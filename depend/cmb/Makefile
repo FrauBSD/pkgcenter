@@ -2,8 +2,6 @@
 
 PROG=		cmb
 
-BINDIR?=	/usr/bin
-
 CFLAGS+=	-I${.CURDIR}
 
 LIBADD=		cmb crypto
