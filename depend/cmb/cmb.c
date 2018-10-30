@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:44:36 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:56:39 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:44:36 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:56:39 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -174,7 +174,7 @@ main(int argc, char *argv[])
 		count = cmb_count(config, nitems);
 		if (errno)
 			err(errno, NULL);
-		printf("%"PRIu64"\n", cmb_count(config, nitems));
+		printf("%"PRIu64"\n", count);
 #endif
 	} else {
 #ifdef HAVE_OPENSSL_BN_H
