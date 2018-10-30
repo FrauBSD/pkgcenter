@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 13:42:48 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 15:50:17 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	uint64_t ncombos;
 
 	errno = 0;
-	if (nitems == 0) return (0);
+	if (nitems == 0)
+		return (0);
 
 	/* Process config options */
 	if (config != NULL) {
@@ -76,15 +77,20 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
-	if (setinit == 0) setinit = 1;
-	if (setdone == 0) setdone = 1;
+	if (setinit == 0)
+		setinit = 1;
+	if (setdone == 0)
+		setdone = 1;
 
 	/* Return zero if the request is out of range */
-	if (setinit > nitems && setdone > nitems) return (0);
+	if (setinit > nitems && setdone > nitems)
+		return (0);
 
 	/* Enforce limits so we don't run over bounds */
-	if (setinit > nitems) setinit = nitems;
-	if (setdone > nitems) setdone = nitems;
+	if (setinit > nitems)
+		setinit = nitems;
+	if (setdone > nitems)
+		setdone = nitems;
 
 	/* Check for integer overflow */
 	if ((setinit > setdone && setinit - setdone >= 64) ||
@@ -99,7 +105,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		return (ULLONG_MAX >> (64 - nitems));
 
 	/* Set the direction of flow (incrementing vs. decrementing) */
-	if (setinit > setdone) nextset = -1;
+	if (setinit > setdone)
+		nextset = -1;
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done
@@ -111,7 +118,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	    curset += nextset)
 	{
 		/* Calculate number of combinations (incrementing) */
-		if (nextset > 0) z = (z * i--) / k++;
+		if (nextset > 0)
+			z = (z * i--) / k++;
 
 		/* Add number of combinations in this set to total */
 		if ((ncombos = z) == 0) {
@@ -125,7 +133,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		count += ncombos;
 
 		/* Calculate number of combinations (decrementing) */
-		if (nextset < 0) z = (z * --k) / ++i;
+		if (nextset < 0)
+			z = (z * --k) / ++i;
 	}
 
 	return (count);
@@ -166,21 +175,24 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint32_t *setnums_backend;
 	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
-	if (nitems == 0) return (0);
+	if (nitems == 0)
+		return (0);
 	else if (cmb_count(config, nitems) == 0)
 		return (errno);
 
 	/* Process config options */
 	if (config != NULL) {
 		cmb_print_nul = config->nul_terminate;
-		if (config->action != NULL) action = config->action;
+		if (config->action != NULL)
+			action = config->action;
 		if (config->count != 0) {
 			docount = TRUE;
 			count = config->count;
 		}
 		if (config->delimiter != NULL)
 			cmb_print_delimiter = config->delimiter;
-		if (config->prefix != NULL) cmb_print_prefix = config->prefix;
+		if (config->prefix != NULL)
+			cmb_print_prefix = config->prefix;
 		if (config->range_min != 0 || config->range_max != 0) {
 			setinit = config->range_min;
 			setdone = config->range_max;
@@ -189,19 +201,25 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			doseek = TRUE;
 			seek = config->start;
 		}
-		if (config->suffix != NULL) cmb_print_suffix = config->suffix;
+		if (config->suffix != NULL)
+			cmb_print_suffix = config->suffix;
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
-	if (setinit == 0) setinit = 1;
-	if (setdone == 0) setdone = 1;
+	if (setinit == 0)
+		setinit = 1;
+	if (setdone == 0)
+		setdone = 1;
 
 	/* Enforce limits so we don't run over bounds */
-	if (setinit > nitems) setinit = nitems;
-	if (setdone > nitems) setdone = nitems;
+	if (setinit > nitems)
+		setinit = nitems;
+	if (setdone > nitems)
+		setdone = nitems;
 
 	/* Set the direction of flow (incrementing vs. decrementing) */
-	if (setinit > setdone) nextset = -1;
+	if (setinit > setdone)
+		nextset = -1;
 
 	/* Allocate memory */
 	setmax = setdone > setinit ? setdone : setinit;
@@ -224,7 +242,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    curset += nextset)
 	{
 		/* Calculate number of combinations (incrementing) */
-		if (nextset > 0) z = (z * i--) / k++;
+		if (nextset > 0)
+			z = (z * i--) / k++;
 
 		/* Cast number of combinations in set to integer */
 		if ((ncombos = z) == 0)
@@ -245,8 +264,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
-			if ((retval = action(curset, curitems)) != 0) break;
-			if (docount && --count == 0) break;
+			if ((retval = action(curset, curitems)) != 0)
+				break;
+			if (docount && --count == 0)
+				break;
 		}
 
 		/*
@@ -297,7 +318,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 				 * formulae rather than stored position.
 				 */
 				setnums_last = n - 1;
-				if (setpos < setpos_backend) break;
+				if (setpos < setpos_backend)
+					break;
 			}
 
 			/*
@@ -327,19 +349,22 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			/* Produce results with this set of items */
 			if (doseek) {
 				seek--;
-				if (seek == 1) doseek = FALSE;
+				if (seek == 1)
+					doseek = FALSE;
 			}
 			if (!doseek || seek == 1) {
 				doseek = FALSE;
 				if ((retval = action(curset, curitems)) != 0)
 					goto cmb_return;
-				if (docount && --count == 0) goto cmb_return;
+				if (docount && --count == 0)
+					goto cmb_return;
 			}
 
 		} /* for combo */
 
 		/* Calculate number of combinations (decrementing) */
-		if (nextset < 0) z = (z * --k) / i++;
+		if (nextset < 0)
+			z = (z * --k) / i++;
 
 	} /* for curset */
 
@@ -356,13 +381,15 @@ cmb_print(uint32_t nitems, char *items[])
 {
 	uint32_t n;
 
-	if (cmb_print_prefix != NULL) printf("%s", cmb_print_prefix);
+	if (cmb_print_prefix != NULL)
+		printf("%s", cmb_print_prefix);
 	for (n = 0; n < nitems; n++) {
 		printf("%s", items[n]);
 		if (n < nitems - 1 && cmb_print_delimiter != NULL)
 			printf("%s", cmb_print_delimiter);
 	}
-	if (cmb_print_suffix != NULL) printf("%s", cmb_print_suffix);
+	if (cmb_print_suffix != NULL)
+		printf("%s", cmb_print_suffix);
 	if (cmb_print_nul)
 		printf("%c", 0);
 	else
@@ -390,7 +417,8 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	BIGNUM *count = NULL;
 	BIGNUM *ncombos = NULL;
 
-	if (nitems == 0) return (NULL);
+	if (nitems == 0)
+		return (NULL);
 
 	/* Process config options */
 	if (config != NULL) {
@@ -401,42 +429,54 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
-	if (setinit == 0) setinit = 1;
-	if (setdone == 0) setdone = 1;
+	if (setinit == 0)
+		setinit = 1;
+	if (setdone == 0)
+		setdone = 1;
 
 	/* Return zero if the request is out of range */
-	if (setinit > nitems && setdone > nitems) return (NULL);
+	if (setinit > nitems && setdone > nitems)
+		return (NULL);
 
 	/* Enforce limits so we don't run over bounds */
-	if (setinit > nitems) setinit = nitems;
-	if (setdone > nitems) setdone = nitems;
+	if (setinit > nitems)
+		setinit = nitems;
+	if (setdone > nitems)
+		setdone = nitems;
 
 	/* Set the direction of flow (incrementing vs decrementing) */
-	if (setinit > setdone) nextset = -1;
+	if (setinit > setdone)
+		nextset = -1;
 
 	/* Initialize count */
-	if ((count = BN_new()) == NULL)	return (NULL);
-	if (!BN_zero(count)) goto cmb_count_bn_return;
+	if ((count = BN_new()) == NULL)
+		return (NULL);
+	if (!BN_zero(count))
+		goto cmb_count_bn_return;
 
 	/* If entire set is requested, return 2^N-1 */
 	if ((setinit == 1 && setdone == nitems) ||
 	    (setinit == nitems && setdone == 1)) {
 		if (!BN_lshift(count, BN_value_one(), nitems))
 			goto cmb_count_bn_return;
-		if (!BN_sub_word(count, 1)) goto cmb_count_bn_return;
+		if (!BN_sub_word(count, 1))
+			goto cmb_count_bn_return;
 		goto cmb_count_bn_return;
 	}
 
 	/* Allocate memory */
-	if ((ncombos = BN_new()) == NULL) goto cmb_count_bn_return;
-	if (!BN_one(ncombos)) goto cmb_count_bn_return;
+	if ((ncombos = BN_new()) == NULL)
+		goto cmb_count_bn_return;
+	if (!BN_one(ncombos))
+		goto cmb_count_bn_return;
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done
 	 */
 	p = nextset > 0 ? setinit - 1 : setinit;
 	for (k = 1; k <= p; k++) {
-		if (!BN_mul_word(ncombos, i--)) goto cmb_count_bn_return;
+		if (!BN_mul_word(ncombos, i--))
+			goto cmb_count_bn_return;
 		if (BN_div_word(ncombos, k) == (BN_ULONG)-1)
 			goto cmb_count_bn_return;
 	}
@@ -446,17 +486,22 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	{
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
-			if (!BN_mul_word(ncombos, i--)) break;
-			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1) break;
+			if (!BN_mul_word(ncombos, i--))
+				break;
+			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1)
+				break;
 		}
 
 		/* Add number of combinations in this set to total */
-		if (!BN_add(count, count, ncombos)) break;
+		if (!BN_add(count, count, ncombos))
+			break;
 
 		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0) {
-			if (!BN_mul_word(ncombos, --k)) break;
-			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
+			if (!BN_mul_word(ncombos, --k))
+				break;
+			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1)
+				break;
 		}
 	}
 
@@ -501,12 +546,14 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	BIGNUM *seek = NULL;
 	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
-	if (nitems == 0) return (0);
+	if (nitems == 0)
+		return (0);
 
 	/* Process config options */
 	if (config != NULL) {
 		cmb_print_nul = config->nul_terminate;
-		if (config->action != NULL) action = config->action;
+		if (config->action != NULL)
+			action = config->action;
 		if (config->count_bn != NULL &&
 		    !BN_is_negative(config->count_bn) &&
 		    !BN_is_zero(config->count_bn))
@@ -517,7 +564,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		}
 		if (config->delimiter != NULL)
 			cmb_print_delimiter = config->delimiter;
-		if (config->prefix != NULL) cmb_print_prefix = config->prefix;
+		if (config->prefix != NULL)
+			cmb_print_prefix = config->prefix;
 		if (config->range_min != 0 || config->range_max != 0) {
 			setinit = config->range_min;
 			setdone = config->range_max;
@@ -531,24 +579,33 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((seek = BN_dup(config->start_bn)) == NULL)
 				goto cmb_bn_return;
 		}
-		if (config->suffix != NULL) cmb_print_suffix = config->suffix;
+		if (config->suffix != NULL)
+			cmb_print_suffix = config->suffix;
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
-	if (setinit == 0) setinit = 1;
-	if (setdone == 0) setdone = 1;
+	if (setinit == 0)
+		setinit = 1;
+	if (setdone == 0)
+		setdone = 1;
 
 	/* Enforce limits so we don't run over bounds */
-	if (setinit > nitems) setinit = nitems;
-	if (setdone > nitems) setdone = nitems;
+	if (setinit > nitems)
+		setinit = nitems;
+	if (setdone > nitems)
+		setdone = nitems;
 
 	/* Set the direction of flow (incrementing vs. decrementing) */
-	if (setinit > setdone) nextset = -1;
+	if (setinit > setdone)
+		nextset = -1;
 
 	/* Allocate memory */
-	if ((combo = BN_new()) == NULL) goto cmb_bn_return;
-	if ((ncombos = BN_new()) == NULL) goto cmb_bn_return;
-	if (!BN_one(ncombos)) goto cmb_bn_return;
+	if ((combo = BN_new()) == NULL)
+		goto cmb_bn_return;
+	if ((ncombos = BN_new()) == NULL)
+		goto cmb_bn_return;
+	if (!BN_one(ncombos))
+		goto cmb_bn_return;
 	setmax = setdone > setinit ? setdone : setinit;
 	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
@@ -564,7 +621,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	 */
 	p = nextset > 0 ? setinit - 1 : setinit;
 	for (k = 1; k <= p; k++) {
-		if (!BN_mul_word(ncombos, i--)) goto cmb_bn_return;
+		if (!BN_mul_word(ncombos, i--))
+			goto cmb_bn_return;
 		if (BN_div_word(ncombos, k) == (BN_ULONG)-1)
 			goto cmb_bn_return;
 	}
@@ -574,14 +632,17 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	{
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
-			if (!BN_mul_word(ncombos, i--)) break;
-			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1) break;
+			if (!BN_mul_word(ncombos, i--))
+				break;
+			if (BN_div_word(ncombos, k++) == (BN_ULONG)-1)
+				break;
 		}
 
 		/* Jump to next set if requested start is beyond this one */
 		if (doseek) {
 			if (BN_ucmp(seek, ncombos) > 0) {
-				if (!BN_sub(seek, seek, ncombos)) break;
+				if (!BN_sub(seek, seek, ncombos))
+					break;
 				continue;
 			} else if (BN_is_one(seek)) {
 				doseek = FALSE;
@@ -593,10 +654,13 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
-			if ((retval = action(curset, curitems)) != 0) break;
+			if ((retval = action(curset, curitems)) != 0)
+				break;
 			if (docount) {
-				if (!BN_sub_word(count, 1)) break;
-				if (BN_is_zero(count)) break;
+				if (!BN_sub_word(count, 1))
+					break;
+				if (BN_is_zero(count))
+					break;
 			}
 		}
 
@@ -622,7 +686,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		/*
 		 * Process remaining self-similar combinations in the set.
 		 */
-		if (!BN_one(combo)) break;
+		if (!BN_one(combo))
+			break;
 		for (; BN_ucmp(combo, ncombos) < 0; ) {
 			setnums_last = curset;
 
@@ -649,7 +714,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				 * formulae rather than stored position.
 				 */
 				setnums_last = n - 1;
-				if (setpos < setpos_backend) break;
+				if (setpos < setpos_backend)
+					break;
 			}
 
 			/*
@@ -678,8 +744,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 			/* Produce results with this set of items */
 			if (doseek) {
-				if (!BN_sub_word(seek, 1)) goto cmb_bn_return;
-				if (BN_is_one(seek)) doseek = FALSE;
+				if (!BN_sub_word(seek, 1))
+					goto cmb_bn_return;
+				if (BN_is_one(seek))
+					doseek = FALSE;
 			}
 			if (!doseek || BN_is_one(seek)) {
 				doseek = FALSE;
@@ -693,14 +761,17 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				}
 			}
 
-			if (!BN_add_word(combo, 1)) goto cmb_bn_return;
+			if (!BN_add_word(combo, 1))
+				goto cmb_bn_return;
 
 		} /* for combo */
 
 		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0) {
-			if (!BN_mul_word(ncombos, --k)) break;
-			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1) break;
+			if (!BN_mul_word(ncombos, --k))
+				break;
+			if (BN_div_word(ncombos, ++i) == (BN_ULONG)-1)
+				break;
 		}
 
 	} /* for curset */
