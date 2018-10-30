@@ -26,11 +26,12 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 13:03:44 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 13:42:48 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
 #include <err.h>
+#include <errno.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -63,6 +64,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	long double z = 1;
 	uint64_t ncombos;
 
+	errno = 0;
 	if (nitems == 0) return (0);
 
 	/* Process config options */
@@ -83,6 +85,13 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	/* Enforce limits so we don't run over bounds */
 	if (setinit > nitems) setinit = nitems;
 	if (setdone > nitems) setdone = nitems;
+
+	/* Check for integer overflow */
+	if ((setinit > setdone && setinit - setdone >= 64) ||
+	    (setinit < setdone && setdone - setinit >= 64)) {
+		errno = ERANGE;
+		return (0);
+	}
 
 	/* If entire set is requested, return 2^N-1 */
 	if ((setinit == 1 && setdone == nitems) ||
@@ -105,10 +114,14 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		if (nextset > 0) z = (z * i--) / k++;
 
 		/* Add number of combinations in this set to total */
-		if ((ncombos = z) == 0)
-			errx(EXIT_FAILURE, "Number too large!");
-		if (ncombos > ULLONG_MAX - count)
-			errx(EXIT_FAILURE, "Number too large!");
+		if ((ncombos = z) == 0) {
+			errno = ERANGE;
+			return (0);
+		}
+		if (ncombos > ULLONG_MAX - count) {
+			errno = ERANGE;
+			return (0);
+		}
 		count += ncombos;
 
 		/* Calculate number of combinations (decrementing) */
@@ -154,6 +167,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
 
 	if (nitems == 0) return (0);
+	else if (cmb_count(config, nitems) == 0)
+		return (errno);
 
 	/* Process config options */
 	if (config != NULL) {
@@ -213,7 +228,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Cast number of combinations in set to integer */
 		if ((ncombos = z) == 0)
-			errx(EXIT_FAILURE, "Number too large!");
+			return (errno = ERANGE);
 
 		/* Jump to next set if requested start is beyond this one */
 		if (doseek) {
