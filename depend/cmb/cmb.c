@@ -22,14 +22,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:56:39 -0700 freebsdfrau $
- * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:56:39 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 15:53:07 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
