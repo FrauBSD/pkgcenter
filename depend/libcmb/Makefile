@@ -6,8 +6,9 @@ SHLIB_MAJOR=	0
 INCS=		cmb.h
 MAN=		cmb.3
 
+SRCS=		cmb.c
+
 CFLAGS+=	-I${.CURDIR}
 
-SRCS=		cmb.c
 
 .include <bsd.lib.mk>
