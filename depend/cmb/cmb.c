@@ -23,13 +23,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 12:45:14 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:44:36 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 12:45:14 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 13:44:36 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -37,6 +37,7 @@ __FBSDID("$FreeBSD$");
 
 #include <cmb.h>
 #include <err.h>
+#include <errno.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <stddef.h>
@@ -168,6 +169,11 @@ main(int argc, char *argv[])
 		} else
 			printf("0\n");
 #else
+		uint64_t count;
+
+		count = cmb_count(config, nitems);
+		if (errno)
+			err(errno, NULL);
 		printf("%"PRIu64"\n", cmb_count(config, nitems));
 #endif
 	} else {
@@ -175,6 +181,8 @@ main(int argc, char *argv[])
 		retval = cmb_bn(config, nitems, argv);
 #else
 		retval = cmb(config, nitems, argv);
+		if (errno)
+			err(errno, NULL);
 #endif
 	}
 
