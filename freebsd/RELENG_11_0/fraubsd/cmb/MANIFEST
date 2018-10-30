@@ -11,7 +11,7 @@
 	"comment":"Combinatorics library/utility",
 	"licenselogic":"single",
 	"licenses":["BSD"],
-	"version":"0.6",
+	"version":"0.7",
 
 	"maintainer":"dteske@freebsd.org",
 	"www":"https://www.fraubsd.org/",
@@ -60,6 +60,6 @@ WWW: https://www.fraubsd.org/",
 ////////////////////////////////////////////////////////////////////////////////
 //
 // $Copyright: 2016-2018 Devin Teske. All rights reserved. $
-// $FrauBSD: pkgcenter/freebsd/RELENG_11_0/fraubsd/cmb/MANIFEST 2018-07-04 23:30:43 +0000 freebsdfrau $
+// $FrauBSD: pkgcenter/freebsd/RELENG_11_0/fraubsd/cmb/MANIFEST 2018-10-30 15:56:58 -0700 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
