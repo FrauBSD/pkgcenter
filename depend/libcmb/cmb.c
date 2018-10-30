@@ -1,6 +1,5 @@
 /*-
  * Copyright (c) 2002-2018 Devin Teske <dteske@FreeBSD.org>
- * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 15:50:17 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 16:07:14 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
