@@ -26,7 +26,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 15:53:07 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 15:55:24 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -147,12 +147,14 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	/* At least one non-option argument is required */
-	if (argc == 0) usage(); /* NOTREACHED */
+	if (argc == 0)
+		usage(); /* NOTREACHED */
 
 	/*
 	 * Calculate combinations
 	 */
-	if (nitems == 0 || nitems > (uint64_t)argc) nitems = (uint64_t)argc;
+	if (nitems == 0 || nitems > (uint64_t)argc)
+		nitems = (uint64_t)argc;
 	if (opt_total) {
 #if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
 		BIGNUM *count;
