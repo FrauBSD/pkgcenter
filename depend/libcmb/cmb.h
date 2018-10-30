@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-03-29 15:27:50 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-10-30 12:53:46 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -39,7 +39,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #elif defined(__FreeBSD_version)
+#ifdef HAVE_LIBCRYPTO
 #define HAVE_OPENSSL_BN_H 1
+#else
+#undef HAVE_OPENSSL_BN_H
+#endif
 #endif
 
 #ifdef HAVE_OPENSSL_BN_H
