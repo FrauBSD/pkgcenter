@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-03-27 17:00:01 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-10-30 14:45:25 -0700 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -7,14 +7,14 @@ AC_INIT
 # AC_PREREQ (VERSION)
 # 	Minimum version of autoconf required to generate `configure'.
 #
-AC_PREREQ(2.13)
+AC_PREREQ(2.69)
 
 #
 # AC_REVISION (REVISION-INFO)
 # 	Place static version identifier information into autoconf-generated
 # 	`configure' for source-code tracking purposes.
 #
-AC_REVISION($Revision: 1.0 $)
+AC_REVISION($Revision: 1.1 $)
 
 #
 # AC_CONFIG_HEADERS (HEADER ..., [CMDS], [INIT-CMDS])
@@ -28,6 +28,11 @@ AC_CONFIG_HEADERS(config.h)
 # 	`config.guess', etc.) in directory DIR.
 #
 AC_CONFIG_AUX_DIR(cfgaux)
+
+############################################################ OPTIONS
+
+AC_ARG_WITH([openssl],
+	AS_HELP_STRING([--without-openssl], [Ignore/Disable OpenSSL support]))
 
 ############################################################ TESTS
 
@@ -52,7 +57,9 @@ AC_CANONICAL_HOST
 # AC_CHECK_HEADER (HEADER-FILE, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
 # 	Define HAVE_* for if header-file exists.
 #
-AC_CHECK_HEADER(openssl/bn.h, [AC_DEFINE(HAVE_OPENSSL_BN_H, 1)])
+AS_IF([test "$with_openssl" != "no"], [
+	AC_CHECK_HEADER(openssl/bn.h, [AC_DEFINE(HAVE_OPENSSL_BN_H, 1)])
+])
 
 #
 # Library checks
@@ -60,7 +67,7 @@ AC_CHECK_HEADER(openssl/bn.h, [AC_DEFINE(HAVE_OPENSSL_BN_H, 1)])
 # AC_CHECK_LIB (LIB, FUNC, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND], [LIBS])
 # 	Prepend `-l<LIB>' to LIBS if library provides function.
 #
-AC_CHECK_LIB(crypto, BN_new)
+AS_IF([test "$with_openssl" != "no"], [AC_CHECK_LIB(crypto, BN_new)])
 
 ############################################################ OUTPUTS
 
