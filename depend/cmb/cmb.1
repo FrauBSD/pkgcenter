@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-10-30 16:09:58 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-10-30 17:16:49 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd October 30, 2018
@@ -95,6 +95,87 @@ Suffix each combination with
 .It Fl t
 Print total number of combinations and exit.
 .El
+.Sh EXAMPLES
+Print all two-word combinations
+.Pq Qo bird dog Qc , Qo bird house Qc , and Qo dog house Qc
+given
+.Qq bird ,
+.Qq dog ,
+and
+.Qq house :
+.Bd -literal -offset indent
+cmb -k 2 bird dog house
+.Ed
+.Pp
+Print number of combinations
+.Pq 7
+given
+.Qq a ,
+.Qq b ,
+and
+.Qq c :
+.Bd -literal -offset indent
+cmb -t a b c
+.Ed
+.Pp
+Print first 5 combinations
+.Pq Qo x Qc , Qo y Qc , Qo z Qc , Qo x y Qc , and Qo x z Qc
+given
+.Qq x ,
+.Qq y ,
+and
+.Qq z :
+.Bd -literal -offset indent
+cmb -c 5 x y z
+.Ed
+.Pp
+Skip the first 3 combinations given
+.Qq 1 ,
+.Qq 2 ,
+and
+.Qq 3 ,
+.Bd -literal -offset indent
+cmb -i 4 1 2 3
+.Ed
+.Pp
+Print items separated by comma instead of space:
+.Bd -literal -offset indent
+cmb -d , a b c
+.Ed
+.Pp
+Print numbers as JSON:
+.Bd -literal -offset indent
+cmb -p '{"values":[' -s ']}' -d , 1 2 3
+.Ed
+.Pp
+Print strings as JSON:
+.Bd -literal -offset indent
+cmb -p '{"values":[' -s ']}' -d , '"a"' '"b"' '"c"'
+.Ed
+.Pp
+Print all two- and three-word combinations
+.Po
+.Qq big blue ,
+.Qq big red ,
+.Qq big couch ,
+.Qq blue red ,
+.Qq blue couch ,
+.Qq red couch ,
+.Qq big blue red ,
+.Qq big blue couch ,
+.Qq big red couch ,
+and
+.Qq blue red couch
+.Pc
+given
+.Qq big ,
+.Qq blue ,
+.Qq red ,
+and
+.Qq couch :
+.Bd -literal -offset indent
+cmb -k 2..3 big blue red couch
+.Ed
 .Sh HISTORY
 The
 .Nm
