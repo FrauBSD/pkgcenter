@@ -10,3 +10,6 @@ Install (as root):
 
 	# make install
 
+Clean:
+
+	% make cleandir
