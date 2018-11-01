@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-10-30 16:07:14 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-10-31 19:20:14 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd October 30, 2018
+.Dd October 31, 2018
 .Dt CMB 3
 .Os
 .Sh NAME
@@ -37,7 +37,7 @@
 .Ft int
 .Fn cmb "struct cmb_config *config" "uint32_t nitems" "char *items[]"
 .Ft int
-.Fn cmb_print "uint32_t nitems" "char *items[]"
+.Fn cmb_print "struct cmb_config *config" "uint32_t nitems" "char *items[]"
 .Ft uint64_t
 .Fn cmb_count "struct cmb_config *config" "uint32_t nitems"
 .Pp
@@ -80,7 +80,8 @@ struct cmb_config {
      * zero, cmb() will stop calculation. The cmb() return value is
      * the first non-zero result from action(), zero otherwise.
      */
-    int (*action)(uint32_t nitems, char *items[]);
+    int (*action)(struct cmb_config *config, uint32_t nitems,
+        char *items[]);
 };
 .Ed
 .Pp

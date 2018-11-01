@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-30 16:07:14 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-31 19:20:14 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -39,11 +39,6 @@ __FBSDID("$FreeBSD$");
 #include <string.h>
 
 #include "cmb.h"
-
-static uint8_t cmb_print_nul = FALSE;
-static const char *cmb_print_delimiter = " ";
-static const char *cmb_print_prefix = NULL;
-static const char *cmb_print_suffix = NULL;
 
 /*
  * Takes pointer to `struct cmb_config' options and number of items. Returns
@@ -172,7 +167,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	char **curitems;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
-	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
+	int (*action)(struct cmb_config *config, uint32_t nitems,
+	    char *items[]) = cmb_print;
 
 	if (nitems == 0)
 		return (0);
@@ -181,17 +177,12 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	/* Process config options */
 	if (config != NULL) {
-		cmb_print_nul = config->nul_terminate;
 		if (config->action != NULL)
 			action = config->action;
 		if (config->count != 0) {
 			docount = TRUE;
 			count = config->count;
 		}
-		if (config->delimiter != NULL)
-			cmb_print_delimiter = config->delimiter;
-		if (config->prefix != NULL)
-			cmb_print_prefix = config->prefix;
 		if (config->range_min != 0 || config->range_max != 0) {
 			setinit = config->range_min;
 			setdone = config->range_max;
@@ -200,8 +191,6 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			doseek = TRUE;
 			seek = config->start;
 		}
-		if (config->suffix != NULL)
-			cmb_print_suffix = config->suffix;
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
@@ -263,7 +252,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
-			if ((retval = action(curset, curitems)) != 0)
+			retval = action(config, curset, curitems);
+			if (retval != 0)
 				break;
 			if (docount && --count == 0)
 				break;
@@ -353,7 +343,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 			if (!doseek || seek == 1) {
 				doseek = FALSE;
-				if ((retval = action(curset, curitems)) != 0)
+				retval = action(config, curset, curitems);
+				if (retval != 0)
 					goto cmb_return;
 				if (docount && --count == 0)
 					goto cmb_return;
@@ -376,15 +367,29 @@ cmb_return:
 }
 
 int
-cmb_print(uint32_t nitems, char *items[])
+cmb_print(struct cmb_config *config, uint32_t nitems, char *items[])
 {
+	uint8_t cmb_print_nul = FALSE;
 	uint32_t n;
+	const char *cmb_print_delimiter = " ";
+	const char *cmb_print_prefix = NULL;
+	const char *cmb_print_suffix = NULL;
+
+
+	/* Process config options */
+	if (config != NULL) {
+		if (config->delimiter != NULL)
+			cmb_print_delimiter = config->delimiter;
+		cmb_print_nul = config->nul_terminate;
+		cmb_print_prefix = config->prefix;
+		cmb_print_suffix = config->suffix;
+	}
 
 	if (cmb_print_prefix != NULL)
 		printf("%s", cmb_print_prefix);
 	for (n = 0; n < nitems; n++) {
 		printf("%s", items[n]);
-		if (n < nitems - 1 && cmb_print_delimiter != NULL)
+		if (n < nitems - 1)
 			printf("%s", cmb_print_delimiter);
 	}
 	if (cmb_print_suffix != NULL)
@@ -543,14 +548,14 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	BIGNUM *count = NULL;
 	BIGNUM *ncombos = NULL;
 	BIGNUM *seek = NULL;
-	int (*action)(uint32_t nitems, char *items[]) = cmb_print;
+	int (*action)(struct cmb_config *config, uint32_t nitems,
+		char *items[]) = cmb_print;
 
 	if (nitems == 0)
 		return (0);
 
 	/* Process config options */
 	if (config != NULL) {
-		cmb_print_nul = config->nul_terminate;
 		if (config->action != NULL)
 			action = config->action;
 		if (config->count_bn != NULL &&
@@ -561,10 +566,6 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((count = BN_dup(config->count_bn)) == NULL)
 				goto cmb_bn_return;
 		}
-		if (config->delimiter != NULL)
-			cmb_print_delimiter = config->delimiter;
-		if (config->prefix != NULL)
-			cmb_print_prefix = config->prefix;
 		if (config->range_min != 0 || config->range_max != 0) {
 			setinit = config->range_min;
 			setdone = config->range_max;
@@ -578,8 +579,6 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((seek = BN_dup(config->start_bn)) == NULL)
 				goto cmb_bn_return;
 		}
-		if (config->suffix != NULL)
-			cmb_print_suffix = config->suffix;
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
@@ -653,7 +652,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
-			if ((retval = action(curset, curitems)) != 0)
+			retval = action(config, curset, curitems);
+			if (retval != 0)
 				break;
 			if (docount) {
 				if (!BN_sub_word(count, 1))
@@ -750,7 +750,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 			if (!doseek || BN_is_one(seek)) {
 				doseek = FALSE;
-				if ((retval = action(curset, curitems)) != 0)
+				retval = action(config, curset, curitems);
+				if (retval != 0)
 					goto cmb_bn_return;
 				if (docount) {
 					if (!BN_sub_word(count, 1))

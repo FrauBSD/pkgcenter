@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-10-30 16:07:14 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-10-31 19:20:14 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -80,12 +80,13 @@ struct cmb_config {
 	 * stop calculation. The cmb() return value is the first non-zero
 	 * result from action(), zero otherwise.
 	 */
-	int (*action)(uint32_t nitems, char *items[]);
+	int (*action)(struct cmb_config *config, uint32_t nitems,
+	    char *items[]);
 };
 
 __BEGIN_DECLS
 int		cmb(struct cmb_config *_config, uint32_t _nitems, char *_items[]);
-int		cmb_print(uint32_t _nitems, char *_items[]);
+int		cmb_print(struct cmb_config *config, uint32_t _nitems, char *_items[]);
 uint64_t	cmb_count(struct cmb_config *_config, uint32_t _nitems);
 #ifdef HAVE_OPENSSL_BN_H
 int		cmb_bn(struct cmb_config *_config, uint32_t _nitems, char *_items[]);
