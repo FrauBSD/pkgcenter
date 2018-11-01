@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-30 16:09:58 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-31 19:53:45 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -193,7 +193,22 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s %s item1 ...\n", pgm,
-		"[-0t] [-c #] [-d str] [-i #] [-k range] [-p str] [-s str]");
+	fprintf(stderr, "usage: %s [options] item1 item2 ...\n", pgm);
+#define OPTFMT "\t%-11s %s\n"
+	fprintf(stderr, "OPTIONS:\n");
+	fprintf(stderr, OPTFMT, "-0",
+	    "NUL terminate combinations (use with `xargs -0').");
+	fprintf(stderr, OPTFMT, "-c num",
+	    "Produce num combinations (default `0' for all).");
+	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
+	fprintf(stderr, OPTFMT, "-i num", "Starting position (default is 1).");
+	fprintf(stderr, OPTFMT, "-k range",
+	    "Number of items (range is `min..max' or `min-max').");
+	fprintf(stderr, OPTFMT, "-n num",
+	    "Limit arguments taken from the command-line.");
+	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");
+	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
+	fprintf(stderr, OPTFMT, "-t",
+	    "Print number of combinations and exit.");
 	exit(EXIT_FAILURE);
 }
