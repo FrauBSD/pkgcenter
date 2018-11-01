@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-31 19:28:15 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-01 00:57:59 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -359,7 +359,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Calculate number of combinations (decrementing) */
 		if (nextset < 0)
-			z = (z * --k) / i++;
+			z = (z * --k) / ++i;
 
 	} /* for curset */
 
