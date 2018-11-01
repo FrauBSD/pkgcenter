@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-31 19:20:14 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-10-31 19:28:15 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -106,7 +106,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	 * Loop over each `set' in the configured direction until we are done
 	 */
 	p = nextset > 0 ? setinit - 1 : setinit;
-	for (k = 1; k <= p; k++) z = (z * i--) / k;
+	for (k = 1; k <= p; k++)
+		z = (z * i--) / k;
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
@@ -224,7 +225,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	 * NB: Each `set' can represent a single item or multiple items.
 	 */
 	p = nextset > 0 ? setinit - 1 : setinit;
-	for (k = 1; k <= p; k++) z = (z * i--) / k;
+	for (k = 1; k <= p; k++)
+		z = (z * i--) / k;
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
@@ -248,7 +250,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		}
 
 		/* Fill array with the initial positional arguments */
-		for (n = 0; n < curset; n++) curitems[n] = items[n];
+		for (n = 0; n < curset; n++)
+			curitems[n] = items[n];
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
@@ -275,8 +278,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		 * set to 7, 8.
 		 */
 		p = 0;
-		for (n = 0; n < curset; n++) setnums[n] = n;
-		for (n = curset; n > 0; n--) setnums_backend[p++] = nitems - n;
+		for (n = 0; n < curset; n++)
+			setnums[n] = n;
+		for (n = curset; n > 0; n--)
+			setnums_backend[p++] = nitems - n;
 
 		/*
 		 * Process remaining self-similar combinations in the set.
@@ -648,7 +653,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		}
 
 		/* Fill array with the initial positional arguments */
-		for (n = 0; n < curset; n++) curitems[n] = items[n];
+		for (n = 0; n < curset; n++)
+			curitems[n] = items[n];
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
@@ -679,8 +685,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		 * set to 7, 8.
 		 */
 		p = 0;
-		for (n = 0; n < curset; n++) setnums[n] = n;
-		for (n = curset; n > 0; n--) setnums_backend[p++] = nitems - n;
+		for (n = 0; n < curset; n++)
+			setnums[n] = n;
+		for (n = curset; n > 0; n--)
+			setnums_backend[p++] = nitems - n;
 
 		/*
 		 * Process remaining self-similar combinations in the set.
