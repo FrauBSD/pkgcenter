@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-01 00:57:59 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-02 01:52:00 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -64,9 +64,9 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 
 	/* Process config options */
 	if (config != NULL) {
-		if (config->range_min != 0 || config->range_max != 0) {
-			setinit = config->range_min;
-			setdone = config->range_max;
+		if (config->size_min != 0 || config->size_max != 0) {
+			setinit = config->size_min;
+			setdone = config->size_max;
 		}
 	}
 
@@ -184,9 +184,9 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			docount = TRUE;
 			count = config->count;
 		}
-		if (config->range_min != 0 || config->range_max != 0) {
-			setinit = config->range_min;
-			setdone = config->range_max;
+		if (config->size_min != 0 || config->size_max != 0) {
+			setinit = config->size_min;
+			setdone = config->size_max;
 		}
 		if (config->start > 1) {
 			doseek = TRUE;
@@ -431,9 +431,9 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 
 	/* Process config options */
 	if (config != NULL) {
-		if (config->range_min != 0 || config->range_max != 0) {
-			setinit = config->range_min;
-			setdone = config->range_max;
+		if (config->size_min != 0 || config->size_max != 0) {
+			setinit = config->size_min;
+			setdone = config->size_max;
 		}
 	}
 
@@ -443,7 +443,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	if (setdone == 0)
 		setdone = 1;
 
-	/* Return zero if the request is out of range */
+	/* Return NULL if the request is out of range */
 	if (setinit > nitems && setdone > nitems)
 		return (NULL);
 
@@ -571,9 +571,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((count = BN_dup(config->count_bn)) == NULL)
 				goto cmb_bn_return;
 		}
-		if (config->range_min != 0 || config->range_max != 0) {
-			setinit = config->range_min;
-			setdone = config->range_max;
+		if (config->size_min != 0 || config->size_max != 0) {
+			setinit = config->size_min;
+			setdone = config->size_max;
 		}
 		if (config->start_bn != NULL &&
 		    !BN_is_negative(config->start_bn) &&
