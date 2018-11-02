@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-10-31 19:53:45 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-02 01:51:13 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -112,17 +112,16 @@ main(int argc, char *argv[])
 			config->start = strtoull(optarg, (char **)NULL, 10);
 #endif
 			break;
-		case 'k': /* range */
-			config->range_min =
-			    strtoull(optarg, (char **)NULL, 10);
+		case 'k': /* size */
+			config->size_min = strtoull(optarg, (char **)NULL, 10);
 			if ((cp = strstr(optarg, "..")) != NULL) {
-				config->range_max =
+				config->size_max =
 				    strtoull(cp + 2, (char **)NULL, 10);
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
-				config->range_max =
+				config->size_max =
 				    strtoull(cp + 1, (char **)NULL, 10);
 			} else {
-				config->range_max = config->range_min;
+				config->size_max = config->size_min;
 			}
 			break;
 		case 'n': /* args */
@@ -194,16 +193,17 @@ static void
 usage(void)
 {
 	fprintf(stderr, "usage: %s [options] item1 item2 ...\n", pgm);
-#define OPTFMT "\t%-11s %s\n"
+#define OPTFMT "\t%-10s %s\n"
 	fprintf(stderr, "OPTIONS:\n");
 	fprintf(stderr, OPTFMT, "-0",
 	    "NUL terminate combinations (use with `xargs -0').");
 	fprintf(stderr, OPTFMT, "-c num",
 	    "Produce num combinations (default `0' for all).");
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
-	fprintf(stderr, OPTFMT, "-i num", "Starting position (default is 1).");
-	fprintf(stderr, OPTFMT, "-k range",
-	    "Number of items (range is `min..max' or `min-max').");
+	fprintf(stderr, OPTFMT, "-i num",
+	    "Skip the first num-1 combinations.");
+	fprintf(stderr, OPTFMT, "-k size",
+	    "Number or range (`min..max' or `min-max') of items.");
 	fprintf(stderr, OPTFMT, "-n num",
 	    "Limit arguments taken from the command-line.");
 	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");

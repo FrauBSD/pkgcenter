@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-10-30 17:16:49 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-02 01:51:13 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd October 30, 2018
+.Dd November 2, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -36,7 +36,7 @@
 .Op Fl c Ar #
 .Op Fl d Ar str
 .Op Fl i Ar #
-.Op Fl k Ar range
+.Op Fl k Ar size
 .Op Fl p Ar str
 .Op Fl s Ar str
 .Ar item1
@@ -47,11 +47,28 @@ The
 utility prints combinations,
 one per line
 .Pq default ,
-separated by space
+with items in each combination separated by space
 .Pq default .
+Given N items on the command-line,
+there are N sets where each set consists of an increasing number of items.
+By default,
+all sets are produced
+.Pq Ql Li -k 0 .
+Combination order within a set of N-items is always consistent and repeatable
+given the order of items on the command-line.
+The order of combinations within a single set of N-items
+.Pq where every combination in the set has the same number of items
+is dependent upon the order of items on the command-line.
+.Pp
+The
+.Dq empty
+set
+.Pq no items
+is not calculated as this is easily handled externally without forking to
+.Nm .
 .Pp
 Available options:
-.Bl -tag -width ".Fl r Ar range"
+.Bl -tag -width ".Fl r Ar size"
 .It Fl 0
 Terminate combinations with ASCII NUL
 .Pq character code 0
@@ -69,23 +86,37 @@ If
 all combinations produced.
 .It Fl d Ar text
 Delimiter for separating items.
-Default is space.
+Default is space
+.Pq Dq " " .
 .It Fl i Ar num
-Set starting position in combination set.
-Default is 1.
-.It Fl k Ar range
+Skip the first
+.Va num-1
+combinations.
+.It Fl k Ar size
 Number or range
 .Pq Qo min..max Qc or Qo min-max Qc
-of how many items appear in each combination.
+of how many items must appear in each combination.
 A value of
 .Ql 0
 .Pq default
-calculates all combinations.
+calculates all sets starting with 1-item combinations.
+If
+.Va size
+is negative one
+.Pq Li -1 ,
+calculate sets in descending order,
+starting with the maximum number of items.
+A range of
+.Ql Li -1..N
+will do the same but stop at N-item combinations.
+The order of combinations in each set is unaffected by negative
+.Va size
+values.
 .It Fl n Ar num
-Use
-.Ar num
-arguments.
-Default is to use all arguments.
+Limit the number of arguments taken from the command-line.
+No effect if
+.Va num
+is greater than the number of arguments.
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .
@@ -175,6 +206,13 @@ and
 .Qq couch :
 .Bd -literal -offset indent
 cmb -k 2..3 big blue red couch
+.Ed
+.Pp
+Print combinations starting with the maximum number of items
+.Pq 3 ,
+ending with 2-item combinations.
+.Bd -literal -offset indent
+cmb -k -1..2 1 2 3
 .Ed
 .Sh HISTORY
 The
