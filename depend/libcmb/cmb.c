@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 11:43:14 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 11:44:12 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -381,7 +381,6 @@ cmb_print(struct cmb_config *config, uint32_t nitems, char *items[])
 	const char *cmb_print_delimiter = " ";
 	const char *cmb_print_prefix = NULL;
 	const char *cmb_print_suffix = NULL;
-
 
 	/* Process config options */
 	if (config != NULL) {
