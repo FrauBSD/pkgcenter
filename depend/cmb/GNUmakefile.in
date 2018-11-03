@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/GNUmakefile.in 2018-03-27 17:01:01 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/GNUmakefile.in 2018-11-03 11:25:24 -0700 freebsdfrau $
 
 PROG=		cmb
 MAN=		cmb.1
@@ -26,14 +26,14 @@ GNUmakefile: configure config.status GNUmakefile.in
 	./config.status
 	$(MAKE) $(MFLAGS) clean
 
-$(PROG): $(OBJS)
+$(PROG): GNUmakefile $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $(@)
 
 $(MAN).gz: $(MAN)
 	gzip -c $(MAN) > $(@)
 
-$(OBJS): $(SRCS)
-	$(CC) $(CFLAGS) -c $(?) -o $(@)
+$(OBJS): GNUmakefile $(SRCS)
+	$(CC) $(CFLAGS) -c $(SRCS) -o $(@)
 
 install: $(PROG)
 	install -d -o 0 -g 0 -m 755 $(BINDIR) $(MANDIR)/man1
