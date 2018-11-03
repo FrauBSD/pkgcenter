@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-02 01:52:00 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 11:43:14 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -243,6 +243,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (doseek) {
 			if (seek > ncombos) {
 				seek -= ncombos;
+				if (nextset < 0)
+					z = (z * --k) / ++i;
 				continue;
 			} else if (seek == 1) {
 				doseek = FALSE;
@@ -646,6 +648,13 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if (BN_ucmp(seek, ncombos) > 0) {
 				if (!BN_sub(seek, seek, ncombos))
 					break;
+				if (nextset < 0) {
+					if (!BN_mul_word(ncombos, --k))
+						break;
+					if (BN_div_word(ncombos, ++i) ==
+					    (BN_ULONG)-1)
+						break;
+				}
 				continue;
 			} else if (BN_is_one(seek)) {
 				doseek = FALSE;
