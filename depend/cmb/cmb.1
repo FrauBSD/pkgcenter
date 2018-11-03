@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-02 01:51:13 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-03 11:49:59 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd November 2, 2018
+.Dd November 3, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0t
+.Op Fl 0et
 .Op Fl c Ar #
 .Op Fl d Ar str
 .Op Fl i Ar #
@@ -60,13 +60,6 @@ The order of combinations within a single set of N-items
 .Pq where every combination in the set has the same number of items
 is dependent upon the order of items on the command-line.
 .Pp
-The
-.Dq empty
-set
-.Pq no items
-is not calculated as this is easily handled externally without forking to
-.Nm .
-.Pp
 Available options:
 .Bl -tag -width ".Fl r Ar size"
 .It Fl 0
@@ -88,6 +81,9 @@ all combinations produced.
 Delimiter for separating items.
 Default is space
 .Pq Dq " " .
+.It Fl e
+Show empty set.
+A single combination containing no-items.
 .It Fl i Ar num
 Skip the first
 .Va num-1

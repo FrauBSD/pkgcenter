@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-02 01:51:13 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-03 11:49:59 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -70,6 +70,7 @@ static void	usage(void);
 int
 main(int argc, char *argv[])
 {
+	uint8_t opt_empty = FALSE;
 	uint8_t opt_total = FALSE;
 	char *cp;
 	int ch;
@@ -88,7 +89,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-	while ((ch = getopt(argc, argv, "0c:d:i:k:n:p:s:t")) != -1) {
+	while ((ch = getopt(argc, argv, "0c:d:ei:k:n:p:s:t")) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
 			config->nul_terminate = TRUE;
@@ -103,6 +104,10 @@ main(int argc, char *argv[])
 			break;
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
+			break;
+		case 'e': /* empty */
+			opt_empty = TRUE;
+			config->show_empty = opt_empty;
 			break;
 		case 'i': /* start */
 #ifdef HAVE_OPENSSL_BN_H
@@ -145,7 +150,7 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	/* At least one non-option argument is required */
-	if (argc == 0)
+	if (argc == 0 && !opt_empty)
 		usage(); /* NOTREACHED */
 
 	/*
@@ -200,6 +205,7 @@ usage(void)
 	fprintf(stderr, OPTFMT, "-c num",
 	    "Produce num combinations (default `0' for all).");
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
+	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
 	fprintf(stderr, OPTFMT, "-i num",
 	    "Skip the first num-1 combinations.");
 	fprintf(stderr, OPTFMT, "-k size",
