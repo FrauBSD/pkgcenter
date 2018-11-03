@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-02 01:52:00 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-03 11:49:13 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd November 2, 2018
+.Dd November 3, 2018
 .Dt CMB 3
 .Os
 .Sh NAME
@@ -61,6 +61,7 @@ Anatomy of config argument to
 .Bd -literal -offset indent
 struct cmb_config {
     uint8_t nul_terminate; /* Terminate combinations with NUL */
+    uint8_t show_empty;    /* Show empty set with no items */
     char    *delimiter;    /* Item separator (default is " ") */
     char    *prefix;       /* Prefix for each combination */
     char    *suffix;       /* Suffix for each combination */
@@ -99,6 +100,13 @@ is zero
 .Ar delimiter
 is used and if unset,
 combinations are separated by a single space.
+.Pp
+If
+.Ar show_empty
+is non-zero,
+the empty set
+.Pq consisting of a single combination with no items
+is accounted-for.
 .Pp
 For each combination,
 if

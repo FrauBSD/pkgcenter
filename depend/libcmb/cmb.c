@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 11:44:12 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 11:49:13 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -47,6 +47,7 @@ __FBSDID("$FreeBSD$");
 uint64_t
 cmb_count(struct cmb_config *config, uint32_t nitems)
 {
+	uint8_t show_empty = FALSE;
 	int8_t nextset = 1;
 	uint32_t curset;
 	uint32_t i = nitems;
@@ -64,6 +65,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 
 	/* Process config options */
 	if (config != NULL) {
+		show_empty = config->show_empty;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -93,10 +95,18 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		return (0);
 	}
 
-	/* If entire set is requested, return 2^N-1 */
+	/* If entire set is requested, return 2^N[-1] */
 	if ((setinit == 1 && setdone == nitems) ||
-	    (setinit == nitems && setdone == 1))
-		return (ULLONG_MAX >> (64 - nitems));
+	    (setinit == nitems && setdone == 1)) {
+		if (show_empty) {
+			if (nitems >= 64) {
+				errno = ERANGE;
+				return (0);
+			}
+			return (1 << nitems);
+		} else
+			return (ULLONG_MAX >> (64 - nitems));
+	}
 
 	/* Set the direction of flow (incrementing vs. decrementing) */
 	if (setinit > setdone)
@@ -105,6 +115,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 	/*
 	 * Loop over each `set' in the configured direction until we are done
 	 */
+	if (show_empty)
+		count++;
 	p = nextset > 0 ? setinit - 1 : setinit;
 	for (k = 1; k <= p; k++)
 		z = (z * i--) / k;
@@ -146,6 +158,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
+	uint8_t show_empty = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
@@ -184,6 +197,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			docount = TRUE;
 			count = config->count;
 		}
+		show_empty = config->show_empty;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -219,6 +233,21 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	if ((setnums_backend =
 	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
+
+	/* Show the empty set consisting of a single combination of no-items */
+	if (nextset > 0 && show_empty) {
+		if (!doseek) {
+			retval = action(config, 0, NULL);
+			if (retval != 0)
+				goto cmb_return;
+			if (docount && --count == 0)
+				goto cmb_return;
+		} else {
+			seek--;
+			if (seek == 1)
+				doseek = FALSE;
+		}
+	}
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done.
@@ -365,6 +394,12 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	} /* for curset */
 
+	/* Show the empty set consisting of a single combination of no-items */
+	if (nextset < 0 && show_empty) {
+		if (!doseek || seek == 1)
+			retval = action(config, 0, NULL);
+	}
+
 cmb_return:
 	free(curitems);
 	free(setnums);
@@ -417,6 +452,7 @@ cmb_print(struct cmb_config *config, uint32_t nitems, char *items[])
 BIGNUM *
 cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 {
+	uint8_t show_empty = FALSE;
 	int8_t nextset = 1;
 	uint32_t curset;
 	uint32_t i = nitems;
@@ -432,6 +468,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 
 	/* Process config options */
 	if (config != NULL) {
+		show_empty = config->show_empty;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -464,14 +501,17 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	if (!BN_zero(count))
 		goto cmb_count_bn_return;
 
-	/* If entire set is requested, return 2^N-1 */
+	/* If entire set is requested, return 2^N[-1] */
 	if ((setinit == 1 && setdone == nitems) ||
 	    (setinit == nitems && setdone == 1)) {
-		if (!BN_lshift(count, BN_value_one(), nitems))
+		if (show_empty) {
+			BN_lshift(count, BN_value_one(), nitems);
 			goto cmb_count_bn_return;
-		if (!BN_sub_word(count, 1))
+		} else {
+			if (BN_lshift(count, BN_value_one(), nitems))
+				BN_sub_word(count, 1);
 			goto cmb_count_bn_return;
-		goto cmb_count_bn_return;
+		}
 	}
 
 	/* Allocate memory */
@@ -533,6 +573,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
+	uint8_t show_empty = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
@@ -572,6 +613,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((count = BN_dup(config->count_bn)) == NULL)
 				goto cmb_bn_return;
 		}
+		show_empty = config->show_empty;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -618,6 +660,26 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	if ((setnums_backend =
 	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
+
+	/* Show the empty set consisting of a single combination of no-items */
+	if (nextset > 0 && show_empty) {
+		if (!doseek) {
+			retval = action(config, 0, NULL);
+			if (retval != 0)
+				goto cmb_bn_return;
+			if (docount) {
+				if (!BN_sub_word(count, 1))
+					goto cmb_bn_return;
+				if (BN_is_zero(count))
+					goto cmb_bn_return;
+			}
+		} else {
+			if (!BN_sub_word(seek, 1))
+				goto cmb_bn_return;
+			if (BN_is_one(seek))
+				doseek = FALSE;
+		}
+	}
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done.
@@ -791,6 +853,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		}
 
 	} /* for curset */
+
+	/* Show the empty set consisting of a single combination of no-items */
+	if (nextset < 0 && show_empty) {
+		if (!doseek || BN_is_one(seek))
+			retval = action(config, 0, NULL);
+	}
 
 cmb_bn_return:
 	BN_free(combo);

@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-02 01:52:00 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-03 11:49:13 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -61,6 +61,7 @@
  */
 struct cmb_config {
 	uint8_t	nul_terminate;	/* Terminate combinations with ASCII NUL */
+	uint8_t show_empty;	/* Show empty set with no items */
 	char	*delimiter;	/* Item separator (default is " ") */
 	char	*prefix;	/* Prefix for each combination */
 	char	*suffix;	/* Suffix for each combination */
