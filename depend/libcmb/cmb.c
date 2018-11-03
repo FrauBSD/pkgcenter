@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 11:49:13 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 12:15:22 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -396,7 +396,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset < 0 && show_empty) {
-		if (!doseek || seek == 1)
+		if ((!doseek || seek == 1) && (!docount || count > 0))
 			retval = action(config, 0, NULL);
 	}
 
@@ -856,8 +856,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset < 0 && show_empty) {
-		if (!doseek || BN_is_one(seek))
+		if ((!doseek || BN_is_one(seek)) &&
+		    (!docount || !BN_is_zero(count))) {
 			retval = action(config, 0, NULL);
+		}
 	}
 
 cmb_bn_return:
