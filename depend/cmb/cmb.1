@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-03 20:54:52 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-03 22:13:24 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd November 3, 2018
+.Dd November 4, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -88,6 +88,12 @@ A single combination containing no-items.
 Skip the first
 .Va num-1
 combinations.
+If
+.Va num
+is negative,
+skip to
+.Va |num|
+combinations before the end.
 .It Fl k Ar size
 Number or range
 .Pq Qo min..max Qc or Qo min-max Qc
@@ -162,13 +168,26 @@ and
 cmb -c 5 x y z
 .Ed
 .Pp
-Skip the first 3 combinations given
-.Qq 1 ,
-.Qq 2 ,
+Skip first 3 combinations
+.Pq Qo x Qc , Qo y Qc , and Qo z Qc
+given
+.Qq x ,
+.Qq y ,
 and
-.Qq 3 ,
+.Qq z :
 .Bd -literal -offset indent
-cmb -i 4 1 2 3
+cmb -i 4 x y z
+.Ed
+.Pp
+Print last 5 combinations
+.Pq Qo z Qc , Qo x y Qc , Qo x z Qc , Qo y z Qc , and Qo x y z Qc
+given
+.Qq x ,
+.Qq y ,
+and
+.Qq z :
+.Bd -literal -offset indent
+cmb -i -5 x y z
 .Ed
 .Pp
 Print items separated by comma instead of space:
@@ -186,7 +205,7 @@ Print strings as JSON:
 cmb -p '{"values":[' -s ']}' -d , '"a"' '"b"' '"c"'
 .Ed
 .Pp
-Print all two- and three-word combinations
+Print all 2- and 3-word combinations
 .Po
 .Qq big blue ,
 .Qq big red ,
@@ -212,13 +231,13 @@ cmb -k 2..3 big blue red couch
 .Pp
 Print combinations starting with the maximum number of items
 .Pq 3 ,
-ending with 2-item combinations.
+ending with 2-item combinations:
 .Bd -literal -offset indent
 cmb -k -1..2 1 2 3
 .Ed
 .Pp
 Print combinations starting with 2-items ending with maximum items
-.Pq 3 .
+.Pq 3 :
 .Bd -literal -offset indent
 cmb -k 2..-1 x y z
 .Ed

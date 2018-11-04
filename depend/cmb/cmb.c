@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-03 11:49:59 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-03 22:13:24 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -78,6 +78,12 @@ main(int argc, char *argv[])
 	uint64_t nitems = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	struct cmb_config *config = NULL;
+#if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
+	BIGNUM *count;
+#else
+	uint64_t count;
+	uint64_t nstart = 0; /* negative start */
+#endif
 
 	pgm = argv[0]; /* store a copy of invocation name */
 
@@ -115,6 +121,8 @@ main(int argc, char *argv[])
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
 #else
 			config->start = strtoull(optarg, (char **)NULL, 10);
+			if (*optarg == '-' && config->start > 0)
+				nstart = strtoll(optarg, (char **)NULL, 10);
 #endif
 			break;
 		case 'k': /* size */
@@ -160,7 +168,6 @@ main(int argc, char *argv[])
 		nitems = (uint64_t)argc;
 	if (opt_total) {
 #if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
-		BIGNUM *count;
 		char *count_str;
 
 		if ((count = cmb_count_bn(config, nitems)) != NULL) {
@@ -171,8 +178,6 @@ main(int argc, char *argv[])
 		} else
 			printf("0\n");
 #else
-		uint64_t count;
-
 		count = cmb_count(config, nitems);
 		if (errno)
 			err(errno, NULL);
@@ -180,8 +185,28 @@ main(int argc, char *argv[])
 #endif
 	} else {
 #ifdef HAVE_OPENSSL_BN_H
+		if (config->start_bn != NULL &&
+		    BN_is_negative(config->start_bn)) {
+			if ((count = cmb_count_bn(config, nitems)) != NULL) {
+				BN_add(config->start_bn,
+				    count, config->start_bn);
+				BN_add_word(config->start_bn, 1);
+				if (BN_is_negative(config->start_bn))
+					BN_zero(config->start_bn);
+				BN_free(count);
+			}
+		}
 		retval = cmb_bn(config, nitems, argv);
 #else
+		if (nstart != 0) {
+			count = cmb_count(config, nitems);
+			if (errno)
+				err(errno, NULL);
+			if (count >= (nstart * -1))
+				config->start = count + nstart + 1;
+			else
+				config->start = 0;
+		}
 		retval = cmb(config, nitems, argv);
 		if (errno)
 			err(errno, NULL);
