@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-03 22:13:24 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-04 01:09:33 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 4, 2018
@@ -94,6 +94,12 @@ is negative,
 skip to
 .Va |num|
 combinations before the end.
+If
+.Va num
+matches
+.Ql Li random
+.Pq case-sensitive
+a random number between 1 and the total number of combinations is chosen.
 .It Fl k Ar size
 Number or range
 .Pq Qo min..max Qc or Qo min-max Qc
@@ -240,6 +246,12 @@ Print combinations starting with 2-items ending with maximum items
 .Pq 3 :
 .Bd -literal -offset indent
 cmb -k 2..-1 x y z
+.Ed
+.Pp
+Roll a set of 2 six-sided dice,
+producing a single combination of two numbers:
+.Bd -literal -offset indent
+cmb -c 1 -k 2 -i rand 1 2 3 4 5 6 1 2 3 4 5 6
 .Ed
 .Sh HISTORY
 The

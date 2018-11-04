@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-03 22:13:24 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-04 01:09:33 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -56,6 +56,8 @@ __FBSDID("$FreeBSD$");
 
 #ifdef HAVE_OPENSSL_BN_H
 #include <openssl/bn.h>
+#else
+#include <sys/time.h>
 #endif
 #ifdef HAVE_OPENSSL_CRYPTO_H
 #include <openssl/crypto.h>
@@ -66,10 +68,22 @@ static char *pgm; /* set to argv[0] by main() */
 
 /* Function prototypes */
 static void	usage(void);
+#ifndef HAVE_OPENSSL_BN_H
+static uint64_t	rand_range(uint64_t range);
+#endif
+
+/* Inline functions */
+#ifndef HAVE_OPENSSL_BN_H
+static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
+static inline uint64_t	urand64(void) { return
+    (((uint64_t)lrand48() << 42) + ((uint64_t)lrand48() << 21) + lrand48());
+}
+#endif
 
 int
 main(int argc, char *argv[])
 {
+	uint8_t opt_randi = FALSE;
 	uint8_t opt_empty = FALSE;
 	uint8_t opt_total = FALSE;
 	char *cp;
@@ -77,12 +91,14 @@ main(int argc, char *argv[])
 	int retval = EXIT_SUCCESS;
 	uint64_t nitems = 0;
 	size_t config_size = sizeof(struct cmb_config);
+	size_t optlen;
 	struct cmb_config *config = NULL;
 #if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
 	BIGNUM *count;
 #else
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
+	struct timeval tv;
 #endif
 
 	pgm = argv[0]; /* store a copy of invocation name */
@@ -116,13 +132,23 @@ main(int argc, char *argv[])
 			config->show_empty = opt_empty;
 			break;
 		case 'i': /* start */
+			if ((optlen = strlen(optarg)) > 0 &&
+			    strncmp("random", optarg, optlen) == 0) {
+				opt_randi = TRUE;
+			}
 #ifdef HAVE_OPENSSL_BN_H
-			if (BN_dec2bn(&(config->start_bn), optarg) == 0)
+			if (!opt_randi &&
+			    BN_dec2bn(&(config->start_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
 #else
-			config->start = strtoull(optarg, (char **)NULL, 10);
-			if (*optarg == '-' && config->start > 0)
-				nstart = strtoll(optarg, (char **)NULL, 10);
+			if (!opt_randi) {
+				config->start =
+				    strtoull(optarg, (char **)NULL, 10);
+				if (*optarg == '-' && config->start > 0) {
+					nstart =
+					    strtoll(optarg, (char **)NULL, 10);
+				}
+			}
 #endif
 			break;
 		case 'k': /* size */
@@ -185,7 +211,14 @@ main(int argc, char *argv[])
 #endif
 	} else {
 #ifdef HAVE_OPENSSL_BN_H
-		if (config->start_bn != NULL &&
+		if (opt_randi) {
+			if ((count = cmb_count_bn(config, nitems)) != NULL) {
+				if (config->start_bn == NULL)
+					config->start_bn = BN_new();
+				if (BN_rand_range(config->start_bn, count))
+					BN_add_word(config->start_bn, 1);
+			}
+		} else if (config->start_bn != NULL &&
 		    BN_is_negative(config->start_bn)) {
 			if ((count = cmb_count_bn(config, nitems)) != NULL) {
 				BN_add(config->start_bn,
@@ -198,7 +231,15 @@ main(int argc, char *argv[])
 		}
 		retval = cmb_bn(config, nitems, argv);
 #else
-		if (nstart != 0) {
+		if (opt_randi) {
+			count = cmb_count(config, nitems);
+			if (errno)
+				err(errno, NULL);
+			if (gettimeofday(&tv,NULL) == 0) {
+				srand48((long)tv.tv_usec);
+				config->start = rand_range(count) + 1;
+			}
+		} else if (nstart != 0) {
 			count = cmb_count(config, nitems);
 			if (errno)
 				err(errno, NULL);
@@ -243,3 +284,19 @@ usage(void)
 	    "Print number of combinations and exit.");
 	exit(EXIT_FAILURE);
 }
+
+#ifndef HAVE_OPENSSL_BN_H
+/*
+ * Return pseudo-random 64-bit unsigned integer in range 0 <= return <= range.
+ */
+static uint64_t
+rand_range(uint64_t range)
+{
+	static const uint64_t M = (uint64_t)~0;
+	uint64_t exclusion = p2(range) ? 0 : M % range + 1;
+	uint64_t res = 0;
+
+	while ((res = urand64()) < exclusion) {}
+	return (res % range);
+}
+#endif
