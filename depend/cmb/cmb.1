@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-03 11:49:59 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-03 20:54:52 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 3, 2018
@@ -105,9 +105,15 @@ starting with the maximum number of items.
 A range of
 .Ql Li -1..N
 will do the same but stop at N-item combinations.
+A range of
+.Ql Li N..-1
+will start with N-item combinations and end with the maximum number of items.
 The order of combinations in each set is unaffected by negative
 .Va size
 values.
+A range of
+.Ql Li -1..-1
+calculates the ending set consisting of only the maximum number of items.
 .It Fl n Ar num
 Limit the number of arguments taken from the command-line.
 No effect if
@@ -209,6 +215,12 @@ Print combinations starting with the maximum number of items
 ending with 2-item combinations.
 .Bd -literal -offset indent
 cmb -k -1..2 1 2 3
+.Ed
+.Pp
+Print combinations starting with 2-items ending with maximum items
+.Pq 3 .
+.Bd -literal -offset indent
+cmb -k 2..-1 x y z
 .Ed
 .Sh HISTORY
 The
