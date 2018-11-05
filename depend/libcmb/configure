@@ -2082,6 +2082,15 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
+############################################################ DEFINES
+
+#
+# Definitions for autoheader (creates config.h.in)
+#
+
+$as_echo "#define HAVE_OPENSSL_BN_H /**/" >>confdefs.h
+
+
 ############################################################ OPTIONS
 
 

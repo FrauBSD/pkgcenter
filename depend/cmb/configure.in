@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-10-30 14:45:55 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-05 13:53:28 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -28,6 +28,16 @@ AC_CONFIG_HEADERS(config.h)
 # 	`config.guess', etc.) in directory DIR.
 #
 AC_CONFIG_AUX_DIR(cfgaux)
+
+############################################################ DEFINES
+
+#
+# Definitions for autoheader (creates config.h.in)
+#
+AC_DEFINE([HAVE_OPENSSL_BN_H], [],
+	[Define to 1 if you have the <openssl/bn.h> header file.])
+AC_DEFINE([HAVE_OPENSSL_CRYPTO_H], [],
+	[Define to 1 if you have the <openssl/crypto.h> header file.])
 
 ############################################################ OPTIONS
 
