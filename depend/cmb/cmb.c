@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-04 01:09:33 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-05 17:21:58 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -83,8 +83,8 @@ static inline uint64_t	urand64(void) { return
 int
 main(int argc, char *argv[])
 {
-	uint8_t opt_randi = FALSE;
 	uint8_t opt_empty = FALSE;
+	uint8_t opt_randi = FALSE;
 	uint8_t opt_total = FALSE;
 	char *cp;
 	int ch;
