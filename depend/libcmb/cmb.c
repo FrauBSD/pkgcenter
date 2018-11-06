@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-03 12:15:22 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:16:44 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -184,11 +184,6 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	int (*action)(struct cmb_config *config, uint32_t nitems,
 	    char *items[]) = cmb_print;
 
-	if (nitems == 0)
-		return (0);
-	else if (cmb_count(config, nitems) == 0)
-		return (errno);
-
 	/* Process config options */
 	if (config != NULL) {
 		if (config->action != NULL)
@@ -206,6 +201,13 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			doseek = TRUE;
 			seek = config->start;
 		}
+	}
+
+	if (!show_empty) {
+		if (nitems == 0)
+			return (0);
+		else if (cmb_count(config, nitems) == 0)
+			return (errno);
 	}
 
 	/* Adjust values to be non-zero (mathematical constraint) */
@@ -248,6 +250,9 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 				doseek = FALSE;
 		}
 	}
+
+	if (nitems == 0)
+		return (0);
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done.
@@ -598,9 +603,6 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	int (*action)(struct cmb_config *config, uint32_t nitems,
 		char *items[]) = cmb_print;
 
-	if (nitems == 0)
-		return (0);
-
 	/* Process config options */
 	if (config != NULL) {
 		if (config->action != NULL)
@@ -628,6 +630,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				goto cmb_bn_return;
 		}
 	}
+
+	if (nitems == 0 && !show_empty)
+		goto cmb_bn_return;
 
 	/* Adjust values to be non-zero (mathematical constraint) */
 	if (setinit == 0)
@@ -680,6 +685,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				doseek = FALSE;
 		}
 	}
+
+	if (nitems == 0)
+		goto cmb_bn_return;
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done.
