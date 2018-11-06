@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:16:44 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:17:34 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -313,9 +313,9 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		 * operating on a set-of-2, and nitems is 8, setnums_backend is
 		 * set to 7, 8.
 		 */
-		p = 0;
 		for (n = 0; n < curset; n++)
 			setnums[n] = n;
+		p = 0;
 		for (n = curset; n > 0; n--)
 			setnums_backend[p++] = nitems - n;
 
