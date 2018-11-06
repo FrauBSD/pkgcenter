@@ -25,11 +25,12 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-05 17:21:58 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-05 17:40:30 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
 #include <sys/param.h>
+#include <sys/time.h>
 
 #include <cmb.h>
 #include <err.h>
@@ -56,8 +57,6 @@ __FBSDID("$FreeBSD$");
 
 #ifdef HAVE_OPENSSL_BN_H
 #include <openssl/bn.h>
-#else
-#include <sys/time.h>
 #endif
 #ifdef HAVE_OPENSSL_CRYPTO_H
 #include <openssl/crypto.h>
@@ -68,22 +67,21 @@ static char *pgm; /* set to argv[0] by main() */
 
 /* Function prototypes */
 static void	usage(void);
-#ifndef HAVE_OPENSSL_BN_H
 static uint64_t	rand_range(uint64_t range);
-#endif
 
 /* Inline functions */
-#ifndef HAVE_OPENSSL_BN_H
 static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
 static inline uint64_t	urand64(void) { return
     (((uint64_t)lrand48() << 42) + ((uint64_t)lrand48() << 21) + lrand48());
 }
-#endif
 
 int
 main(int argc, char *argv[])
 {
 	uint8_t opt_empty = FALSE;
+#ifdef HAVE_LIBCRYPTO
+	uint8_t opt_nossl = FALSE;
+#endif
 	uint8_t opt_randi = FALSE;
 	uint8_t opt_total = FALSE;
 	char *cp;
@@ -93,13 +91,12 @@ main(int argc, char *argv[])
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
 	struct cmb_config *config = NULL;
-#if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
-	BIGNUM *count;
-#else
+#ifdef HAVE_OPENSSL_BN_H
+	BIGNUM *count_bn;
+#endif
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
 	struct timeval tv;
-#endif
 
 	pgm = argv[0]; /* store a copy of invocation name */
 
@@ -111,18 +108,27 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-	while ((ch = getopt(argc, argv, "0c:d:ei:k:n:p:s:t")) != -1) {
+#define OPTSTRING1 "0c:d:ei:k:n:p:s:t"
+#ifdef HAVE_LIBCRYPTO
+#define OPTSTRING2 OPTSTRING1 "o"
+#else
+#define OPTSTRING2 OPTSTRING1
+#endif
+#define OPTSTRING OPTSTRING2
+	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
 			config->nul_terminate = TRUE;
 			break;
 		case 'c': /* count */
 #ifdef HAVE_OPENSSL_BN_H
-			if (BN_dec2bn(&(config->count_bn), optarg) == 0)
+			if (!opt_nossl &&
+			    BN_dec2bn(&(config->count_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
-#else
-			config->count = strtoull(optarg, (char **)NULL, 10);
 #endif
+			if (opt_nossl)
+				config->count =
+				    strtoull(optarg, (char **)NULL, 10);
 			break;
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
@@ -137,11 +143,13 @@ main(int argc, char *argv[])
 				opt_randi = TRUE;
 			}
 #ifdef HAVE_OPENSSL_BN_H
-			if (!opt_randi &&
+			if (!opt_randi && !opt_nossl &&
 			    BN_dec2bn(&(config->start_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
+			if (!opt_randi && opt_nossl) {
 #else
 			if (!opt_randi) {
+#endif
 				config->start =
 				    strtoull(optarg, (char **)NULL, 10);
 				if (*optarg == '-' && config->start > 0) {
@@ -149,7 +157,6 @@ main(int argc, char *argv[])
 					    strtoll(optarg, (char **)NULL, 10);
 				}
 			}
-#endif
 			break;
 		case 'k': /* size */
 			config->size_min = strtoull(optarg, (char **)NULL, 10);
@@ -166,6 +173,11 @@ main(int argc, char *argv[])
 		case 'n': /* args */
 			nitems = strtoull(optarg, (char **)NULL, 10);
 			break;
+#ifdef HAVE_LIBCRYPTO
+		case 'o': /* disable openssl */
+			opt_nossl = TRUE;
+			break;
+#endif
 		case 'p': /* prefix */
 			config->prefix = optarg;
 			break;
@@ -193,44 +205,52 @@ main(int argc, char *argv[])
 	if (nitems == 0 || nitems > (uint64_t)argc)
 		nitems = (uint64_t)argc;
 	if (opt_total) {
-#if defined(HAVE_OPENSSL_BN_H) && defined(HAVE_OPENSSL_CRYPTO_H)
-		char *count_str;
-
-		if ((count = cmb_count_bn(config, nitems)) != NULL) {
-			count_str = BN_bn2dec(count);
-			printf("%s\n", count_str);
-			OPENSSL_free(count_str);
-			BN_free(count);
-		} else
-			printf("0\n");
-#else
-		count = cmb_count(config, nitems);
-		if (errno)
-			err(errno, NULL);
-		printf("%"PRIu64"\n", count);
-#endif
-	} else {
 #ifdef HAVE_OPENSSL_BN_H
+		if (!opt_nossl) {
+			char *count_str;
+
+			if ((count_bn =
+			    cmb_count_bn(config, nitems)) != NULL) {
+				count_str = BN_bn2dec(count_bn);
+				printf("%s\n", count_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+				OPENSSL_free(count_str);
+#endif
+				BN_free(count_bn);
+			} else
+				printf("0\n");
+		} else {
+#endif
+			count = cmb_count(config, nitems);
+			if (errno)
+				err(errno, NULL);
+			printf("%"PRIu64"\n", count);
+#ifdef HAVE_OPENSSL_BN_H
+		}
+	} else if (!opt_nossl) {
 		if (opt_randi) {
-			if ((count = cmb_count_bn(config, nitems)) != NULL) {
+			if ((count_bn =
+			    cmb_count_bn(config, nitems)) != NULL) {
 				if (config->start_bn == NULL)
 					config->start_bn = BN_new();
-				if (BN_rand_range(config->start_bn, count))
+				if (BN_rand_range(config->start_bn, count_bn))
 					BN_add_word(config->start_bn, 1);
 			}
 		} else if (config->start_bn != NULL &&
 		    BN_is_negative(config->start_bn)) {
-			if ((count = cmb_count_bn(config, nitems)) != NULL) {
+			if ((count_bn =
+			    cmb_count_bn(config, nitems)) != NULL) {
 				BN_add(config->start_bn,
-				    count, config->start_bn);
+				    count_bn, config->start_bn);
 				BN_add_word(config->start_bn, 1);
 				if (BN_is_negative(config->start_bn))
 					BN_zero(config->start_bn);
-				BN_free(count);
+				BN_free(count_bn);
 			}
 		}
 		retval = cmb_bn(config, nitems, argv);
-#else
+#endif
+	} else {
 		if (opt_randi) {
 			count = cmb_count(config, nitems);
 			if (errno)
@@ -251,7 +271,6 @@ main(int argc, char *argv[])
 		retval = cmb(config, nitems, argv);
 		if (errno)
 			err(errno, NULL);
-#endif
 	}
 
 	return (retval);
@@ -278,6 +297,10 @@ usage(void)
 	    "Number or range (`min..max' or `min-max') of items.");
 	fprintf(stderr, OPTFMT, "-n num",
 	    "Limit arguments taken from the command-line.");
+#ifdef HAVE_LIBCRYPTO
+	fprintf(stderr, OPTFMT, "-o",
+		"Disable OpenSSL (limits calculations to 64-bits).");
+#endif
 	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
 	fprintf(stderr, OPTFMT, "-t",
@@ -285,7 +308,6 @@ usage(void)
 	exit(EXIT_FAILURE);
 }
 
-#ifndef HAVE_OPENSSL_BN_H
 /*
  * Return pseudo-random 64-bit unsigned integer in range 0 <= return <= range.
  */
@@ -299,4 +321,3 @@ rand_range(uint64_t range)
 	while ((res = urand64()) < exclusion) {}
 	return (res % range);
 }
-#endif

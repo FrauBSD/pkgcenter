@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-05 17:38:46 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-05 17:40:30 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 5, 2018
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0et
+.Op Fl 0eot
 .Op Fl c Ar #
 .Op Fl d Ar str
 .Op Fl i Ar #
@@ -133,6 +133,11 @@ Limit the number of arguments taken from the command-line.
 No effect if
 .Va num
 is greater than the number of arguments.
+.It Fl o
+Disable OpenSSL
+.Xr bn 3
+support
+.Pq limits calculations to 64-bits .
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .
