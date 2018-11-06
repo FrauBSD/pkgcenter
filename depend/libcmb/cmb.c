@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:17:34 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:19:20 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -226,24 +226,14 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (setinit > setdone)
 		nextset = -1;
 
-	/* Allocate memory */
-	setmax = setdone > setinit ? setdone : setinit;
-	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums = (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums_backend =
-	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
 		if (!doseek) {
 			retval = action(config, 0, NULL);
 			if (retval != 0)
-				goto cmb_return;
+				return (retval);
 			if (docount && --count == 0)
-				goto cmb_return;
+				return (retval);
 		} else {
 			seek--;
 			if (seek == 1)
@@ -253,6 +243,16 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	if (nitems == 0)
 		return (0);
+
+	/* Allocate memory */
+	setmax = setdone > setinit ? setdone : setinit;
+	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
+	if ((setnums = (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
+	if ((setnums_backend =
+	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done.
@@ -650,22 +650,6 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (setinit > setdone)
 		nextset = -1;
 
-	/* Allocate memory */
-	if ((combo = BN_new()) == NULL)
-		goto cmb_bn_return;
-	if ((ncombos = BN_new()) == NULL)
-		goto cmb_bn_return;
-	if (!BN_one(ncombos))
-		goto cmb_bn_return;
-	setmax = setdone > setinit ? setdone : setinit;
-	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums = (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-	if ((setnums_backend =
-	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
 		if (!doseek) {
@@ -688,6 +672,22 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	if (nitems == 0)
 		goto cmb_bn_return;
+
+	/* Allocate memory */
+	if ((combo = BN_new()) == NULL)
+		goto cmb_bn_return;
+	if ((ncombos = BN_new()) == NULL)
+		goto cmb_bn_return;
+	if (!BN_one(ncombos))
+		goto cmb_bn_return;
+	setmax = setdone > setinit ? setdone : setinit;
+	if ((curitems = (char **)malloc(sizeof(char *) * setmax)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
+	if ((setnums = (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
+	if ((setnums_backend =
+	    (uint32_t *)malloc(sizeof(uint32_t) * setmax)) == NULL)
+		errx(EXIT_FAILURE, "Out of memory?!");
 
 	/*
 	 * Loop over each `set' in the configured direction until we are done.
