@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-03 11:49:13 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-05 17:44:49 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -56,10 +56,15 @@
 #define FALSE 0
 #endif
 
+#ifndef CMB_DEBUG
+#define CMB_DEBUG FALSE
+#endif
+
 /*
  * Anatomy of config option to pass as cmb*() config argument
  */
 struct cmb_config {
+	uint8_t debug;		/* Enable debugging if non-zero */
 	uint8_t	nul_terminate;	/* Terminate combinations with ASCII NUL */
 	uint8_t show_empty;	/* Show empty set with no items */
 	char	*delimiter;	/* Item separator (default is " ") */

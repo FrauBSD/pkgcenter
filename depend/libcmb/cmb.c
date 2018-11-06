@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:19:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:44:49 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -156,6 +156,7 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 int
 cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 {
+	uint8_t debug = FALSE;
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	uint8_t show_empty = FALSE;
@@ -192,6 +193,12 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			docount = TRUE;
 			count = config->count;
 		}
+#if CMB_DEBUG
+		debug = config->debug;
+#else
+		if (debug != config->debug)
+			warnx("libcmb not compiled with debug support!");
+#endif
 		show_empty = config->show_empty;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
@@ -265,6 +272,13 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += nextset)
 	{
+#if CMB_DEBUG
+		if (debug) {
+			fprintf(stderr,
+			    "DEBUG: >>> %u-item combinations <<<\n", curset);
+		}
+#endif
+
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0)
 			z = (z * i--) / k++;
@@ -318,6 +332,17 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		p = 0;
 		for (n = curset; n > 0; n--)
 			setnums_backend[p++] = nitems - n;
+#if CMB_DEBUG
+		if (debug) {
+			fprintf(stderr, "DEBUG1: endnums=[");
+			for (n = 0; n < curset; n++) {
+				fprintf(stderr, "%u", setnums_backend[n]);
+				if (n + 1 < curset)
+					fprintf(stderr, ",");
+			}
+			fprintf(stderr, "]\n");
+		}
+#endif
 
 		/*
 		 * Process remaining self-similar combinations in the set.
@@ -371,6 +396,17 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			 */
 			for (n = setnums_last; n <= curset; n++)
 				setnums[n] = seed + n - setnums_last + 1;
+#if CMB_DEBUG
+			if (debug) {
+				fprintf(stderr, "DEBUG2: setnums=[");
+				for (n = 0; n < curset; n++) {
+					fprintf(stderr, "%u", setnums[n]);
+					if (n + 1 < curset)
+						fprintf(stderr, ",");
+				}
+				fprintf(stderr, "]\n");
+			}
+#endif
 
 			/* Now map new setnums into values stored in items */
 			for (n = 0; n < curset; n++)

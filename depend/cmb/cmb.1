@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-05 17:40:30 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-05 17:44:49 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 5, 2018
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0eot
+.Op Fl 0Deot
 .Op Fl c Ar #
 .Op Fl d Ar str
 .Op Fl i Ar #
@@ -79,6 +79,10 @@ If
 .Ql 0
 .Pq default
 all combinations produced.
+.It Fl D
+Enable debugging information
+.Pq implies So Fl o Sc .
+Only available if compiled with debug option.
 .It Fl d Ar text
 Delimiter for separating items.
 Default is space

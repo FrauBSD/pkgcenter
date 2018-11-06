@@ -680,6 +680,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_debug
 with_openssl
 '
       ac_precious_vars='build_alias
@@ -1297,6 +1298,12 @@ fi
 if test -n "$ac_init_help"; then
 
   cat <<\_ACEOF
+
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-debug          Enable extra debugging options
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2088,6 +2095,9 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # Definitions for autoheader (creates config.h.in)
 #
 
+$as_echo "#define CMB_DEBUG 0" >>confdefs.h
+
+
 $as_echo "#define HAVE_OPENSSL_BN_H /**/" >>confdefs.h
 
 
@@ -2095,6 +2105,12 @@ $as_echo "#define HAVE_OPENSSL_CRYPTO_H /**/" >>confdefs.h
 
 
 ############################################################ OPTIONS
+
+# Check whether --enable-debug was given.
+if test "${enable_debug+set}" = set; then :
+  enableval=$enable_debug; $as_echo "#define CMB_DEBUG 1" >>confdefs.h
+
+fi
 
 
 # Check whether --with-openssl was given.

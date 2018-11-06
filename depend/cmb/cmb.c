@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-05 17:40:30 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-05 17:44:49 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -114,7 +114,12 @@ main(int argc, char *argv[])
 #else
 #define OPTSTRING2 OPTSTRING1
 #endif
-#define OPTSTRING OPTSTRING2
+#if CMB_DEBUG
+#define OPTSTRING3 OPTSTRING2 "D"
+#else
+#define OPTSTRING3 OPTSTRING2
+#endif
+#define OPTSTRING OPTSTRING3
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -133,6 +138,14 @@ main(int argc, char *argv[])
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
 			break;
+#if CMB_DEBUG
+		case 'D': /* debug */
+			config->debug = TRUE;
+#ifdef HAVE_LIBCRYPTO
+			opt_nossl = TRUE;
+#endif
+			break;
+#endif
 		case 'e': /* empty */
 			opt_empty = TRUE;
 			config->show_empty = opt_empty;
@@ -289,6 +302,15 @@ usage(void)
 	    "NUL terminate combinations (use with `xargs -0').");
 	fprintf(stderr, OPTFMT, "-c num",
 	    "Produce num combinations (default `0' for all).");
+#if CMB_DEBUG
+	fprintf(stderr, OPTFMT, "-D",
+#ifdef HAVE_LIBCRYPTO
+	    "Enable debugging information (implies `-o')."
+#else
+	    "Enable debugging information."
+#endif
+	);
+#endif
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
 	fprintf(stderr, OPTFMT, "-i num",
