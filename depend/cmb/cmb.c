@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:15:46 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:32:22 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -135,10 +135,13 @@ main(int argc, char *argv[])
 			if (!opt_nossl &&
 			    BN_dec2bn(&(config->count_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
+			if (opt_nossl) {
 #endif
-			if (opt_nossl)
 				config->count =
 				    strtoull(optarg, (char **)NULL, 10);
+#ifdef HAVE_OPENSSL_BN_H
+			}
+#endif
 			break;
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
@@ -220,10 +223,10 @@ main(int argc, char *argv[])
 		cmdver += 10; /* Seek past "$Version: " */
 		cmdver[strlen(cmdver)-2] = '\0'; /* Place NUL before "$" */
 #ifdef HAVE_OPENSSL_CRYPTO_H
-		printf("%s (%s; %s)\n", cmdver, libver,
+		printf("%s: %s (%s; %s)\n", pgm, cmdver, libver,
 		    SSLeay_version(SSLEAY_VERSION));
 #else
-		printf("%s (%s)\n", cmdver, libver);
+		printf("%s: %s (%s)\n", pgm, cmdver, libver);
 #endif
 		exit(EXIT_FAILURE);
 	}
