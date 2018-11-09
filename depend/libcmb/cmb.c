@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-08 20:39:28 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-09 14:22:52 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -40,8 +40,36 @@ __FBSDID("$FreeBSD$");
 
 #include "cmb.h"
 
-static const char version[] = "libcmb 1.1";
-static const char version_long[] = "$Version: libcmb 1.1 $";
+#if CMB_DEBUG
+#include <stdarg.h>
+#include <unistd.h>
+#define CMB_DEBUG_PREFIX	"DEBUG: "
+#define CMB_DEBUG_PREFIX_LEN	7
+#endif
+
+static const char version[] = "libcmb 1.2";
+static const char version_long[] = "$Version: libcmb 1.2 $";
+
+#if CMB_DEBUG
+static void
+cmb_debug(char *fmt, ...)
+{
+	int len;
+	va_list ap;
+	char buf[2048];
+
+	sprintf(buf, CMB_DEBUG_PREFIX);
+	va_start(ap, fmt);
+	len = vsnprintf(&buf[CMB_DEBUG_PREFIX_LEN],
+	    sizeof(buf) - CMB_DEBUG_PREFIX_LEN - 1, fmt, ap);
+	va_end(ap);
+	if (len == -1)
+		len = sizeof(buf) - CMB_DEBUG_PREFIX_LEN - 1;
+	len += CMB_DEBUG_PREFIX_LEN;
+	buf[len++] = '\n';
+	write(2, buf, len);
+}
+#endif
 
 /*
  * Takes one of below described type constants. Returns string version.
@@ -218,7 +246,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 #if CMB_DEBUG
 		debug = config->debug;
 #else
-		if (debug != config->debug)
+		if (config->debug != FALSE)
 			warnx("libcmb not compiled with debug support!");
 #endif
 		show_empty = config->show_empty;
@@ -257,6 +285,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
+#if CMB_DEBUG
+		if (debug)
+			cmb_debug(">>> 0-item combinations <<<");
+#endif
 		if (!doseek) {
 			retval = action(config, 0, NULL);
 			if (retval != 0)
@@ -295,10 +327,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	    curset += nextset)
 	{
 #if CMB_DEBUG
-		if (debug) {
-			fprintf(stderr,
-			    "DEBUG: >>> %u-item combinations <<<\n", curset);
-		}
+		if (debug)
+			cmb_debug(">>> %u-item combinations <<<", curset);
 #endif
 
 		/* Calculate number of combinations (incrementing) */
@@ -322,8 +352,26 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		}
 
 		/* Fill array with the initial positional arguments */
-		for (n = 0; n < curset; n++)
+#if CMB_DEBUG
+		if (debug)
+			fprintf(stderr, CMB_DEBUG_PREFIX "setnums=[");
+#endif
+		for (n = 0; n < curset; n++) {
+#if CMB_DEBUG
+			if (debug) {
+				if (n == curset - 1)
+					fprintf(stderr, "\033[31m%u\033[m", n);
+				else
+					fprintf(stderr, "%u", n);
+				if (n + 1 < curset)
+					fprintf(stderr, ",");
+			}
+#endif
 			curitems[n] = items[n];
+		}
+#if CMB_DEBUG
+		fprintf(stderr, "]\n");
+#endif
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
@@ -354,17 +402,6 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		p = 0;
 		for (n = curset; n > 0; n--)
 			setnums_backend[p++] = nitems - n;
-#if CMB_DEBUG
-		if (debug) {
-			fprintf(stderr, "DEBUG1: endnums=[");
-			for (n = 0; n < curset; n++) {
-				fprintf(stderr, "%u", setnums_backend[n]);
-				if (n + 1 < curset)
-					fprintf(stderr, ",");
-			}
-			fprintf(stderr, "]\n");
-		}
-#endif
 
 		/*
 		 * Process remaining self-similar combinations in the set.
@@ -420,9 +457,16 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 				setnums[n] = seed + n - setnums_last + 1;
 #if CMB_DEBUG
 			if (debug) {
-				fprintf(stderr, "DEBUG2: setnums=[");
+				fprintf(stderr, CMB_DEBUG_PREFIX "setnums=[");
 				for (n = 0; n < curset; n++) {
-					fprintf(stderr, "%u", setnums[n]);
+					if (n == setnums_last) {
+						fprintf(stderr,
+						    "\033[31m%u\033[m",
+						    setnums[n]);
+					} else {
+						fprintf(stderr, "%u",
+						    setnums[n]);
+					}
 					if (n + 1 < curset)
 						fprintf(stderr, ",");
 				}
