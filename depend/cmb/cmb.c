@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-05 17:44:49 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 18:31:40 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -84,6 +84,7 @@ main(int argc, char *argv[])
 #endif
 	uint8_t opt_randi = FALSE;
 	uint8_t opt_total = FALSE;
+	uint8_t opt_version = FALSE;
 	char *cp;
 	int ch;
 	int retval = EXIT_SUCCESS;
@@ -108,7 +109,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ei:k:n:p:s:t"
+#define OPTSTRING1 "0c:d:ei:k:n:p:s:tv"
 #ifdef HAVE_LIBCRYPTO
 #define OPTSTRING2 OPTSTRING1 "o"
 #else
@@ -200,6 +201,9 @@ main(int argc, char *argv[])
 		case 't': /* total */
 			opt_total = TRUE;
 			break;
+		case 'v': /* version */
+			opt_version = TRUE;
+			break;
 		default: /* unhandled argument (based on switch) */
 			usage();
 			/* NOTREACHED */
@@ -207,6 +211,22 @@ main(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
+
+	if (opt_version) {
+		char libver[] = LIBCMB_VERSION;
+		char *version = libver;
+
+		if (strncmp("$Version: ", version, 10) == 0) {
+			version += 10;
+			version[strlen(version)-2] = '\0';
+		}
+#ifdef HAVE_OPENSSL_CRYPTO_H
+		warnx("%s (%s)", version, SSLeay_version(SSLEAY_VERSION));
+#else
+		warnx("%s", version);
+#endif
+		exit(EXIT_FAILURE);
+	}
 
 	/* At least one non-option argument is required */
 	if (argc == 0 && !opt_empty)

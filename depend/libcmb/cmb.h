@@ -22,12 +22,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-05 17:44:49 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-08 18:31:40 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
 #ifndef _CMB_H_
 #define _CMB_H_
+
+#define LIBCMB_VERSION "$Version: 1.3 $"
 
 #include <sys/param.h>
 #include <sys/types.h>
