@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:03:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:05:48 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -346,6 +346,7 @@ usage(void)
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
 	fprintf(stderr, OPTFMT, "-t",
 	    "Print number of combinations and exit.");
+	fprintf(stderr, OPTFMT, "-v", "Print version info and exit.");
 	exit(EXIT_FAILURE);
 }
 
