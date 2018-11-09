@@ -22,14 +22,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-08 18:31:40 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-08 20:03:20 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
 #ifndef _CMB_H_
 #define _CMB_H_
-
-#define LIBCMB_VERSION "$Version: 1.3 $"
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -61,6 +59,13 @@
 #ifndef CMB_DEBUG
 #define CMB_DEBUG FALSE
 #endif
+
+
+/*
+ * Version constants for cmb_version(3)
+ */
+#define CMB_VERSION		0
+#define CMB_VERSION_LONG	1
 
 /*
  * Anatomy of config option to pass as cmb*() config argument
@@ -99,6 +104,7 @@ uint64_t	cmb_count(struct cmb_config *_config, uint32_t _nitems);
 #ifdef HAVE_OPENSSL_BN_H
 int		cmb_bn(struct cmb_config *_config, uint32_t _nitems, char *_items[]);
 BIGNUM *	cmb_count_bn(struct cmb_config *_config, uint32_t _nitems);
+const char *	cmb_version(int type);
 #endif
 __END_DECLS
 

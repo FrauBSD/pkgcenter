@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 18:31:40 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:03:20 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,6 +62,8 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
+static char version[] = "$Version: 1.3 $";
+
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
 
@@ -86,6 +88,8 @@ main(int argc, char *argv[])
 	uint8_t opt_total = FALSE;
 	uint8_t opt_version = FALSE;
 	char *cp;
+	char *cmdver = version;
+	const char *libver = cmb_version(CMB_VERSION);
 	int ch;
 	int retval = EXIT_SUCCESS;
 	uint64_t nitems = 0;
@@ -213,19 +217,14 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	if (opt_version) {
-		char libver[] = LIBCMB_VERSION;
-		char *version = libver;
-
-		if (strncmp("$Version: ", version, 10) == 0) {
-			version += 10;
-			version[strlen(version)-2] = '\0';
-		}
+		cmdver += 10; /* Seek past "$Version: " */
+		cmdver[strlen(cmdver)-2] = '\0'; /* Place NUL before "$" */
 #ifdef HAVE_OPENSSL_CRYPTO_H
-		warnx("%s (%s)", version, SSLeay_version(SSLEAY_VERSION));
+		errx(EXIT_FAILURE, "%s (%s; %s)", cmdver, libver,
+		    SSLeay_version(SSLEAY_VERSION));
 #else
-		warnx("%s", version);
+		errx(EXIT_FAILURE, "%s (%s)", cmdver, libver);
 #endif
-		exit(EXIT_FAILURE);
 	}
 
 	/* At least one non-option argument is required */

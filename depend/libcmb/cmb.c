@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-05 17:44:49 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-08 20:03:20 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -39,6 +39,28 @@ __FBSDID("$FreeBSD$");
 #include <string.h>
 
 #include "cmb.h"
+
+static const char version[] = "libcmb 1.0";
+static const char version_long[] = "$Version: libcmb 1.0 $";
+
+/*
+ * Takes one of below described type constants. Returns string version.
+ *
+ * TYPE			DESCRIPTION
+ * CMB_VERSION		Short version text. For example, "x.y".
+ * CMB_VERSION_LONG	RCS style ($Version$).
+ *
+ * For unknown type, the text "not available" is returned.
+ */
+const char *
+cmb_version(int type)
+{
+	switch(type) {
+	case CMB_VERSION: return version;
+	case CMB_VERSION_LONG: return version_long;
+	default: return "not available";
+	}
+}
 
 /*
  * Takes pointer to `struct cmb_config' options and number of items. Returns
