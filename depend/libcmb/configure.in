@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-05 17:44:49 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-08 20:31:38 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -36,8 +36,10 @@ AC_CONFIG_AUX_DIR(cfgaux)
 #
 AC_DEFINE([CMB_DEBUG], [0],
 	[Define to 1 if you want to enable extra debugging options.])
+if !:; then
 AC_DEFINE([HAVE_OPENSSL_BN_H], [],
 	[Define to 1 if you have the <openssl/bn.h> header file.])
+fi
 
 ############################################################ OPTIONS
 

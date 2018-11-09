@@ -2097,9 +2097,11 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 $as_echo "#define CMB_DEBUG 0" >>confdefs.h
 
+if !:; then
 
 $as_echo "#define HAVE_OPENSSL_BN_H /**/" >>confdefs.h
 
+fi
 
 ############################################################ OPTIONS
 
