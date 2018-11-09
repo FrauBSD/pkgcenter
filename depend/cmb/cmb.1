@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-05 17:45:56 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-08 20:12:06 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd November 5, 2018
+.Dd November 10, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -151,6 +151,14 @@ Suffix each combination with
 .Ar text .
 .It Fl t
 Print total number of combinations and exit.
+.It Fl v
+Print version information to stdout and exit.
+Includes
+.Xr cmb 3
+library version and
+.Pq if-enabled
+.Xr SSL 3
+library version.
 .El
 .Sh EXAMPLES
 Print all two-word combinations
