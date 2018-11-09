@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-08 20:03:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-08 20:39:28 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -40,8 +40,8 @@ __FBSDID("$FreeBSD$");
 
 #include "cmb.h"
 
-static const char version[] = "libcmb 1.0";
-static const char version_long[] = "$Version: libcmb 1.0 $";
+static const char version[] = "libcmb 1.1";
+static const char version_long[] = "$Version: libcmb 1.1 $";
 
 /*
  * Takes one of below described type constants. Returns string version.
