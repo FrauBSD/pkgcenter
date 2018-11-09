@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-08 20:14:25 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-11-08 20:34:11 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -59,7 +59,6 @@
 #ifndef CMB_DEBUG
 #define CMB_DEBUG FALSE
 #endif
-
 
 /*
  * Version constants for cmb_version(3)
