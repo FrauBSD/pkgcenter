@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-09 14:22:52 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-09 14:23:58 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -206,7 +206,9 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 int
 cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 {
+#if CMB_DEBUG
 	uint8_t debug = FALSE;
+#endif
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	uint8_t show_empty = FALSE;
