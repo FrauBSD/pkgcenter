@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:05:48 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:07:32 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -220,11 +220,12 @@ main(int argc, char *argv[])
 		cmdver += 10; /* Seek past "$Version: " */
 		cmdver[strlen(cmdver)-2] = '\0'; /* Place NUL before "$" */
 #ifdef HAVE_OPENSSL_CRYPTO_H
-		errx(EXIT_FAILURE, "%s (%s; %s)", cmdver, libver,
+		printf("%s (%s; %s)", cmdver, libver,
 		    SSLeay_version(SSLEAY_VERSION));
 #else
-		errx(EXIT_FAILURE, "%s (%s)", cmdver, libver);
+		printf("%s (%s)", cmdver, libver);
 #endif
+		exit(EXIT_FAILURE);
 	}
 
 	/* At least one non-option argument is required */
