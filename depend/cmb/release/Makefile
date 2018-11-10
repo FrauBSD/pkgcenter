@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to produce release tarballs $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/release/Makefile 2018-11-10 13:50:36 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/release/Makefile 2018-11-10 13:53:16 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -87,8 +87,10 @@ cmb:
 
 clean:
 	rm -f cmb-*/cmb cmb-*/cmb.1.gz
-	@$(EVAL2); \
+	@$(QUIETLY); \
+	 $(EVAL2); \
 	 $(STATUSES); \
+	 quietly type cmb || fail cmb not installed; \
 	 version=$$( awk 'match($$0, /\$$Version: [^$$]* \$$/) { \
 	 	print substr($$0, RSTART + 10, RLENGTH - 12); \
 	 	exit found=1; \
