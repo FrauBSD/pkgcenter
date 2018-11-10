@@ -1,0 +1,29 @@
+Compile all possible variants and generate versioned tarballs for each:
+
+	make
+
+Produces the variants with these properties:
+
+	FILE			CONFIGURE ARGS
+	cmb-{version}.tgz	Default (none)
+	cmb-{version}-D.tgz	--enable-debug
+	cmb-{version}-o.tgz	--without-openssl
+	cmb-{version}-Do.tgz	--enable-debug --without-openssl
+
+Each tarball contains:
+
+	cmb (utility)
+	cmb.1.gz (gzip-compressed manual)
+
+To build all variants but leave the directories behind:
+
+	make NO_CLEAN=1
+
+Clean up after NO_CLEAN or failed build:
+
+	make clean
+
+Return directory to its distribution state (removes tarballs):
+
+	make cleandir
+
