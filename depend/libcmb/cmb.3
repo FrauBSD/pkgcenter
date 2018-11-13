@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-10 14:19:19 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-12 16:48:30 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 12, 2018
@@ -62,6 +62,7 @@ Anatomy of config argument to
 .Fn cmb* :
 .Bd -literal -offset indent
 struct cmb_config {
+    uint8_t debug;         /* Enable debugging if non-zero */
     uint8_t nul_terminate; /* Terminate combinations with NUL */
     uint8_t show_empty;    /* Show empty set with no items */
     char    *delimiter;    /* Item separator (default is " ") */
@@ -87,6 +88,17 @@ struct cmb_config {
         char *items[]);
 };
 .Ed
+.Pp
+If
+.Ar debug
+is non-zero and
+.Xr cmb 3
+was compiled with
+.Ql CMB_DEBUG ,
+enable debugging information on stderr.
+Only affects with
+.Fn cmb
+.Pq ignored by Fn cmb_bn .
 .Pp
 If
 .Ar nul_terminate
