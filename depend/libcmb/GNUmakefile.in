@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/GNUmakefile.in 2018-11-05 13:46:54 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/GNUmakefile.in 2018-11-12 20:58:20 -0800 freebsdfrau $
 
 LIB=		cmb
 SHLIB_MAJOR=	0
@@ -39,7 +39,7 @@ $(OBJS): GNUmakefile config.h $(SRCS) $(INCS)
 	$(CC) $(CFLAGS) -c $(SRCS) -o $(@)
 
 install: lib$(LIB).so.$(SHLIB_MAJOR)
-	install -d -o 0 -g 0 -m 755 $(LIBDIR) $(MANDIR)/man3
+	install -d -o 0 -g 0 -m 755 $(LIBDIR) $(INCDIR) $(MANDIR)/man3
 	install -C -o 0 -g 0 -m 444 lib$(LIB).so.$(SHLIB_MAJOR) $(LIBDIR)/
 	ln -sf lib$(LIB).so.$(SHLIB_MAJOR) $(LIBDIR)/lib$(LIB).so
 	install -C -o 0 -g 0 -m 444 $(INCS) $(INCDIR)/
