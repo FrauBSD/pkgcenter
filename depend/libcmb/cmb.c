@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-12 17:49:57 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-12 18:16:25 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -47,8 +47,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_DEBUG_PREFIX_LEN	7
 #endif
 
-static const char version[] = "libcmb 1.2";
-static const char version_long[] = "$Version: libcmb 1.2 $";
+static const char version[] = "libcmb 1.3";
+static const char version_long[] = "$Version: libcmb 1.3 $";
 
 #if CMB_DEBUG
 static void
@@ -212,6 +212,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	uint8_t show_empty = FALSE;
+	uint8_t show_numbers = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
@@ -230,6 +231,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint64_t count = 0;
 	uint64_t ncombos;
 	uint64_t seek = 0;
+	uint64_t seq = 0;
 	long double z = 1;
 	char **curitems;
 	uint32_t *setnums;
@@ -252,6 +254,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			warnx("libcmb not compiled with debug support!");
 #endif
 		show_empty = config->show_empty;
+		show_numbers = config->show_numbers;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -259,6 +262,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (config->start > 1) {
 			doseek = TRUE;
 			seek = config->start;
+			if (show_numbers)
+				seq = seek - 1;
 		}
 	}
 
@@ -292,6 +297,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			cmb_debug(">>> 0-item combinations <<<");
 #endif
 		if (!doseek) {
+			if (show_numbers)
+				printf("%lu ", ++seq);
 			retval = action(config, 0, NULL);
 			if (retval != 0)
 				return (retval);
@@ -377,6 +384,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
+			if (show_numbers)
+				printf("%lu ", ++seq);
 			retval = action(config, curset, curitems);
 			if (retval != 0)
 				break;
@@ -488,6 +497,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 			if (!doseek || seek == 1) {
 				doseek = FALSE;
+				if (show_numbers)
+					printf("%lu ", ++seq);
 				retval = action(config, curset, curitems);
 				if (retval != 0)
 					goto cmb_return;
@@ -505,8 +516,11 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset < 0 && show_empty) {
-		if ((!doseek || seek == 1) && (!docount || count > 0))
+		if ((!doseek || seek == 1) && (!docount || count > 0)) {
+			if (show_numbers)
+				printf("%lu ", ++seq);
 			retval = action(config, 0, NULL);
+		}
 	}
 
 cmb_return:
@@ -683,6 +697,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	uint8_t show_empty = FALSE;
+	uint8_t show_numbers = FALSE;
 	int8_t nextset = 1;
 	int retval = 0;
 	uint32_t curset;
@@ -698,12 +713,14 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint32_t setpos;
 	uint32_t setpos_backend;
 	char **curitems;
+	char *seq_str;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
 	BIGNUM *combo = NULL;
 	BIGNUM *count = NULL;
 	BIGNUM *ncombos = NULL;
 	BIGNUM *seek = NULL;
+	BIGNUM *seq = NULL;
 	int (*action)(struct cmb_config *config, uint32_t nitems,
 		char *items[]) = cmb_print;
 
@@ -720,6 +737,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				goto cmb_bn_return;
 		}
 		show_empty = config->show_empty;
+		show_numbers = config->show_numbers;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -732,6 +750,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			doseek = TRUE;
 			if ((seek = BN_dup(config->start_bn)) == NULL)
 				goto cmb_bn_return;
+			if (show_numbers) {
+				if ((seq = BN_dup(seek)) == NULL)
+					goto cmb_bn_return;
+				if (!BN_sub_word(seek, 1))
+					goto cmb_bn_return;
+			}
 		}
 	}
 
@@ -754,9 +778,26 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (setinit > setdone)
 		nextset = -1;
 
+	/* Initialize sequence number */
+	if (show_numbers && seq == NULL) {
+		if ((seq = BN_new()) == NULL)
+			goto cmb_bn_return;
+		if (!BN_zero(seq))
+			goto cmb_bn_return;
+	}
+
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
 		if (!doseek) {
+			if (show_numbers) {
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+				seq_str = BN_bn2dec(seq);
+				printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+				OPENSSL_free(seq_str);
+#endif
+			}
 			retval = action(config, 0, NULL);
 			if (retval != 0)
 				goto cmb_bn_return;
@@ -840,6 +881,15 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
+			if (show_numbers) {
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+				seq_str = BN_bn2dec(seq);
+				printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+				OPENSSL_free(seq_str);
+#endif
+			}
 			retval = action(config, curset, curitems);
 			if (retval != 0)
 				break;
@@ -940,6 +990,15 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 			if (!doseek || BN_is_one(seek)) {
 				doseek = FALSE;
+				if (show_numbers) {
+					if (!BN_add_word(seq, 1))
+						goto cmb_bn_return;
+					seq_str = BN_bn2dec(seq);
+					printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+					OPENSSL_free(seq_str);
+#endif
+				}
 				retval = action(config, curset, curitems);
 				if (retval != 0)
 					goto cmb_bn_return;
@@ -970,6 +1029,15 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (nextset < 0 && show_empty) {
 		if ((!doseek || BN_is_one(seek)) &&
 		    (!docount || !BN_is_zero(count))) {
+			if (show_numbers) {
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+				seq_str = BN_bn2dec(seq);
+				printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+				OPENSSL_free(seq_str);
+#endif
+			}
 			retval = action(config, 0, NULL);
 		}
 	}
@@ -979,6 +1047,7 @@ cmb_bn_return:
 	BN_free(count);
 	BN_free(ncombos);
 	BN_free(seek);
+	BN_free(seq);
 
 	return (retval);
 }

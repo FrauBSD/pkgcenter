@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-10 13:44:08 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-12 18:16:25 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -39,6 +39,8 @@ AC_DEFINE([CMB_DEBUG], [0],
 if ! :; then
 AC_DEFINE([HAVE_OPENSSL_BN_H], [],
 	[Define to 1 if you have the <openssl/bn.h> header file.])
+AC_DEFINE([HAVE_OPENSSL_CRYPTO_H], [],
+	[Define to 1 if you have the <openssl/crypto.h> header file.])
 fi
 
 ############################################################ OPTIONS
@@ -74,6 +76,7 @@ AC_CANONICAL_HOST
 #
 AS_IF([test "$with_openssl" != "no"], [
 	AC_CHECK_HEADER(openssl/bn.h, [AC_DEFINE(HAVE_OPENSSL_BN_H, 1)])
+	AC_CHECK_HEADER(openssl/crypto.h, [AC_DEFINE(HAVE_OPENSSL_CRYPTO_H, 1)])
 ])
 
 #

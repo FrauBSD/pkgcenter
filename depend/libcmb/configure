@@ -2101,6 +2101,9 @@ if ! :; then
 
 $as_echo "#define HAVE_OPENSSL_BN_H /**/" >>confdefs.h
 
+
+$as_echo "#define HAVE_OPENSSL_CRYPTO_H /**/" >>confdefs.h
+
 fi
 
 ############################################################ OPTIONS
@@ -3403,6 +3406,13 @@ if test "$with_openssl" != "no"; then :
 	ac_fn_c_check_header_mongrel "$LINENO" "openssl/bn.h" "ac_cv_header_openssl_bn_h" "$ac_includes_default"
 if test "x$ac_cv_header_openssl_bn_h" = xyes; then :
   $as_echo "#define HAVE_OPENSSL_BN_H 1" >>confdefs.h
+
+fi
+
+
+	ac_fn_c_check_header_mongrel "$LINENO" "openssl/crypto.h" "ac_cv_header_openssl_crypto_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_crypto_h" = xyes; then :
+  $as_echo "#define HAVE_OPENSSL_CRYPTO_H 1" >>confdefs.h
 
 fi
 

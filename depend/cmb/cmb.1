@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-12 17:11:36 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-11-12 18:16:25 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 12, 2018
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0Deot
+.Op Fl 0DeNot
 .Op Fl c Ar num
 .Op Fl d Ar str
 .Op Fl i Ar num
@@ -131,6 +131,13 @@ values.
 A range of
 .Ql Li -1..-1
 calculates the ending set consisting of only the maximum number of items.
+.It Fl N
+Show combination sequence numbers.
+Combinations are calculated in arithmetic progression,
+providing predictable order.
+The sequence number can be used as a value to
+.Ql Fl i Ar num
+to start at that combination.
 .It Fl n Ar num
 Limit the number of arguments taken from the command-line.
 No effect if

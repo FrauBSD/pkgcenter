@@ -1,5 +1,5 @@
 /*-
- * $FrauBSD: pkgcenter/depend/libcmb/config.h.in 2018-11-05 17:44:49 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/config.h.in 2018-11-12 18:16:25 -0800 freebsdfrau $
  */
 
 /* config.h.in.  Generated from configure.in by autoheader.  */
@@ -18,6 +18,9 @@
 
 /* Define to 1 if you have the <openssl/bn.h> header file. */
 #undef HAVE_OPENSSL_BN_H
+
+/* Define to 1 if you have the <openssl/crypto.h> header file. */
+#undef HAVE_OPENSSL_CRYPTO_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H

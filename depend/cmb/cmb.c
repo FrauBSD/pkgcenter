@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-08 20:32:22 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-12 18:16:25 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 1.3 $";
+static char version[] = "$Version: 1.4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -113,7 +113,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ei:k:n:p:s:tv"
+#define OPTSTRING1 "0c:d:ei:k:Nn:p:s:tv"
 #ifdef HAVE_LIBCRYPTO
 #define OPTSTRING2 OPTSTRING1 "o"
 #else
@@ -190,6 +190,9 @@ main(int argc, char *argv[])
 			} else {
 				config->size_max = config->size_min;
 			}
+			break;
+		case 'N': /* numbers */
+			config->show_numbers = TRUE;
 			break;
 		case 'n': /* args */
 			nitems = strtoull(optarg, (char **)NULL, 10);
@@ -340,6 +343,7 @@ usage(void)
 	    "Skip the first num-1 combinations.");
 	fprintf(stderr, OPTFMT, "-k size",
 	    "Number or range (`min..max' or `min-max') of items.");
+	fprintf(stderr, OPTFMT, "-N", "Show combination sequence numbers.");
 	fprintf(stderr, OPTFMT, "-n num",
 	    "Limit arguments taken from the command-line.");
 #ifdef HAVE_LIBCRYPTO

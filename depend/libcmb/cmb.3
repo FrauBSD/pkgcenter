@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-12 16:48:30 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-12 18:16:25 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd November 12, 2018
@@ -65,6 +65,7 @@ struct cmb_config {
     uint8_t debug;         /* Enable debugging if non-zero */
     uint8_t nul_terminate; /* Terminate combinations with NUL */
     uint8_t show_empty;    /* Show empty set with no items */
+    uint8_t show_numbers;  /* Show combination sequence numbers */
     char    *delimiter;    /* Item separator (default is " ") */
     char    *prefix;       /* Prefix for each combination */
     char    *suffix;       /* Suffix for each combination */
@@ -121,6 +122,19 @@ is non-zero,
 the empty set
 .Pq consisting of a single combination with no items
 is accounted-for.
+.Pp
+If
+.Ar show_numbers
+is non-zero,
+print combination sequence number before calling
+.Fn action .
+Combinations are calculated in arithmetic progression,
+providing predictable order.
+The sequence number can be used as
+.Ar start
+or
+.Ar start_bn
+value to begin at that combination.
 .Pp
 For each combination,
 if
