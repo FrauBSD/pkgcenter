@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-12 18:16:25 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-12 18:52:59 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -321,7 +321,7 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [options] item1 item2 ...\n", pgm);
+	fprintf(stderr, "usage: %s [options] item1 [item2 ...]\n", pgm);
 #define OPTFMT "\t%-10s %s\n"
 	fprintf(stderr, "OPTIONS:\n");
 	fprintf(stderr, OPTFMT, "-0",
