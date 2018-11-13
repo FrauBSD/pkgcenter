@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-09 14:23:58 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-12 17:49:57 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -520,31 +520,31 @@ cmb_return:
 int
 cmb_print(struct cmb_config *config, uint32_t nitems, char *items[])
 {
-	uint8_t cmb_print_nul = FALSE;
+	uint8_t nul = FALSE;
 	uint32_t n;
-	const char *cmb_print_delimiter = " ";
-	const char *cmb_print_prefix = NULL;
-	const char *cmb_print_suffix = NULL;
+	const char *delimiter = " ";
+	const char *prefix = NULL;
+	const char *suffix = NULL;
 
 	/* Process config options */
 	if (config != NULL) {
 		if (config->delimiter != NULL)
-			cmb_print_delimiter = config->delimiter;
-		cmb_print_nul = config->nul_terminate;
-		cmb_print_prefix = config->prefix;
-		cmb_print_suffix = config->suffix;
+			delimiter = config->delimiter;
+		nul = config->nul_terminate;
+		prefix = config->prefix;
+		suffix = config->suffix;
 	}
 
-	if (cmb_print_prefix != NULL)
-		printf("%s", cmb_print_prefix);
+	if (prefix != NULL)
+		printf("%s", prefix);
 	for (n = 0; n < nitems; n++) {
 		printf("%s", items[n]);
 		if (n < nitems - 1)
-			printf("%s", cmb_print_delimiter);
+			printf("%s", delimiter);
 	}
-	if (cmb_print_suffix != NULL)
-		printf("%s", cmb_print_suffix);
-	if (cmb_print_nul)
+	if (suffix != NULL)
+		printf("%s", suffix);
+	if (nul)
 		printf("%c", 0);
 	else
 		printf("\n");
