@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-12 18:16:25 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-12 18:47:33 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -231,7 +231,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint64_t count = 0;
 	uint64_t ncombos;
 	uint64_t seek = 0;
-	uint64_t seq = 0;
+	uint64_t seq = 1;
 	long double z = 1;
 	char **curitems;
 	uint32_t *setnums;
@@ -263,7 +263,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			doseek = TRUE;
 			seek = config->start;
 			if (show_numbers)
-				seq = seek - 1;
+				seq = seek;
 		}
 	}
 
@@ -298,8 +298,9 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 #endif
 		if (!doseek) {
 			if (show_numbers)
-				printf("%lu ", ++seq);
+				printf("%lu ", seq);
 			retval = action(config, 0, NULL);
+			seq++;
 			if (retval != 0)
 				return (retval);
 			if (docount && --count == 0)
@@ -379,14 +380,15 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			curitems[n] = items[n];
 		}
 #if CMB_DEBUG
-		fprintf(stderr, "]\n");
+		fprintf(stderr, "] seq=%lu\n", seq);
 #endif
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
 			if (show_numbers)
-				printf("%lu ", ++seq);
+				printf("%lu ", seq);
 			retval = action(config, curset, curitems);
+			seq++;
 			if (retval != 0)
 				break;
 			if (docount && --count == 0)
@@ -481,7 +483,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 					if (n + 1 < curset)
 						fprintf(stderr, ",");
 				}
-				fprintf(stderr, "]\n");
+				fprintf(stderr, "] seq=%lu\n", seq);
 			}
 #endif
 
@@ -498,8 +500,9 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			if (!doseek || seek == 1) {
 				doseek = FALSE;
 				if (show_numbers)
-					printf("%lu ", ++seq);
+					printf("%lu ", seq);
 				retval = action(config, curset, curitems);
+				seq++;
 				if (retval != 0)
 					goto cmb_return;
 				if (docount && --count == 0)
@@ -518,8 +521,9 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (nextset < 0 && show_empty) {
 		if ((!doseek || seek == 1) && (!docount || count > 0)) {
 			if (show_numbers)
-				printf("%lu ", ++seq);
+				printf("%lu ", seq);
 			retval = action(config, 0, NULL);
+			seq++;
 		}
 	}
 
