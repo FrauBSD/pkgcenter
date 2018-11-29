@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-10 13:44:08 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-29 10:40:48 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -69,6 +69,11 @@ fi
 AC_CANONICAL_HOST
 
 #
+# Compute CC variable
+#
+AC_PROG_CC(clang gcc cc cl.exe)
+
+#
 # Generic header checks
 #
 # AC_CHECK_HEADER (HEADER-FILE, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
@@ -107,6 +112,12 @@ darwin*)
 	fi
 	;;
 esac
+case "$CC" in
+clang)
+	CFLAGS="$CFLAGS -Weverything -Wno-reserved-id-macro -Wno-unused-macros"
+	;;
+esac
+CFLAGS="${CFLAGS# }"
 
 #
 # AC_CONFIG_FILES (FILE ..., [COMMANDS], [INIT-CMDS])

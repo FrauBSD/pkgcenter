@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-12 18:53:24 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-29 10:40:48 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -68,13 +68,13 @@ static char version[] = "$Version: 1.4.1 $";
 static char *pgm; /* set to argv[0] by main() */
 
 /* Function prototypes */
-static void	usage(void);
+static void	_Noreturn usage(void);
 static uint64_t	rand_range(uint64_t range);
 
 /* Inline functions */
 static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
-static inline uint64_t	urand64(void) { return
-    (((uint64_t)lrand48() << 42) + ((uint64_t)lrand48() << 21) + lrand48());
+static inline uint64_t	urand64(void) { return (((uint64_t)lrand48() << 42)
+    + ((uint64_t)lrand48() << 21) + (uint64_t)lrand48());
 }
 
 int
@@ -92,7 +92,7 @@ main(int argc, char *argv[])
 	const char *libver = cmb_version(CMB_VERSION);
 	int ch;
 	int retval = EXIT_SUCCESS;
-	uint64_t nitems = 0;
+	uint32_t nitems = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
 	struct cmb_config *config = NULL;
@@ -174,19 +174,20 @@ main(int argc, char *argv[])
 				config->start =
 				    strtoull(optarg, (char **)NULL, 10);
 				if (*optarg == '-' && config->start > 0) {
-					nstart =
-					    strtoll(optarg, (char **)NULL, 10);
+					nstart = strtoull(&optarg[1],
+					    (char **)NULL, 10);
 				}
 			}
 			break;
 		case 'k': /* size */
-			config->size_min = strtoull(optarg, (char **)NULL, 10);
+			config->size_min = (uint32_t)strtoul(optarg,
+			    (char **)NULL, 10);
 			if ((cp = strstr(optarg, "..")) != NULL) {
-				config->size_max =
-				    strtoull(cp + 2, (char **)NULL, 10);
+				config->size_max = (uint32_t)strtoul(cp + 2,
+				    (char **)NULL, 10);
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
-				config->size_max =
-				    strtoull(cp + 1, (char **)NULL, 10);
+				config->size_max = (uint32_t)strtoul(cp + 1,
+				    (char **)NULL, 10);
 			} else {
 				config->size_max = config->size_min;
 			}
@@ -195,7 +196,7 @@ main(int argc, char *argv[])
 			config->show_numbers = TRUE;
 			break;
 		case 'n': /* args */
-			nitems = strtoull(optarg, (char **)NULL, 10);
+			nitems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
 			break;
 #ifdef HAVE_LIBCRYPTO
 		case 'o': /* disable openssl */
@@ -241,8 +242,8 @@ main(int argc, char *argv[])
 	/*
 	 * Calculate combinations
 	 */
-	if (nitems == 0 || nitems > (uint64_t)argc)
-		nitems = (uint64_t)argc;
+	if (nitems == 0 || nitems > (uint32_t)argc)
+		nitems = (uint32_t)argc;
 	if (opt_total) {
 #ifdef HAVE_OPENSSL_BN_H
 		if (!opt_nossl) {
@@ -302,7 +303,7 @@ main(int argc, char *argv[])
 			count = cmb_count(config, nitems);
 			if (errno)
 				err(errno, NULL);
-			if (count >= (nstart * -1))
+			if ((long double)count >= ((long double)nstart * -1))
 				config->start = count + nstart + 1;
 			else
 				config->start = 0;
