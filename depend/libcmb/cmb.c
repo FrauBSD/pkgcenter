@@ -25,12 +25,14 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-30 20:29:05 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-29 10:58:22 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
 #include <err.h>
 #include <errno.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -302,7 +304,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 #endif
 		if (!doseek) {
 			if (show_numbers)
-				printf("%llu ", seq);
+				printf("%"PRIu64" ", seq);
 			retval = action(config, 0, NULL);
 			seq++;
 			if (retval != 0)
@@ -390,7 +392,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		/* Produce results with the first set of items */
 		if (!doseek) {
 			if (show_numbers)
-				printf("%llu ", seq);
+				printf("%"PRIu64" ", seq);
 			retval = action(config, curset, curitems);
 			seq++;
 			if (retval != 0)
@@ -504,7 +506,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			if (!doseek || seek == 1) {
 				doseek = FALSE;
 				if (show_numbers)
-					printf("%llu ", seq);
+					printf("%"PRIu64" ", seq);
 				retval = action(config, curset, curitems);
 				seq++;
 				if (retval != 0)
@@ -525,7 +527,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (nextset < 0 && show_empty) {
 		if ((!doseek || seek == 1) && (!docount || count > 0)) {
 			if (show_numbers)
-				printf("%llu ", seq);
+				printf("%"PRIu64" ", seq);
 			retval = action(config, 0, NULL);
 			seq++;
 		}
