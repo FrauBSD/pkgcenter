@@ -3489,6 +3489,8 @@ darwin*)
 		if [ -e "/usr/lib/libcrypto.dylib" ] ||
 		   [ "$prefix/lib/libcrypto.dylib "]
 		then
+			$as_echo "#define HAVE_LIBCRYPTO 1" >>confdefs.h
+
 			LIBS="$LIBS -lcrypto"
 		fi
 	fi

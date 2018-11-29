@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-12 18:16:25 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-29 11:45:15 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -102,6 +102,7 @@ darwin*)
 		if [[ -e "/usr/lib/libcrypto.dylib" ]] ||
 		   [[ "$prefix/lib/libcrypto.dylib "]]
 		then
+			AC_DEFINE(HAVE_LIBCRYPTO, 1)
 			LIBS="$LIBS -lcrypto"
 		fi
 	fi
