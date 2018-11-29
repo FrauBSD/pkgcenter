@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to produce release tarballs $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/release/Makefile 2018-11-29 02:20:57 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/release/Makefile 2018-11-29 11:28:53 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -36,71 +36,72 @@ all: cmb
 .PHONY: cmb
 
 cmb:
-	@$(QUIETLY); \
-	 $(EVAL2); \
-	 $(STATUSES); \
-	 $(EXIT_TRAPS); \
-	 quietly type cmb || fail cmb not installed; \
-	 ok cmb installed; \
-	 make=$(MAKE); \
-	 args="$(DEFAULT_ARGS)"; \
-	 case "$${UNAME_s:=$$( uname -s )}" in \
-	 FreeBSD) \
-	 	quietly type gmake || fail gmake not installed; \
-	 	ok gmake installed; \
-	 	make=gmake; \
-	 	;; \
-	 esac; \
-	 version=$$( awk 'match($$0, /\$$Version: [^$$]* \$$/) { \
-	 	print substr($$0, RSTART + 10, RLENGTH - 12); \
-	 	exit found=1; \
-	 } END { exit !found }' "$(SRC)" 2> /dev/null ) || \
-	 	fail Version not found in $(SRC); \
-	 version="$${version#libcmb }"; \
-	 ok Version $$version found in $(SRC); \
-	 cd ..; \
-	 [ ! -e cmb ] || fail build directory not clean; \
-	 ok build directory clean; \
-	 cmb -e D:--enable-debug o:--without-openssl | while read line; do \
-	 	variant=; \
-	 	args="$(DEFAULT_ARGS)"; \
-	 	set -- $$line; \
-	 	for arg; do \
-	 		variant="$$variant$${arg%%:*}"; \
-	 		args="$$args $${arg#*:}"; \
-	 	done; \
-	 	args="$${args# }"; \
+	@$(QUIETLY);                                                          \
+	 $(EVAL2);                                                            \
+	 $(STATUSES);                                                         \
+	 $(EXIT_TRAPS);                                                       \
+	 quietly type cmb || fail cmb not installed;                          \
+	 ok cmb installed;                                                    \
+	 make=$(MAKE);                                                        \
+	 args="$(DEFAULT_ARGS)";                                              \
+	 case "$${UNAME_s:=$$( uname -s )}" in                                \
+	 FreeBSD)                                                             \
+	 	quietly type gmake || fail gmake not installed;               \
+	 	ok gmake installed;                                           \
+	 	make=gmake;                                                   \
+	 	;;                                                            \
+	 esac;                                                                \
+	 version=$$( awk 'match($$0, /\$$Version: [^$$]* \$$/) {              \
+	 	print substr($$0, RSTART + 10, RLENGTH - 12);                 \
+	 	exit found=1;                                                 \
+	 } END { exit !found }' "$(SRC)" 2> /dev/null ) ||                    \
+	 	fail Version not found in $(SRC);                             \
+	 version="$${version#libcmb }";                                       \
+	 ok Version $$version found in $(SRC);                                \
+	 cd ..;                                                               \
+	 [ ! -e cmb ] || fail build directory not clean;                      \
+	 ok build directory clean;                                            \
+	 cmb -e D:--enable-debug o:--without-openssl | while read line; do    \
+	 	variant=;                                                     \
+	 	args="$(DEFAULT_ARGS)";                                       \
+	 	set -- $$line;                                                \
+	 	for arg; do                                                   \
+	 		variant="$$variant$${arg%%:*}";                       \
+	 		args="$$args $${arg#*:}";                             \
+	 	done;                                                         \
+	 	args="$${args# }";                                            \
 	 	printf "\033[36m>>> Configure args: %s <<<\033[m\n" "$$args"; \
-	 	eval2 ./configure $$args; \
-	 	etrap eval2 $$make cleandir; \
-	 	eval2 $$make; \
-	 	cmbdir=release/libcmb-$$version$${variant:+-$$variant}; \
-	 	eval2 mkdir -p $$cmbdir; \
-	 	[ "$(NO_CLEAN)" ] || etrap eval2 rm -Rf $$cmbdir; \
-	 	eval2 cp libcmb.so.0 cmb.3.gz $$cmbdir/; \
-	 	eval2 tar czfo $$cmbdir.tgz $$cmbdir; \
-	 	parte; \
-	 	[ "$(NO_CLEAN)" ] || eval2 rm -Rf $$cmbdir; \
-	 	eval2 $$make cleandir; \
+	 	eval2 ./configure $$args;                                     \
+	 	etrap eval2 $$make cleandir;                                  \
+	 	eval2 $$make;                                                 \
+	 	cmbdir=release/libcmb-$$version$${variant:+-$$variant};       \
+	 	eval2 mkdir -p $$cmbdir;                                      \
+	 	[ "$(NO_CLEAN)" ] || etrap eval2 rm -Rf $$cmbdir;             \
+	 	eval2 cp libcmb.so.0 cmb.3.gz $$cmbdir/;                      \
+	 	eval2 tar czfo $$cmbdir.tgz $$cmbdir;                         \
+	 	parte;                                                        \
+	 	[ "$(NO_CLEAN)" ] || eval2 rm -Rf $$cmbdir;                   \
+	 	eval2 $$make cleandir;                                        \
+	 	echo Success.;                                                \
 	 done
 
 .PHONY: clean distclean
 
 clean:
 	rm -f libcmb-*/libcmb.so.0 libcmb-*/cmb.3.gz
-	@$(QUIETLY); \
-	 $(EVAL2); \
-	 $(STATUSES); \
-	 quietly type cmb || fail cmb not installed; \
+	@$(QUIETLY);                                             \
+	 $(EVAL2);                                               \
+	 $(STATUSES);                                            \
+	 quietly type cmb || fail cmb not installed;             \
 	 version=$$( awk 'match($$0, /\$$Version: [^$$]* \$$/) { \
-	 	print substr($$0, RSTART + 10, RLENGTH - 12); \
-	 	exit found=1; \
-	 } END { exit !found }' "$(SRC)" 2> /dev/null ) || \
-	 	fail Version not found in $(SRC); \
-	 version="$${version#libcmb }"; \
-	 cmb -ed "" D o | while read variant; do \
-	 	cmbdir=libcmb-$$version$${variant:+-$$variant}; \
-	 	eval2 "[ ! -e $$cmbdir ] || rmdir $$cmbdir"; \
+	 	print substr($$0, RSTART + 10, RLENGTH - 12);    \
+	 	exit found=1;                                    \
+	 } END { exit !found }' "$(SRC)" 2> /dev/null ) ||       \
+	 	fail Version not found in $(SRC);                \
+	 version="$${version#libcmb }";                          \
+	 cmb -ed "" D o | while read variant; do                 \
+	 	cmbdir=libcmb-$$version$${variant:+-$$variant};  \
+	 	eval2 "[ ! -e $$cmbdir ] || rmdir $$cmbdir";     \
 	 done
 
 cleandir: clean
