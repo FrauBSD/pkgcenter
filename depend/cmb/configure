@@ -3310,9 +3310,10 @@ case "$CC" in
 clang)
 	CFLAGS="$CFLAGS $( echo \
 		-Weverything \
+		-Wno-extra-semi \
+		-Wno-padded \
 		-Wno-reserved-id-macro \
 		-Wno-unused-macros \
-		-Wno-extra-semi \
 	)"
 	;;
 esac

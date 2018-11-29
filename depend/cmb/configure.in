@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-29 10:46:30 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-29 11:16:06 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -116,9 +116,10 @@ case "$CC" in
 clang)
 	CFLAGS="$CFLAGS $( echo \
 		-Weverything \
+		-Wno-extra-semi \
+		-Wno-padded \
 		-Wno-reserved-id-macro \
 		-Wno-unused-macros \
-		-Wno-extra-semi \
 	)"
 	;;
 esac
