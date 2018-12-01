@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-29 10:40:48 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-11-30 23:31:48 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -96,7 +96,7 @@ main(int argc, char *argv[])
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
 	struct cmb_config *config = NULL;
-#ifdef HAVE_OPENSSL_BN_H
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 	BIGNUM *count_bn;
 #endif
 	uint64_t count;
@@ -131,7 +131,7 @@ main(int argc, char *argv[])
 			config->nul_terminate = TRUE;
 			break;
 		case 'c': /* count */
-#ifdef HAVE_OPENSSL_BN_H
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			if (!opt_nossl &&
 			    BN_dec2bn(&(config->count_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
@@ -139,7 +139,7 @@ main(int argc, char *argv[])
 #endif
 				config->count =
 				    strtoull(optarg, (char **)NULL, 10);
-#ifdef HAVE_OPENSSL_BN_H
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			}
 #endif
 			break;
@@ -163,7 +163,7 @@ main(int argc, char *argv[])
 			    strncmp("random", optarg, optlen) == 0) {
 				opt_randi = TRUE;
 			}
-#ifdef HAVE_OPENSSL_BN_H
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			if (!opt_randi && !opt_nossl &&
 			    BN_dec2bn(&(config->start_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
@@ -245,7 +245,7 @@ main(int argc, char *argv[])
 	if (nitems == 0 || nitems > (uint32_t)argc)
 		nitems = (uint32_t)argc;
 	if (opt_total) {
-#ifdef HAVE_OPENSSL_BN_H
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		if (!opt_nossl) {
 			char *count_str;
 
@@ -265,7 +265,7 @@ main(int argc, char *argv[])
 			if (errno)
 				err(errno, NULL);
 			printf("%"PRIu64"\n", count);
-#ifdef HAVE_OPENSSL_BN_H
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		}
 	} else if (!opt_nossl) {
 		if (opt_randi) {
