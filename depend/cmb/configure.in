@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-30 23:34:49 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/configure.in 2018-11-30 23:37:34 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -58,8 +58,8 @@ AC_ARG_WITH(openssl,
 #
 [[ "${prefix#NONE}" ]] || prefix=/usr/local
 if [[ "$prefix" != /usr ]]; then
-	CFLAGS="$CFLAGS -I$prefix/include"
-	LDFLAGS="$LDFLAGS -L$prefix/lib"
+	CFLAGS="${CFLAGS:+$CFLAGS }-I$prefix/include"
+	LDFLAGS="${LDFLAGS:+$LDFLAGS }-L$prefix/lib"
 fi
 
 #
@@ -99,15 +99,15 @@ AS_IF(test "$with_openssl" != "no", AC_CHECK_LIB(crypto, BN_new))
 #
 case "$host_os" in
 darwin*)
-	CFLAGS="$CFLAGS -mmacosx-version-min=\$(OSX_MIN)"
-	LDFLAGS="$LDFLAGS -isysroot /"
+	CFLAGS="${CFLAGS:+$CFLAGS }-mmacosx-version-min=\$(OSX_MIN)"
+	LDFLAGS="${LDFLAGS:+$LDFLAGS }-isysroot /"
 	if [[ "$ac_cv_lib_crypto_BN_new" = no ]] &&
 	   [[ "$ac_cv_header_openssl_bn_h" = yes ]]
 	then
 		if [[ -e "/usr/lib/libcrypto.dylib" ]] ||
 		   [[ "$prefix/lib/libcrypto.dylib "]]
 		then
-			LIBS="$LIBS -lcrypto"
+			LIBS="${LIBS:+$LIBS }-lcrypto"
 		fi
 	fi
 	;;
