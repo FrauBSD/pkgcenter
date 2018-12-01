@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 03:04:40 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 15:46:17 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -114,18 +114,13 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ei:k:Nn:p:s:Stv"
-#ifdef HAVE_LIBCRYPTO
-#define OPTSTRING2 OPTSTRING1 "o"
+#define OPTSTRING1 "0c:d:ei:k:Nn:op:s:Stv"
+#if CMB_DEBUG
+#define OPTSTRING2 OPTSTRING1 "D"
 #else
 #define OPTSTRING2 OPTSTRING1
 #endif
-#if CMB_DEBUG
-#define OPTSTRING3 OPTSTRING2 "D"
-#else
-#define OPTSTRING3 OPTSTRING2
-#endif
-#define OPTSTRING OPTSTRING3
+#define OPTSTRING OPTSTRING2
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -199,11 +194,11 @@ main(int argc, char *argv[])
 		case 'n': /* args */
 			nitems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
 			break;
-#ifdef HAVE_LIBCRYPTO
 		case 'o': /* disable openssl */
+#ifdef HAVE_LIBCRYPTO
 			opt_nossl = TRUE;
-			break;
 #endif
+			break;
 		case 'p': /* prefix */
 			config->prefix = optarg;
 			break;
