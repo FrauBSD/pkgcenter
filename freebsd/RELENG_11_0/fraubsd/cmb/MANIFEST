@@ -11,13 +11,13 @@
 	"comment":"Combinatorics library/utility",
 	"licenselogic":"single",
 	"licenses":["BSD"],
-	"version":"1.4.1",
+	"version":"1.5",
 
 	"maintainer":"dteske@freebsd.org",
 	"www":"https://www.fraubsd.org/",
 
 	"arch":"freebsd:11:amd64",
-	"prefix":"/",
+	"prefix":"/usr/local",
 
 	//////////////////////////////////////////////////// DESCRIPTION
 
@@ -28,31 +28,24 @@ WWW: https://www.fraubsd.org/",
 	//////////////////////////////////////////////////// FILES
 
 	"files":[
-		"/usr/bin/cmb",
-		"/usr/include/cmb.h",
-		"/usr/lib/debug/usr/lib/libcmb.so.0.debug",
-		"/usr/lib/libcmb.a",
-		"/usr/lib/libcmb.so",
-		"/usr/lib/libcmb.so.0",
-		"/usr/lib/libcmb_p.a",
-		"/usr/share/man/man1/cmb.1.gz",
-		"/usr/share/man/man3/cmb.3.gz",
+		"/usr/local/bin/cmb",
+		"/usr/local/include/cmb.h",
+		"/usr/local/lib/libcmb.so",
+		"/usr/local/lib/libcmb.so.0",
+		"/usr/local/man/man1/cmb.1.gz",
+		"/usr/local/man/man3/cmb.3.gz",
 	],
 
 	//////////////////////////////////////////////////// DIRECTORIES
 
 	"directories":{
-		"/usr":"n",
-		"/usr/bin":"n",
-		"/usr/include":"n",
-		"/usr/lib":"n",
-		"/usr/lib/debug":"n",
-		"/usr/lib/debug/usr":"n",
-		"/usr/lib/debug/usr/lib":"n",
-		"/usr/share":"n",
-		"/usr/share/man":"n",
-		"/usr/share/man/man1":"n",
-		"/usr/share/man/man3":"n",
+		"/usr/local":"n",
+		"/usr/local/bin":"n",
+		"/usr/local/include":"n",
+		"/usr/local/lib":"n",
+		"/usr/local/man":"n",
+		"/usr/local/man/man1":"n",
+		"/usr/local/man/man3":"n",
 	},
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,6 +53,6 @@ WWW: https://www.fraubsd.org/",
 ////////////////////////////////////////////////////////////////////////////////
 //
 // $Copyright: 2016-2018 Devin Teske. All rights reserved. $
-// $FrauBSD: pkgcenter/freebsd/RELENG_11_0/fraubsd/cmb/MANIFEST 2018-11-12 18:54:04 -0800 freebsdfrau $
+// $FrauBSD: pkgcenter/freebsd/RELENG_11_0/fraubsd/cmb/MANIFEST 2018-12-01 02:12:52 -0800 freebsdfrau $
 //
 ////////////////////////////////////////////////////////////////////////////////
