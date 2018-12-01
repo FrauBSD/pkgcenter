@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-01 00:01:12 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-01 00:13:11 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -57,8 +57,9 @@ static const char version[] = "libcmb 1.4-interim";
 static const char version_long[] = "$Version: libcmb 1.4-interim $";
 
 #if CMB_DEBUG
+__attribute__((__format__ (__printf__, 1, 0)))
 static void
-cmb_debug(char *fmt, ...)
+cmb_debug(const char *fmt, ...)
 {
 	int len;
 	va_list ap;
@@ -73,7 +74,7 @@ cmb_debug(char *fmt, ...)
 		len = sizeof(buf) - CMB_DEBUG_PREFIX_LEN - 1;
 	len += CMB_DEBUG_PREFIX_LEN;
 	buf[len++] = '\n';
-	write(2, buf, len);
+	write(2, buf, (size_t)len);
 }
 #endif
 
@@ -386,7 +387,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			curitems[n] = items[n];
 		}
 #if CMB_DEBUG
-		fprintf(stderr, "] seq=%lu\n", seq);
+		fprintf(stderr, "] seq=%"PRIu64"\n", seq);
 #endif
 
 		/* Produce results with the first set of items */
@@ -489,7 +490,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 					if (n + 1 < curset)
 						fprintf(stderr, ",");
 				}
-				fprintf(stderr, "] seq=%lu\n", seq);
+				fprintf(stderr, "] seq=%"PRIu64"\n", seq);
 			}
 #endif
 
