@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-11-29 11:19:27 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-01 00:01:12 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -178,14 +178,14 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 		z = (z * i--) / k;
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
-	    curset += nextset)
+	    curset += (uint32_t)nextset)
 	{
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0)
 			z = (z * i--) / k++;
 
 		/* Add number of combinations in this set to total */
-		if ((ncombos = z) == 0) {
+		if ((ncombos = (uint64_t)z) == 0) {
 			errno = ERANGE;
 			return (0);
 		}
@@ -340,7 +340,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		z = (z * i--) / k;
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
-	    curset += nextset)
+	    curset += (uint32_t)nextset)
 	{
 #if CMB_DEBUG
 		if (debug)
@@ -352,7 +352,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			z = (z * i--) / k++;
 
 		/* Cast number of combinations in set to integer */
-		if ((ncombos = z) == 0)
+		if ((ncombos = (uint64_t)z) == 0)
 			return (errno = ERANGE);
 
 		/* Jump to next set if requested start is beyond this one */
@@ -638,10 +638,10 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	if ((setinit == 1 && setdone == nitems) ||
 	    (setinit == nitems && setdone == 1)) {
 		if (show_empty) {
-			BN_lshift(count, BN_value_one(), nitems);
+			BN_lshift(count, BN_value_one(), (int)nitems);
 			goto cmb_count_bn_return;
 		} else {
-			if (BN_lshift(count, BN_value_one(), nitems))
+			if (BN_lshift(count, BN_value_one(), (int)nitems))
 				BN_sub_word(count, 1);
 			goto cmb_count_bn_return;
 		}
@@ -665,7 +665,7 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 	}
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
-	    curset += nextset)
+	    curset += (uint32_t)nextset)
 	{
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
@@ -857,7 +857,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	}
 	for (curset = setinit;
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
-	    curset += nextset)
+	    curset += (uint32_t)nextset)
 	{
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
