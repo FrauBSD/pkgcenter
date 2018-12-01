@@ -70,7 +70,7 @@ cmb:
 	 	done;                                                         \
 	 	args="$${args# }";                                            \
 	 	printf "\033[36m>>> Configure args: %s <<<\033[m\n" "$$args"; \
-	 	eval2 ./configure $$args;                                     \
+	 	eval2 ./configure $$args || fail "configure failed";          \
 	 	etrap eval2 $$make cleandir;                                  \
 	 	eval2 $$make;                                                 \
 	 	cmbdir=release/cmb-$$version$${variant:+-$$variant};          \
