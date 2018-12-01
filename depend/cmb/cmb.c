@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 02:03:51 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 03:04:05 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -70,6 +70,7 @@ static char *pgm; /* set to argv[0] by main() */
 /* Function prototypes */
 static void	_Noreturn usage(void);
 static uint64_t	rand_range(uint64_t range);
+static int	nop(struct cmb_config *config, uint32_t nitems, char *items[]);
 
 /* Inline functions */
 static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
@@ -113,7 +114,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ei:k:Nn:p:s:tv"
+#define OPTSTRING1 "0c:d:ei:k:Nn:p:s:Stv"
 #ifdef HAVE_LIBCRYPTO
 #define OPTSTRING2 OPTSTRING1 "o"
 #else
@@ -205,6 +206,9 @@ main(int argc, char *argv[])
 #endif
 		case 'p': /* prefix */
 			config->prefix = optarg;
+			break;
+		case 'S': /* silent */
+			config->action = nop;
 			break;
 		case 's': /* suffix */
 			config->suffix = optarg;
@@ -352,6 +356,7 @@ usage(void)
 		"Disable OpenSSL (limits calculations to 64-bits).");
 #endif
 	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");
+	fprintf(stderr, OPTFMT, "-S", "Silent (for performance benchmarks).");
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
 	fprintf(stderr, OPTFMT, "-t",
 	    "Print number of combinations and exit.");
@@ -372,4 +377,16 @@ rand_range(uint64_t range)
 
 	while ((res = urand64()) < exclusion) {}
 	return (res % range);
+}
+
+/*
+ * For performance benchmarking
+ */
+static int
+nop(struct cmb_config *config, uint32_t nitems, char *items[])
+{
+	(void)config;
+	(void)nitems;
+	(void)items;
+	return (0);
 }
