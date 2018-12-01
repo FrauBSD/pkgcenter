@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-01 00:13:11 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-01 02:03:51 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -53,8 +53,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_DEBUG_PREFIX_LEN	7
 #endif
 
-static const char version[] = "libcmb 1.4-interim";
-static const char version_long[] = "$Version: libcmb 1.4-interim $";
+static const char version[] = "libcmb 1.4";
+static const char version_long[] = "$Version: libcmb 1.4 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
