@@ -34,9 +34,9 @@ AC_CONFIG_AUX_DIR(cfgaux)
 #
 # Definitions for autoheader (creates config.h.in)
 #
-AC_DEFINE(CMB_DEBUG, 0,
-	[Define to 1 if you want to enable extra debugging options.])
 if ! :; then
+AC_DEFINE(CMB_DEBUG, [],
+	[Define to 1 if you want to enable extra debugging options.])
 AC_DEFINE(HAVE_OPENSSL_BN_H, [],
 	[Define to 1 if you have the <openssl/bn.h> header file.])
 AC_DEFINE(HAVE_OPENSSL_CRYPTO_H, [],
