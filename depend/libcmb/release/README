@@ -15,6 +15,10 @@ Each tarball contains:
 	libcmb.so.0 (library)
 	cmb.3.gz (gzip-compressed manual)
 
+To build all variants with any/all warnings made fatal:
+
+	make CFLAGS=-Werror
+
 To build all variants but leave the directories behind:
 
 	make NO_CLEAN=1
