@@ -303,8 +303,8 @@ main(int argc, char *argv[])
 			count = cmb_count(config, nitems);
 			if (errno)
 				err(errno, NULL);
-			if ((long double)count >= ((long double)nstart * -1))
-				config->start = count + nstart + 1;
+			if (count > nstart)
+				config->start = count - nstart + 1;
 			else
 				config->start = 0;
 		}
