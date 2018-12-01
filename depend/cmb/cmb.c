@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 03:04:05 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 03:04:40 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 1.5 $";
+static char version[] = "$Version: 1.6-interim $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
