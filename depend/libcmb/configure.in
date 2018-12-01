@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-30 23:19:27 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2018-11-30 23:23:04 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -99,6 +99,8 @@ add_crypto()
 }
 AS_IF([test "$host_os" != "${host_os#darwin}"],
 [
+	CFLAGS="${CFLAGS:+$CFLAGS }-mmacosx-version-min=\$(OSX_MIN)"
+	LDFLAGS="${LDFLAGS:+$LDFLAGS }-isysroot /"
 	AS_IF([test "$ac_cv_lib_crypto_BN_new" = no &&
 		test "$ac_cv_header_openssl_bn_h" = yes],
 	[

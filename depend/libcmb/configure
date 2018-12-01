@@ -3487,6 +3487,8 @@ add_crypto()
 }
 if test "$host_os" != "${host_os#darwin}"; then :
 
+	CFLAGS="${CFLAGS:+$CFLAGS }-mmacosx-version-min=\$(OSX_MIN)"
+	LDFLAGS="${LDFLAGS:+$LDFLAGS }-isysroot /"
 	if test "$ac_cv_lib_crypto_BN_new" = no &&
 		test "$ac_cv_header_openssl_bn_h" = yes; then :
 
