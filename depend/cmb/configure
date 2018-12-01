@@ -3297,7 +3297,7 @@ add_crypto()
 
 	LIBS="${LIBS:+$LIBS }-lcrypto"
 }
-if test "$host_os" != "${host_os#darwin}",
+if test "$host_os" != "${host_os#darwin}"; then :
 
 	CFLAGS="${CFLAGS:+$CFLAGS }-mmacosx-version-min=\$(OSX_MIN)"
 	LDFLAGS="${LDFLAGS:+$LDFLAGS }-isysroot /"
@@ -3347,7 +3347,6 @@ fi
 
 
 fi
-; then :
 
 fi
 if test "$CC" = clang; then :
