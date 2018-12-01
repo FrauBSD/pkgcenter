@@ -3426,7 +3426,7 @@ fi
 # AC_CHECK_LIB (LIB, FUNC, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND], [LIBS])
 # 	Prepend `-l<LIB>' to LIBS if library provides function.
 #
-if test "$with_openssl" != "no"; then :
+if test "$with_openssl" != "no" -a "$host_os" = "${host_os#darwin}"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BN_new in -lcrypto" >&5
 $as_echo_n "checking for BN_new in -lcrypto... " >&6; }
 if ${ac_cv_lib_crypto_BN_new+:} false; then :
