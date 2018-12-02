@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-01 16:19:03 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-01 17:08:55 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd December 2, 2018
@@ -148,7 +148,11 @@ Disable OpenSSL
 .Xr bn 3
 support
 .Pq limits calculations to 64-bits .
-Only available if compiled with openssl support.
+No effect if unsupported.
+Use
+.Ql Fl v
+to check OpenSSL support.
+The default is to use OpenSSL when supported.
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .

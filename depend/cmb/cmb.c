@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 15:46:17 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 17:08:55 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -330,11 +330,7 @@ usage(void)
 	    "Produce num combinations (default `0' for all).");
 #if CMB_DEBUG
 	fprintf(stderr, OPTFMT, "-D",
-#ifdef HAVE_LIBCRYPTO
 	    "Enable debugging information (implies `-o')."
-#else
-	    "Enable debugging information."
-#endif
 	);
 #endif
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
@@ -346,10 +342,8 @@ usage(void)
 	fprintf(stderr, OPTFMT, "-N", "Show combination sequence numbers.");
 	fprintf(stderr, OPTFMT, "-n num",
 	    "Limit arguments taken from the command-line.");
-#ifdef HAVE_LIBCRYPTO
 	fprintf(stderr, OPTFMT, "-o",
 		"Disable OpenSSL (limits calculations to 64-bits).");
-#endif
 	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");
 	fprintf(stderr, OPTFMT, "-S", "Silent (for performance benchmarks).");
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
