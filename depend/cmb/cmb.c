@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-01 17:08:55 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-03 05:27:29 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -86,6 +86,7 @@ main(int argc, char *argv[])
 	uint8_t opt_nossl = FALSE;
 #endif
 	uint8_t opt_randi = FALSE;
+	uint8_t opt_silent = FALSE;
 	uint8_t opt_total = FALSE;
 	uint8_t opt_version = FALSE;
 	char *cp;
@@ -203,7 +204,7 @@ main(int argc, char *argv[])
 			config->prefix = optarg;
 			break;
 		case 'S': /* silent */
-			config->action = nop;
+			opt_silent = TRUE;
 			break;
 		case 's': /* suffix */
 			config->suffix = optarg;
@@ -237,6 +238,17 @@ main(int argc, char *argv[])
 	/* At least one non-option argument is required */
 	if (argc == 0 && !opt_empty)
 		usage(); /* NOTREACHED */
+
+	/*
+	 * Time-based benchmarking option (-S for silent).
+	 *
+	 * NB: The call-stack is still incremented into the action, while using
+	 *     a nop action allows us to benchmark various action overhead.
+	 */
+	if (opt_silent) {
+		config->action = nop;
+		config->show_numbers = FALSE;
+	}
 
 	/*
 	 * Calculate combinations
