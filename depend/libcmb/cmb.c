@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:51:13 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:54:44 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -986,7 +986,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		nextset = -1;
 
 	/* Initialize sequence number */
+#if CMB_DEBUG
 	if ((show_numbers || debug) && seq == NULL) {
+#else
+	if (show_numbers && seq == NULL) {
+#endif
 		if ((seq = BN_new()) == NULL)
 			goto cmb_bn_return;
 		if (!BN_one(seq))
