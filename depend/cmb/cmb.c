@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 15:43:15 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 15:48:35 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -271,7 +271,7 @@ main(int argc, char *argv[])
 #endif
 			count = cmb_count(config, nitems);
 			if (errno)
-				err(errno, NULL);
+				err(errno, NULL); /* NOTREACHED */
 			printf("%"PRIu64"\n", count);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		}
@@ -302,7 +302,7 @@ main(int argc, char *argv[])
 		if (opt_randi) {
 			count = cmb_count(config, nitems);
 			if (errno)
-				err(errno, NULL);
+				err(errno, NULL); /* NOTREACHED */
 			if (gettimeofday(&tv,NULL) == 0) {
 				srand48((long)tv.tv_usec);
 				config->start = rand_range(count) + 1;
@@ -310,7 +310,7 @@ main(int argc, char *argv[])
 		} else if (nstart != 0) {
 			count = cmb_count(config, nitems);
 			if (errno)
-				err(errno, NULL);
+				err(errno, NULL); /* NOTREACHED */
 			if (count > nstart)
 				config->start = count - nstart + 1;
 			else
@@ -318,7 +318,7 @@ main(int argc, char *argv[])
 		}
 		retval = cmb(config, nitems, argv);
 		if (errno)
-			err(errno, NULL);
+			err(errno, NULL); /* NOTREACHED */
 	}
 
 	return (retval);
