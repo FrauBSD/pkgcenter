@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-01 02:03:51 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:43:15 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -53,8 +53,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_DEBUG_PREFIX_LEN	7
 #endif
 
-static const char version[] = "libcmb 1.4";
-static const char version_long[] = "$Version: libcmb 1.4 $";
+static const char version[] = "libcmb 1.5-interim";
+static const char version_long[] = "$Version: libcmb 1.5-interim $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -703,6 +703,9 @@ cmb_count_bn_return:
 int
 cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 {
+#if CMB_DEBUG
+	uint8_t debug = FALSE;
+#endif
 	uint8_t docount = FALSE;
 	uint8_t doseek = FALSE;
 	uint8_t show_empty = FALSE;
@@ -745,6 +748,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((count = BN_dup(config->count_bn)) == NULL)
 				goto cmb_bn_return;
 		}
+#if CMB_DEBUG
+		debug = config->debug;
+#else
+		if (config->debug != FALSE)
+			warnx("libcmb not compiled with debug support!");
+#endif
 		show_empty = config->show_empty;
 		show_numbers = config->show_numbers;
 		if (config->size_min != 0 || config->size_max != 0) {
@@ -786,7 +795,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		nextset = -1;
 
 	/* Initialize sequence number */
-	if (show_numbers && seq == NULL) {
+	if ((show_numbers || debug) && seq == NULL) {
 		if ((seq = BN_new()) == NULL)
 			goto cmb_bn_return;
 		if (!BN_one(seq))
@@ -795,6 +804,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
+#if CMB_DEBUG
+		if (debug)
+			cmb_debug(">>> 0-item combinations <<<");
+#endif
 		if (!doseek) {
 			if (show_numbers) {
 				seq_str = BN_bn2dec(seq);
@@ -856,6 +869,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	    nextset > 0 ? curset <= setdone : curset >= setdone;
 	    curset += (uint32_t)nextset)
 	{
+#if CMB_DEBUG
+		if (debug)
+			cmb_debug(">>> %u-item combinations <<<", curset);
+#endif
+
 		/* Calculate number of combinations (incrementing) */
 		if (nextset > 0) {
 			if (!BN_mul_word(ncombos, i--))
@@ -883,8 +901,32 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		}
 
 		/* Fill array with the initial positional arguments */
-		for (n = 0; n < curset; n++)
+#if CMB_DEBUG
+		if (debug)
+			fprintf(stderr, CMB_DEBUG_PREFIX "setnums=[");
+#endif
+		for (n = 0; n < curset; n++) {
+#if CMB_DEBUG
+			if (debug) {
+				if (n == curset - 1)
+					fprintf(stderr, "\033[31m%u\033[m", n);
+				else
+					fprintf(stderr, "%u", n);
+				if (n + 1 < curset)
+					fprintf(stderr, ",");
+			}
+#endif
 			curitems[n] = items[n];
+		}
+#if CMB_DEBUG
+		if (debug) {
+			seq_str = BN_bn2dec(seq);
+			fprintf(stderr, "] seq=%s\n", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+			OPENSSL_free(seq_str);
+#endif
+		}
+#endif
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
@@ -983,6 +1025,29 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			 */
 			for (n = setnums_last; n <= curset; n++)
 				setnums[n] = seed + n - setnums_last + 1;
+#if CMB_DEBUG
+			if (debug) {
+				fprintf(stderr, CMB_DEBUG_PREFIX "setnums=[");
+				for (n = 0; n < curset; n++) {
+					if (n == setnums_last) {
+						fprintf(stderr,
+						    "\033[31m%u\033[m",
+						    setnums[n]);
+					} else {
+						fprintf(stderr, "%u",
+						    setnums[n]);
+					}
+					if (n + 1 < curset)
+						fprintf(stderr, ",");
+				}
+				seq_str = BN_bn2dec(seq);
+				fprintf(stderr, "] seq=%s\n", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+				OPENSSL_free(seq_str);
+				
+#endif
+			}
+#endif
 
 			/* Now map new setnums into values stored in items */
 			for (n = 0; n < curset; n++)

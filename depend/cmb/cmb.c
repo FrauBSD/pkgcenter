@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-03 05:27:29 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 15:43:15 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -146,9 +146,6 @@ main(int argc, char *argv[])
 #if CMB_DEBUG
 		case 'D': /* debug */
 			config->debug = TRUE;
-#ifdef HAVE_LIBCRYPTO
-			opt_nossl = TRUE;
-#endif
 			break;
 #endif
 		case 'e': /* empty */
@@ -342,7 +339,7 @@ usage(void)
 	    "Produce num combinations (default `0' for all).");
 #if CMB_DEBUG
 	fprintf(stderr, OPTFMT, "-D",
-	    "Enable debugging information (implies `-o')."
+	    "Enable debugging information on stderr."
 	);
 #endif
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
