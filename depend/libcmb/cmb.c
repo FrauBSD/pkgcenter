@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:44:44 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:45:46 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -391,7 +391,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			curitems[n] = items[n];
 		}
 #if CMB_DEBUG
-		fprintf(stderr, "] seq=%"PRIu64"\n", seq);
+		if (debug)
+			fprintf(stderr, "] seq=%"PRIu64"\n", seq);
 #endif
 
 		/* Produce results with the first set of items */
