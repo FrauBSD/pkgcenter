@@ -25,12 +25,15 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:45:46 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 15:51:13 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
+#include <sys/stat.h>
+
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <limits.h>
@@ -39,8 +42,10 @@ __FBSDID("$FreeBSD$");
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "cmb.h"
+#include "cmb_private.h"
 
 #ifdef HAVE_OPENSSL_CRYPTO_H
 #include <openssl/crypto.h>
@@ -54,6 +59,14 @@ __FBSDID("$FreeBSD$");
 #ifndef CMB_DEBUG_BUFSIZE
 #define CMB_DEBUG_BUFSIZE 2048
 #endif
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
+#ifndef CMB_PARSE_FRAGSIZE
+#define CMB_PARSE_FRAGSIZE 512
 #endif
 
 static const char version[] = "libcmb 1.5-interim";
@@ -98,6 +111,180 @@ cmb_version(int type)
 	case CMB_VERSION_LONG: return version_long;
 	default: return "not available";
 	}
+}
+
+/*
+ * Takes pointer to `struct cmb_config' options, file path to read items from,
+ * pointer to uint32_t (written-to, containing number of items read), and
+ * uint32_t to optionally maximum number of items read from file. Returns
+ * allocated array of char * items read from file.
+ */
+char **
+cmb_parse_file(struct cmb_config *config, char *path, uint32_t *nitems, uint32_t max)
+{
+#if CMB_DEBUG
+	uint8_t debug = FALSE;
+#endif
+	int fd;
+	char rpath[PATH_MAX];
+
+#if CMB_DEBUG
+	if (config != NULL) {
+		debug = config->debug;
+	}
+#endif
+
+	/* Resolve the file path */
+	if (path == NULL || (path[0] == '-' && path[1] == '\0')) {
+		strcpy(rpath, "/dev/stdin");
+	} else if (realpath(path, rpath) == 0)
+		return (NULL);
+
+	/* Open the file */
+	if ((fd = open(rpath, O_RDONLY)) < 0)
+		return (NULL);
+#if CMB_DEBUG
+	if (debug)
+		cmb_debug("%s: opened `%s' fd=%u", __func__, rpath, fd);
+#endif
+
+	return cmb_parse(config, fd, nitems, max);
+}
+
+/*
+ * Takes pointer to `struct cmb_config' options, file descriptor to read items
+ * from, pointer to uint32_t (written-to, containing number of items read), and
+ * uint32_t to optionally maximum number of items read from file. Returns
+ * allocated array of char * items read from file.
+ */
+char **
+cmb_parse(struct cmb_config *config, int fd, uint32_t *nitems, uint32_t max)
+{
+	char d = '\n';
+#if CMB_DEBUG
+	uint8_t debug = FALSE;
+#endif
+	uint32_t _nitems;
+	char **items = NULL;
+	char *b, *buf;
+	char *p;
+	uint64_t n;
+	size_t bufsize, buflen;
+	size_t datasize = 0;
+	size_t fragsize = sizeof(char *) * CMB_PARSE_FRAGSIZE;
+	size_t itemsize = fragsize;
+	ssize_t r = 1;
+	struct stat sb;
+
+	errno = 0;
+
+	/* Process config options */
+	if (config != NULL) {
+		if (config->nul_terminate)
+			d = '\0';
+		else if (config->delimiter != NULL)
+			if (*(config->delimiter) != '\0')
+				d = *(config->delimiter);
+#if CMB_DEBUG
+		debug = config->debug;
+#endif
+	}
+
+	/* Use output block size as buffer size if available */
+	if (fstat(fd, &sb) != 0) {
+		if (S_ISREG(sb.st_mode)) {
+			if (sysconf(_SC_PHYS_PAGES) >
+			    PHYSPAGES_THRESHOLD)
+				bufsize = MIN(BUFSIZE_MAX, MAXPHYS * 8);
+			else
+				bufsize = BUFSIZE_SMALL;
+		} else
+			bufsize = (size_t)MAX(sb.st_blksize,
+			    (blksize_t)sysconf(_SC_PAGESIZE));
+	} else
+		bufsize = MIN(BUFSIZE_MAX, MAXPHYS * 8);
+
+	/* Initialize buffer/pointers */
+#if CMB_DEBUG
+	if (debug)
+		cmb_debug("%s: reading fd=%u bufsize=%lu",
+		    __func__, fd, bufsize);
+#endif
+	if ((buf = malloc(bufsize)) == NULL)
+		return (NULL);
+	buflen = bufsize;
+	if ((items = malloc(itemsize)) == NULL)
+		return (NULL);
+
+	/* Read the file until EOF */
+	b = buf;
+	*nitems = _nitems = 0;
+	while (r != 0) {
+		r = read(fd, b, bufsize);
+
+		/* Test for Error/EOF */
+		if (r <= 0)
+			break;
+
+		/* Resize the buffer if necessary */
+		datasize += (size_t)r;
+		if (buflen - datasize < bufsize) {
+			buflen += bufsize;
+			if ((buf = realloc(buf, buflen)) == NULL) {
+				free(buf);
+				free(items);
+				return (NULL);
+			}
+		}
+		b = &buf[datasize];
+	}
+
+	if (datasize == 0) {
+#if CMB_DEBUG
+		if (debug)
+			cmb_debug("%s: nitems=%u datasize=%lu",
+			    __func__, *nitems, datasize);
+#endif
+		free(buf);
+		free(items);
+		return (NULL);
+	}
+
+	/* chomp trailing newline */
+	if (buf[datasize-1] == '\n')
+		buf[datasize-1] = '\0';
+
+	/* Look for delimiter */
+	p = buf;
+	for (n = 0; n < datasize; n++) {
+		if (buf[n] != d)
+			continue;
+		items[_nitems++] = p;
+		buf[n] = '\0';
+		p = buf + n + 1;
+		if (max > 0 && _nitems >= max)
+			goto cmb_parse_return;
+		if (_nitems >= 0xffffffff) {
+			items = NULL;
+			errno = EFBIG;
+			goto cmb_parse_return;
+		} else if (_nitems % CMB_PARSE_FRAGSIZE == 0) {
+			itemsize += fragsize;
+			if ((items = realloc(items, itemsize)) == NULL)
+				goto cmb_parse_return;
+		}
+	}
+	items[_nitems++] = p;
+
+cmb_parse_return:
+	*nitems = _nitems;
+#if CMB_DEBUG
+	if (debug)
+		cmb_debug("%s: nitems=%u datasize=%lu",
+		    __func__, *nitems, datasize);
+#endif
+	close(fd);
+	return (items);
 }
 
 /*

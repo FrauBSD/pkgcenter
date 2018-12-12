@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 15:49:46 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 15:51:13 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -91,7 +91,9 @@ main(int argc, char *argv[])
 	uint8_t opt_version = FALSE;
 	char *cp;
 	char *cmdver = version;
+	char **items = argv;
 	const char *libver = cmb_version(CMB_VERSION);
+	char *opt_file = NULL;
 	int ch;
 	int retval = EXIT_SUCCESS;
 	uint32_t nitems = 0;
@@ -115,7 +117,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ei:k:Nn:op:s:Stv"
+#define OPTSTRING1 "0c:d:ef:i:k:Nn:op:s:Stv"
 #if CMB_DEBUG
 #define OPTSTRING2 OPTSTRING1 "D"
 #else
@@ -151,6 +153,9 @@ main(int argc, char *argv[])
 		case 'e': /* empty */
 			opt_empty = TRUE;
 			config->show_empty = opt_empty;
+			break;
+		case 'f': /* file */
+			opt_file = optarg;
 			break;
 		case 'i': /* start */
 			if ((optlen = strlen(optarg)) > 0 &&
@@ -219,6 +224,7 @@ main(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
+	items = argv;
 
 	if (opt_version) {
 		cmdver += 10; /* Seek past "$Version: " */
@@ -233,8 +239,20 @@ main(int argc, char *argv[])
 	}
 
 	/* At least one non-option argument is required */
-	if (argc == 0 && !opt_empty)
+	if (argc == 0 && !opt_empty && opt_file == NULL)
 		usage(); /* NOTREACHED */
+
+	/* Read arguments from file if give `-f file' */
+	if (opt_file != NULL) {
+		if (argc > 0)
+			warnx("arguments ignored when `-f file' given");
+		if ((items = malloc(sizeof(char *) * 0xffffffff)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+		items = cmb_parse_file(config, opt_file, &nitems, nitems);
+		if (items == NULL && errno != 0)
+			err(EXIT_FAILURE, NULL); /* NOTREACHED */
+	} else if (nitems == 0 || nitems > (uint32_t)argc)
+		nitems = (uint32_t)argc;
 
 	/*
 	 * Time-based benchmarking option (-S for silent).
@@ -250,8 +268,6 @@ main(int argc, char *argv[])
 	/*
 	 * Calculate combinations
 	 */
-	if (nitems == 0 || nitems > (uint32_t)argc)
-		nitems = (uint32_t)argc;
 	if (opt_total) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		if (!opt_nossl) {
@@ -296,7 +312,7 @@ main(int argc, char *argv[])
 				BN_free(count_bn);
 			}
 		}
-		retval = cmb_bn(config, nitems, argv);
+		retval = cmb_bn(config, nitems, items);
 #endif
 	} else {
 		if (opt_randi) {
@@ -316,7 +332,7 @@ main(int argc, char *argv[])
 			else
 				config->start = 0;
 		}
-		retval = cmb(config, nitems, argv);
+		retval = cmb(config, nitems, items);
 		if (errno)
 			err(EXIT_FAILURE, NULL); /* NOTREACHED */
 	}

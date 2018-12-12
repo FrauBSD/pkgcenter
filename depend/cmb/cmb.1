@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-12 15:43:15 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-12 15:51:13 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd December 11, 2018
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0DeNotv
+.Op Fl 0DeNo
 .Op Fl c Ar num
 .Op Fl d Ar str
 .Op Fl i Ar num
@@ -42,6 +42,31 @@
 .Op Fl s Ar str
 .Ar item1
 .Op Ar item2 ...
+.Nm
+.Op Fl 0DeNo
+.Op Fl c Ar num
+.Op Fl d Ar str
+.Op Fl i Ar num
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Op Fl p Ar str
+.Op Fl s Ar str
+.Fl f Ar file
+.Nm
+.Fl t
+.Op Fl Deo
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Ar item1
+.Op Ar item2 ...
+.Nm
+.Fl t
+.Op Fl 0Deo
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Fl f Ar file
+.Nm
+.Fl v
 .Sh DESCRIPTION
 The
 .Nm
@@ -88,6 +113,22 @@ Default is space
 .It Fl e
 Show empty set.
 A single combination containing no-items.
+.It Fl f Ar file
+Read items from
+.Ar file ,
+one item per line.
+Command-line arguments ignored when used.
+With
+.Ql Fl 0 ,
+use NUL
+.Pq Sq Sq \\\0
+separator instead of newline.
+If
+.Ar file
+is
+.Ql Li - ,
+read from stdin.
+File cannot contain more than 4294967295 items.
 .It Fl i Ar num
 Skip the first
 .Va num-1
