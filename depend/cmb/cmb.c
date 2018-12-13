@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 18:00:09 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 19:46:39 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 1.7-interim $";
+static char version[] = "$Version: 1.7.1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -132,14 +132,23 @@ main(int argc, char *argv[])
 			config->nul_terminate = TRUE;
 			break;
 		case 'c': /* count */
+			if (*optarg < 48 || *optarg > 57) {
+				errno = EINVAL;
+				err(EXIT_FAILURE, "-c");
+				/* NOTREACHED */
+			}
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			if (!opt_nossl &&
 			    BN_dec2bn(&(config->count_bn), optarg) == 0)
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
 			if (opt_nossl) {
 #endif
-				config->count =
-				    strtoull(optarg, (char **)NULL, 10);
+				config->count = strtoull(optarg,
+				    (char **)NULL, 10);
+				if (errno != 0) {
+					err(EXIT_FAILURE, "-c");
+					/* NOTREACHED */
+				}
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			}
 #endif
@@ -163,6 +172,13 @@ main(int argc, char *argv[])
 			if ((optlen = strlen(optarg)) > 0 &&
 			    strncmp("random", optarg, optlen) == 0) {
 				opt_randi = TRUE;
+			} else if (*optarg < 48 || *optarg > 57) {
+				if (*optarg != '-' ||
+				    optarg[1] < 48 || optarg[1] > 57) {
+					errno = EINVAL;
+					err(EXIT_FAILURE, "-i");
+					/* NOTREACHED */
+				}
 			}
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			if (!opt_randi && !opt_nossl &&
@@ -172,23 +188,48 @@ main(int argc, char *argv[])
 #else
 			if (!opt_randi) {
 #endif
-				config->start =
-				    strtoull(optarg, (char **)NULL, 10);
-				if (*optarg == '-' && config->start > 0) {
+				if (*optarg == '-') {
 					nstart = strtoull(&optarg[1],
 					    (char **)NULL, 10);
+				} else {
+					config->start = strtoull(optarg,
+					    (char **)NULL, 10);
+				}
+				if (errno != 0) {
+					err(EXIT_FAILURE, "-i");
+					/* NOTREACHED */
 				}
 			}
 			break;
 		case 'k': /* size */
+			if (*optarg < 48 || *optarg > 57) {
+				if (*optarg != '-' ||
+				    optarg[1] < 48 || optarg[1] > 57) {
+					errno = EINVAL;
+					err(EXIT_FAILURE, "-k");
+					/* NOTREACHED */
+				}
+			}
 			config->size_min = (uint32_t)strtoul(optarg,
 			    (char **)NULL, 10);
+			if (errno != 0) {
+				err(EXIT_FAILURE, "-k");
+				/* NOTREACHED */
+			}
 			if ((cp = strstr(optarg, "..")) != NULL) {
 				config->size_max = (uint32_t)strtoul(cp + 2,
 				    (char **)NULL, 10);
+				if (errno != 0) {
+					err(EXIT_FAILURE, "-k");
+					/* NOTREACHED */
+				}
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
 				config->size_max = (uint32_t)strtoul(cp + 1,
 				    (char **)NULL, 10);
+				if (errno != 0) {
+					err(EXIT_FAILURE, "-k");
+					/* NOTREACHED */
+				}
 			} else {
 				config->size_max = config->size_min;
 			}
@@ -197,7 +238,16 @@ main(int argc, char *argv[])
 			config->show_numbers = TRUE;
 			break;
 		case 'n': /* args */
+			if (*optarg < 48 || *optarg > 57) {
+				errno = EINVAL;
+				err(EXIT_FAILURE, "-n");
+				/* NOTREACHED */
+			}
 			nitems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
+			if (errno != 0) {
+				err(EXIT_FAILURE, "-n");
+				/* NOTREACHED */
+			}
 			break;
 		case 'o': /* disable openssl */
 #ifdef HAVE_LIBCRYPTO
@@ -217,8 +267,17 @@ main(int argc, char *argv[])
 			opt_total = TRUE;
 			break;
 		case 'T': /* total w/ num items */
+			if (*optarg < 48 || *optarg > 57) {
+				errno = EINVAL;
+				err(EXIT_FAILURE, "-T");
+				/* NOTREACHED */
+			}
 			opt_total_num = TRUE;
 			titems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
+			if (errno != 0) {
+				err(EXIT_FAILURE, "-T");
+				/* NOTREACHED */
+			}
 			break;
 		case 'v': /* version */
 			opt_version = TRUE;
@@ -263,8 +322,10 @@ main(int argc, char *argv[])
 		} else {
 #endif
 			count = cmb_count(config, titems);
-			if (errno)
-				err(EXIT_FAILURE, NULL); /* NOTREACHED */
+			if (errno) {
+				err(EXIT_FAILURE, NULL);
+				/* NOTREACHED */
+			}
 			printf("%"PRIu64"\n", count);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		}
@@ -273,8 +334,10 @@ main(int argc, char *argv[])
 	}
 
 	/* At least one non-option argument is required */
-	if (argc == 0 && !opt_empty && opt_file == NULL)
-		usage(); /* NOTREACHED */
+	if (argc == 0 && !opt_empty && opt_file == NULL) {
+		usage();
+		/* NOTREACHED */
+	}
 
 	/* Read arguments from file if give `-f file' */
 	if (opt_file != NULL) {
@@ -283,8 +346,10 @@ main(int argc, char *argv[])
 		if ((items = malloc(sizeof(char *) * 0xffffffff)) == NULL)
 			errx(EXIT_FAILURE, "Out of memory?!");
 		items = cmb_parse_file(config, opt_file, &nitems, nitems);
-		if (items == NULL && errno != 0)
-			err(EXIT_FAILURE, NULL); /* NOTREACHED */
+		if (items == NULL && errno != 0) {
+			err(EXIT_FAILURE, NULL);
+			/* NOTREACHED */
+		}
 	} else if (nitems == 0 || nitems > (uint32_t)argc)
 		nitems = (uint32_t)argc;
 
@@ -320,8 +385,10 @@ main(int argc, char *argv[])
 		} else {
 #endif
 			count = cmb_count(config, nitems);
-			if (errno)
-				err(EXIT_FAILURE, NULL); /* NOTREACHED */
+			if (errno) {
+				err(EXIT_FAILURE, NULL);
+				/* NOTREACHED */
+			}
 			printf("%"PRIu64"\n", count);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		}
@@ -351,24 +418,30 @@ main(int argc, char *argv[])
 	} else {
 		if (opt_randi) {
 			count = cmb_count(config, nitems);
-			if (errno)
-				err(EXIT_FAILURE, NULL); /* NOTREACHED */
+			if (errno) {
+				err(EXIT_FAILURE, NULL);
+				/* NOTREACHED */
+			}
 			if (gettimeofday(&tv,NULL) == 0) {
 				srand48((long)tv.tv_usec);
 				config->start = rand_range(count) + 1;
 			}
 		} else if (nstart != 0) {
 			count = cmb_count(config, nitems);
-			if (errno)
-				err(EXIT_FAILURE, NULL); /* NOTREACHED */
+			if (errno) {
+				err(EXIT_FAILURE, NULL);
+				/* NOTREACHED */
+			}
 			if (count > nstart)
 				config->start = count - nstart + 1;
 			else
 				config->start = 0;
 		}
 		retval = cmb(config, nitems, items);
-		if (errno)
-			err(EXIT_FAILURE, NULL); /* NOTREACHED */
+		if (errno) {
+			err(EXIT_FAILURE, NULL);
+			/* NOTREACHED */
+		}
 	}
 
 	return (retval);
