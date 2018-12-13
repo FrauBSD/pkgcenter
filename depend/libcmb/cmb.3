@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-11-12 18:16:25 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-12-12 17:39:56 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd November 12, 2018
+.Dd December 12, 2018
 .Dt CMB 3
 .Os
 .Sh NAME
@@ -36,6 +36,10 @@
 .In cmb.h
 .Ft int
 .Fn cmb "struct cmb_config *config" "uint32_t nitems" "char *items[]"
+.Ft char **
+.Fn cmb_parse "struct cmb_config *config" "int fd" "uint32_t *nitems" "uint32_t max"
+.Ft char **
+.Fn cmb_parse_file "struct cmb_config *config" "char *path" "uint32_t *nitems" "uint32_t max"
 .Ft int
 .Fn cmb_print "struct cmb_config *config" "uint32_t nitems" "char *items[]"
 .Ft uint64_t
@@ -97,9 +101,6 @@ is non-zero and
 was compiled with
 .Ql CMB_DEBUG ,
 enable debugging information on stderr.
-Only affects with
-.Fn cmb
-.Pq ignored by Fn cmb_bn .
 .Pp
 If
 .Ar nul_terminate
@@ -121,7 +122,14 @@ If
 is non-zero,
 the empty set
 .Pq consisting of a single combination with no items
-is accounted-for.
+is enumerated by
+.Fn cmb
+/
+.Fn cmb_bn
+and counted by
+.Fn cmb_count
+/
+.Fn cmb_count_bn .
 .Pp
 If
 .Ar show_numbers
@@ -135,14 +143,17 @@ The sequence number can be used as
 or
 .Ar start_bn
 value to begin at that combination.
+The sequence number precedes the prefix and is followed by a single space,
+regardless of
+.Ar delimiter .
 .Pp
 For each combination,
 if
 .Ar prefix
-is non-NULL it is printed before the first item and
-if
-.Ar suffix
-is non-NULL it is printed after the last item.
+is non-NULL it is printed before the first item in each combination and
+.Ar suffix ,
+if non-NULL,
+is printed after the last item.
 .Pp
 To operate on only a subset or range of subsets,
 use
