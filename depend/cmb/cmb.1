@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-12 18:00:09 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-12 18:48:29 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd December 12, 2018
+.Dd December 13, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -197,6 +197,11 @@ Use
 .Ql Fl v
 to check OpenSSL support.
 The default is to use OpenSSL when supported.
+Must appear before
+.Ql Fl c Ar num
+and
+.Ql Fl i Ar num
+options.
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .
