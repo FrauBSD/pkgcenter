@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-12 15:51:13 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2018-12-12 18:00:09 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd December 11, 2018
+.Dd December 12, 2018
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -65,6 +65,10 @@
 .Op Fl k Ar size
 .Op Fl n Ar num
 .Fl f Ar file
+.Nm
+.Fl T Ar num
+.Op Fl Deo
+.Op Fl k Ar size
 .Nm
 .Fl v
 .Sh DESCRIPTION
@@ -199,6 +203,10 @@ Prefix each combination with
 .It Fl s Ar text
 Suffix each combination with
 .Ar text .
+.It Fl T
+Print number of combinations for
+.Ar num
+items and exit.
 .It Fl t
 Print total number of combinations and exit.
 .It Fl v

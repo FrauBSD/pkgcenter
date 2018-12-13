@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 17:45:38 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 18:00:09 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -88,6 +88,7 @@ main(int argc, char *argv[])
 	uint8_t opt_randi = FALSE;
 	uint8_t opt_silent = FALSE;
 	uint8_t opt_total = FALSE;
+	uint8_t opt_total_num = FALSE;
 	uint8_t opt_version = FALSE;
 	char *cp;
 	char *cmdver = version;
@@ -97,6 +98,7 @@ main(int argc, char *argv[])
 	int ch;
 	int retval = EXIT_SUCCESS;
 	uint32_t nitems = 0;
+	uint32_t titems = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
 	struct cmb_config *config = NULL;
@@ -117,7 +119,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ef:i:k:Nn:op:s:Stv"
+#define OPTSTRING1 "0c:d:ef:i:k:Nn:op:s:StT:v"
 #if CMB_DEBUG
 #define OPTSTRING2 OPTSTRING1 "D"
 #else
@@ -214,6 +216,10 @@ main(int argc, char *argv[])
 		case 't': /* total */
 			opt_total = TRUE;
 			break;
+		case 'T': /* total w/ num items */
+			opt_total_num = TRUE;
+			titems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
+			break;
 		case 'v': /* version */
 			opt_version = TRUE;
 			break;
@@ -236,6 +242,34 @@ main(int argc, char *argv[])
 		printf("%s: %s (%s)\n", pgm, cmdver, libver);
 #endif
 		exit(EXIT_FAILURE);
+	}
+
+	/* Print total for num items if given `-T num' */
+	if (opt_total_num) {
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+		if (!opt_nossl) {
+			char *count_str;
+
+			if ((count_bn =
+			    cmb_count_bn(config, titems)) != NULL) {
+				count_str = BN_bn2dec(count_bn);
+				printf("%s\n", count_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+				OPENSSL_free(count_str);
+#endif
+				BN_free(count_bn);
+			} else
+				printf("0\n");
+		} else {
+#endif
+			count = cmb_count(config, titems);
+			if (errno)
+				err(EXIT_FAILURE, NULL); /* NOTREACHED */
+			printf("%"PRIu64"\n", count);
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+		}
+#endif
+		exit(EXIT_SUCCESS);
 	}
 
 	/* At least one non-option argument is required */
@@ -374,6 +408,8 @@ usage(void)
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
 	fprintf(stderr, OPTFMT, "-t",
 	    "Print number of combinations and exit.");
+	fprintf(stderr, OPTFMT, "-T num",
+	    "Print number of combinations for num items and exit.");
 	fprintf(stderr, OPTFMT, "-v",
 	    "Print version info to stdout and exit.");
 	exit(EXIT_FAILURE);
