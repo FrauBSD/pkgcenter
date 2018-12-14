@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-12 19:49:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-14 13:08:21 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 1.7 $";
+static char version[] = "$Version: 1.8 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -143,6 +143,7 @@ main(int argc, char *argv[])
 				errx(EXIT_FAILURE, "OpenSSL Error?!");
 			if (opt_nossl) {
 #endif
+				errno = 0;
 				config->count = strtoull(optarg,
 				    (char **)NULL, 10);
 				if (errno != 0) {
@@ -188,6 +189,7 @@ main(int argc, char *argv[])
 #else
 			if (!opt_randi) {
 #endif
+				errno = 0;
 				if (*optarg == '-') {
 					nstart = strtoull(&optarg[1],
 					    (char **)NULL, 10);
@@ -210,6 +212,7 @@ main(int argc, char *argv[])
 					/* NOTREACHED */
 				}
 			}
+			errno = 0;
 			config->size_min = (uint32_t)strtoul(optarg,
 			    (char **)NULL, 10);
 			if (errno != 0) {
@@ -217,6 +220,7 @@ main(int argc, char *argv[])
 				/* NOTREACHED */
 			}
 			if ((cp = strstr(optarg, "..")) != NULL) {
+				errno = 0;
 				config->size_max = (uint32_t)strtoul(cp + 2,
 				    (char **)NULL, 10);
 				if (errno != 0) {
@@ -224,6 +228,7 @@ main(int argc, char *argv[])
 					/* NOTREACHED */
 				}
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
+				errno = 0;
 				config->size_max = (uint32_t)strtoul(cp + 1,
 				    (char **)NULL, 10);
 				if (errno != 0) {
@@ -243,6 +248,7 @@ main(int argc, char *argv[])
 				err(EXIT_FAILURE, "-n");
 				/* NOTREACHED */
 			}
+			errno = 0;
 			nitems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
 			if (errno != 0) {
 				err(EXIT_FAILURE, "-n");
@@ -273,6 +279,7 @@ main(int argc, char *argv[])
 				/* NOTREACHED */
 			}
 			opt_total_num = TRUE;
+			errno = 0;
 			titems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
 			if (errno != 0) {
 				err(EXIT_FAILURE, "-T");
