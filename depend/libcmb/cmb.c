@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-14 12:22:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-14 12:45:03 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 1.5.2";
-static const char version_long[] = "$Version: libcmb 1.5.2 $";
+static const char version[] = "libcmb 1.5.3";
+static const char version_long[] = "$Version: libcmb 1.5.3 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -279,7 +279,8 @@ cmb_parse(struct cmb_config *config, int fd, uint32_t *nitems, uint32_t max)
 				goto cmb_parse_return;
 		}
 	}
-	items[_nitems++] = p;
+	if (p < buf + datasize)
+		items[_nitems++] = p;
 
 cmb_parse_return:
 	*nitems = _nitems;
