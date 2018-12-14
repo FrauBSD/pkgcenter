@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-12 22:06:08 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-14 12:22:20 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 1.5.1";
-static const char version_long[] = "$Version: libcmb 1.5.1 $";
+static const char version[] = "libcmb 1.5.2";
+static const char version_long[] = "$Version: libcmb 1.5.2 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -466,7 +466,11 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (config->start > 1) {
 			doseek = TRUE;
 			seek = config->start;
+#if CMB_DEBUG
+			if (show_numbers || debug)
+#else
 			if (show_numbers)
+#endif
 				seq = seek;
 		}
 	}
@@ -503,6 +507,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (!doseek) {
 			if (show_numbers)
 				printf("%"PRIu64" ", seq++);
+#if CMB_DEBUG
+			else if (debug)
+				seq++;
+#endif
 			retval = action(config, 0, NULL);
 			if (retval != 0)
 				return (retval);
@@ -591,6 +599,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (!doseek) {
 			if (show_numbers)
 				printf("%"PRIu64" ", seq++);
+#if CMB_DEBUG
+			else if (debug)
+				seq++;
+#endif
 			retval = action(config, curset, curitems);
 			if (retval != 0)
 				break;
@@ -704,6 +716,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 				doseek = FALSE;
 				if (show_numbers)
 					printf("%"PRIu64" ", seq++);
+#if CMB_DEBUG
+				else if (debug)
+					seq++;
+#endif
 				retval = action(config, curset, curitems);
 				if (retval != 0)
 					goto cmb_return;
@@ -724,6 +740,10 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 		if ((!doseek || seek == 1) && (!docount || count > 0)) {
 			if (show_numbers)
 				printf("%"PRIu64" ", seq++);
+#if CMB_DEBUG
+			else if (debug)
+				seq++;
+#endif
 			retval = action(config, 0, NULL);
 		}
 	}
@@ -964,7 +984,11 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			doseek = TRUE;
 			if ((seek = BN_dup(config->start_bn)) == NULL)
 				goto cmb_bn_return;
+#if CMB_DEBUG
+			if (show_numbers || debug) {
+#else
 			if (show_numbers) {
+#endif
 				if ((seq = BN_dup(seek)) == NULL)
 					goto cmb_bn_return;
 			}
@@ -1018,6 +1042,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				OPENSSL_free(seq_str);
 #endif
 			}
+#if CMB_DEBUG
+			else if (debug) {
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+			}
+#endif
 			retval = action(config, 0, NULL);
 			if (retval != 0)
 				goto cmb_bn_return;
@@ -1139,6 +1169,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				OPENSSL_free(seq_str);
 #endif
 			}
+#if CMB_DEBUG
+			else if (debug) {
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+			}
+#endif
 			retval = action(config, curset, curitems);
 			if (retval != 0)
 				break;
@@ -1271,6 +1307,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 					OPENSSL_free(seq_str);
 #endif
 				}
+#if CMB_DEBUG
+				else if (debug) {
+					if (!BN_add_word(seq, 1))
+						goto cmb_bn_return;
+				}
+#endif
 				retval = action(config, curset, curitems);
 				if (retval != 0)
 					goto cmb_bn_return;
@@ -1310,6 +1352,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				OPENSSL_free(seq_str);
 #endif
 			}
+#if CMB_DEBUG
+			else if (debug) {
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+			}
+#endif
 			retval = action(config, 0, NULL);
 		}
 	}
