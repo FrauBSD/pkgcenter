@@ -12,17 +12,13 @@
 typedef struct cmb_config * Cmb;
 
 SV *g_action = NULL;
-PerlInterpreter *g_perl_interp;
 int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 {
-#if 0
 	dTHX;
-#else
-	PerlInterpreter *my_perl = g_perl_interp;
+	dSP;
 
+	PUSHMARK(SP);
 	return (call_sv(g_action, G_DISCARD|G_NOARGS));
-	return (0);
-#endif
 }
 
 MODULE = Cmb		PACKAGE = Cmb		
@@ -255,7 +251,6 @@ CODE:
 	_action = c->action;
 	c->action = g_callback;
 	g_action = name;
-	g_perl_interp = my_perl;
 	RETVAL = cmb(c, nitems, array);
 	c->action = _action;
 OUTPUT:
