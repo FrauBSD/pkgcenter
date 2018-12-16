@@ -16,9 +16,22 @@ int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	dTHX;
 	dSP;
+	dMULTICALL;
+	HV *stash;
+	GV *gv;
+	U8 gimme = G_SCALAR;
+	CV *cv;
 
-	PUSHMARK(SP);
-	return (call_sv(g_action, G_DISCARD|G_NOARGS));
+	cv = sv_2cv(g_action, &stash, &gv, 0);
+	PUSH_MULTICALL(cv);
+
+	{
+		MULTICALL;
+	}
+
+	POP_MULTICALL;
+
+	return (0);
 }
 
 MODULE = Cmb		PACKAGE = Cmb		
