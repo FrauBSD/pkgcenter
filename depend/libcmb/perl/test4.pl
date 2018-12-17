@@ -7,11 +7,9 @@ my @items = (1..10000);
 my $choose = 2;
 my $nitems = $#items + 1;
 
-our $DPV;
-my $total = qx/cmb -k $choose -T $nitems/;
-chomp $total;
-open $DPV, "|-", "dpv -l $total:perl" or die "dpv: $!";
-
 my $cmb = new Cmb { size_min => $choose, size_max => $choose };
+my $total = $cmb->count($nitems);
+open our $DPV, "|-", "dpv -l $total:perl" or die "dpv: $!";
+END { close $DPV }
+
 $cmb->cmb_callback($nitems, \@items, sub { print $DPV "@_\n" });
-close $DPV;
