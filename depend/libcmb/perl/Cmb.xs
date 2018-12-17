@@ -13,7 +13,8 @@ SV *g_action = NULL;
 AV *g_args = NULL;
 
 int
-g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
+g_callback(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
 {
 	uint32_t i;
 	int result = 0;
@@ -33,6 +34,8 @@ g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 	PUSH_MULTICALL(cv);
 
 	av_clear(g_args);
+	if (config != NULL && config->show_numbers)
+		av_push(g_args, (SV *)newSViv(seq));
 	for (i = 1; i <= nitems; i++) {
 		av_push(g_args, (SV *)items[i-1]);
 		SvREFCNT_inc((SV *)items[i-1]);
@@ -166,7 +169,7 @@ OUTPUT:
 	RETVAL
 
 int
-cmb_print(c, nitems, arrayref)
+cmb_print(c, seq, nitems, arrayref)
 PREINIT:
 	char **array;
 	int inum;
@@ -174,6 +177,7 @@ PREINIT:
 	int i;
 INPUT:
 	Cmb c;
+	IV seq;
 	uint32_t nitems;
 	AV *arrayref;
 CODE:
@@ -184,12 +188,12 @@ CODE:
 			array[i] = SvPV(*item, PL_na);
 		}
 	}
-	RETVAL = cmb_print(c, nitems, array);
+	RETVAL = cmb_print(c, seq, nitems, array);
 OUTPUT:
 	RETVAL
 
 int
-print(c, nitems, arrayref)
+print(c, seq, nitems, arrayref)
 PREINIT:
 	char **array;
 	int inum;
@@ -197,6 +201,7 @@ PREINIT:
 	int i;
 INPUT:
 	Cmb c;
+	IV seq;
 	uint32_t nitems;
 	AV *arrayref;
 CODE:
@@ -207,7 +212,7 @@ CODE:
 			array[i] = SvPV(*item, PL_na);
 		}
 	}
-	RETVAL = cmb_print(c, nitems, array);
+	RETVAL = cmb_print(c, seq, nitems, array);
 OUTPUT:
 	RETVAL
 
@@ -241,7 +246,8 @@ PREINIT:
 	char **array;
 	int i;
 	SV **item;
-	int (*_action)(struct cmb_config *c, uint32_t nitems, char *array[]);
+	int (*_action)(struct cmb_config *c, uint64_t seq, uint32_t nitems,
+	    char *array[]);
 INPUT:
 	Cmb c;
 	uint32_t nitems;
