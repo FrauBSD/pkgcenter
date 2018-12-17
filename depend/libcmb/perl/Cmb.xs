@@ -39,6 +39,7 @@ int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 	}
 
 	POP_MULTICALL;
+	(void)newsp;
 
 	return (0);
 }
@@ -68,7 +69,7 @@ config(c, config_hash)
 	Cmb c
 	SV *config_hash
 CODE:
-	HV *config = (HV *)SvRV(ST(1));
+	HV *config = (HV *)SvRV(config_hash);
 	HE *entry;
 	char *k;
 	SV *v;
@@ -106,6 +107,7 @@ CODE:
 Cmb
 new(char *class, ...)
 CODE:
+	(void)class;
 	struct cmb_config *c = calloc(1, sizeof(struct cmb_config));
 	if (items > 1) {
 		HV *config = (HV *)SvRV(ST(1));
@@ -162,6 +164,7 @@ version(c, type)
 	Cmb c
 	int type
 CODE:
+	(void)c;
 	RETVAL = cmb_version(type);
 OUTPUT:
 	RETVAL
