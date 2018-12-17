@@ -12,8 +12,10 @@
 typedef struct cmb_config * Cmb;
 
 SV *g_action = NULL;
+AV *g_args = NULL;
 int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 {
+	uint32_t i;
 	dTHX;
 	dSP;
 	dMULTICALL;
@@ -25,7 +27,14 @@ int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 	cv = sv_2cv(g_action, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 
+	av_clear(g_args);
+	for (i = 1; i <= nitems; i++) {
+		av_push(g_args, (SV *)items[i-1]);
+		SvREFCNT_inc((SV *)items[i-1]);
+	}
+
 	{
+		GvAV(PL_defgv) = g_args;
 		MULTICALL;
 	}
 
@@ -254,17 +263,28 @@ INPUT:
 	AV *arrayref;
 	SV *name;
 CODE:
+	/* Set custom callback to call referenced subroutine */
+	_action = c->action; /* save current callback */
+	c->action = g_callback;
+
+	/* Configure which Perl subroutine g_callback() should call */
+	g_action = name;
+
+	/* Initialize globals used by g_callback() */
+	if (g_args == NULL)
+		g_args = (AV *)sv_2mortal((SV *)newAV());
+
+	/* Copy elements from arrayref to C array of SV pointers */
 	inum = av_len(arrayref);
 	array = (char **)calloc(inum + 1, sizeof(char *));
 	for (i = 0; i <= inum; i++) {
 		if ((item = av_fetch(arrayref, i, 0)) && SvOK(*item)) {
-			array[i] = SvPV(*item, PL_na);
+			array[i] = (char *)*item;
 		}
 	}
-	_action = c->action;
-	c->action = g_callback;
-	g_action = name;
+
+	/* Combine scalar value reference pointers using g_callback() */
 	RETVAL = cmb(c, nitems, array);
-	c->action = _action;
+	c->action = _action; /* restore previous callback */
 OUTPUT:
 	RETVAL
