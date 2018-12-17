@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to compile Perl XS bindings to cmb(3) $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/perl/Makefile 2018-12-16 19:33:52 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/perl/Makefile 2018-12-16 19:46:06 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -34,11 +34,6 @@ Cmb/.h2xs_done:
 
 Cmb/Makefile:
 	cd Cmb && perl Makefile.PL
-
-.PHONY: cleandir
-
-cleandir:
-	rm -Rf Cmb
 
 .PHONY: realclean
 
