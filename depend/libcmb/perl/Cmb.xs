@@ -114,13 +114,6 @@ T_U_LONG_LONG
 	sv_setuv($arg, (UV)$var);
 EOF
 
-void
-config(c, hash)
-	Cmb c
-	SV *hash
-CODE:
-	_config(c, hash);
-
 Cmb
 new(char *class, ...)
 CODE:
@@ -137,6 +130,13 @@ DESTROY(c)
 	Cmb c;
 CODE:
 	free(c);
+
+void
+config(c, hash)
+	Cmb c
+	SV *hash
+CODE:
+	_config(c, hash);
 
 const char *
 cmb_version(...)
