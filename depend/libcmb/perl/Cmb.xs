@@ -169,30 +169,6 @@ OUTPUT:
 	RETVAL
 
 int
-cmb_print(c, seq, nitems, arrayref)
-PREINIT:
-	char **array;
-	int inum;
-	SV **item;
-	int i;
-INPUT:
-	Cmb c;
-	IV seq;
-	uint32_t nitems;
-	AV *arrayref;
-CODE:
-	inum = av_len(arrayref);
-	array = (char **)calloc(inum + 1, sizeof(char *));
-	for (i = 0; i <= inum; i++) {
-		if ((item = av_fetch(arrayref, i, 0)) && SvOK(*item)) {
-			array[i] = SvPV(*item, PL_na);
-		}
-	}
-	RETVAL = cmb_print(c, seq, nitems, array);
-OUTPUT:
-	RETVAL
-
-int
 print(c, seq, nitems, arrayref)
 PREINIT:
 	char **array;

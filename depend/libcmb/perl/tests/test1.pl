@@ -25,6 +25,7 @@ my $vers = 1; # Long version
 my @items = qw/a b c d/;
 my $count = $#items + 1;
 my $ilist = join ", ", @items;
+my $seq = 1;
 my $res;
 
 #
@@ -38,8 +39,8 @@ printf "\tCmb::cmb_version(%i): %s\n", $vers, Cmb::cmb_version($vers);
 printf "\tsize_min=%u size_max=%u\n", $config->{size_min}, $config->{size_max};
 printf "\tCmb::cmb_count(config, %u) = %u\n", $count,
 	Cmb::cmb_count($cmbA, $count);
-printf "\tCmb::print(config, %u, [%s]):\n", $count, $ilist;
-$res = Cmb::cmb_print($cmbA, $count, \@items);
+printf "\tCmb::print(config, %u, %u, [%s]):\n", $seq, $count, $ilist;
+$res = Cmb::print($cmbA, $seq, $count, \@items);
 printf "\t\tRESULT: %i\n", $res;
 printf "\tCmb::cmb(config, %u, [%s]):\n", $count, $ilist;
 printf "\t\tNOTE: { start => %u, count => %u }\n",
@@ -58,8 +59,8 @@ printf "\t\$cmb->version(): %s\n", $cmbB->version();
 printf "\t\$cmb->version(%i): %s\n", $vers, $cmbB->version($vers);
 printf "\tsize_min=%u size_max=%u\n", $config->{size_min}, $config->{size_max};
 printf "\t\$cmb->count(%u) = %u\n", $count, $cmbB->count($count);
-printf "\t\$cmb->print(%u, [%s]):\n", $count, $ilist;
-$res = $cmbB->print($count, \@items);
+printf "\t\$cmb->print(%u, %u, [%s]):\n", $seq, $count, $ilist;
+$res = $cmbB->print($seq, $count, \@items);
 printf "\t\tRESULT: %i\n", $res;
 printf "\t\$cmb->cmb(%u, [%s]):\n", $count, $ilist;
 printf "\t\tNOTE: start=%u count=%u\n", $config->{start}, $config->{count};
