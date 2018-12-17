@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-15 03:47:23 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-17 02:23:26 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 1.5.5";
-static const char version_long[] = "$Version: libcmb 1.5.5 $";
+static const char version[] = "libcmb 2.0";
+static const char version_long[] = "$Version: libcmb 2.0 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -439,7 +439,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	char **curitems;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
-	int (*action)(struct cmb_config *config, uint32_t nitems,
+	int (*action)(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	    char *items[]) = cmb_print;
 
 	errno = 0;
@@ -506,13 +506,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			cmb_debug(">>> 0-item combinations <<<");
 #endif
 		if (!doseek) {
-			if (show_numbers)
-				printf("%"PRIu64" ", seq++);
-#if CMB_DEBUG
-			else if (debug)
-				seq++;
-#endif
-			retval = action(config, 0, NULL);
+			retval = action(config, seq++, 0, NULL);
 			if (retval != 0)
 				return (retval);
 			if (docount && --count == 0)
@@ -598,13 +592,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
-			if (show_numbers)
-				printf("%"PRIu64" ", seq++);
-#if CMB_DEBUG
-			else if (debug)
-				seq++;
-#endif
-			retval = action(config, curset, curitems);
+			retval = action(config, seq++, curset, curitems);
 			if (retval != 0)
 				break;
 			if (docount && --count == 0)
@@ -715,13 +703,8 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 			if (!doseek || seek == 1) {
 				doseek = FALSE;
-				if (show_numbers)
-					printf("%"PRIu64" ", seq++);
-#if CMB_DEBUG
-				else if (debug)
-					seq++;
-#endif
-				retval = action(config, curset, curitems);
+				retval = action(config, seq++, curset,
+				    curitems);
 				if (retval != 0)
 					goto cmb_return;
 				if (docount && --count == 0)
@@ -739,13 +722,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset < 0 && show_empty) {
 		if ((!doseek || seek == 1) && (!docount || count > 0)) {
-			if (show_numbers)
-				printf("%"PRIu64" ", seq++);
-#if CMB_DEBUG
-			else if (debug)
-				seq++;
-#endif
-			retval = action(config, 0, NULL);
+			retval = action(config, seq++, 0, NULL);
 		}
 	}
 
@@ -758,9 +735,11 @@ cmb_return:
 }
 
 int
-cmb_print(struct cmb_config *config, uint32_t nitems, char *items[])
+cmb_print(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
 {
 	uint8_t nul = FALSE;
+	uint8_t show_numbers = FALSE;
 	uint32_t n;
 	const char *delimiter = " ";
 	const char *prefix = NULL;
@@ -771,10 +750,13 @@ cmb_print(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (config->delimiter != NULL)
 			delimiter = config->delimiter;
 		nul = config->nul_terminate;
+		show_numbers = config->show_numbers;
 		prefix = config->prefix;
 		suffix = config->suffix;
 	}
 
+	if (show_numbers)
+		printf("%"PRIu64" ", seq++);
 	if (prefix != NULL)
 		printf("%s", prefix);
 	for (n = 0; n < nitems; n++) {
@@ -913,7 +895,7 @@ cmb_count_bn_return:
 /*
  * Takes pointer to `struct cmb_config' options, number of items, and array
  * of `char *' items. Calculates combinations according to options and either
- * prints combinations to stdout (default) or runs `action' if passed-in as
+ * prints combinations to stdout (default) or runs `action_bn' if passed-in as
  * function pointer member of `config' argument. Numbers formatted as openssl
  * bn(3) BIGNUM type.
  */
@@ -942,7 +924,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	uint32_t setpos;
 	uint32_t setpos_backend;
 	char **curitems;
+#if CMB_DEBUG
 	char *seq_str;
+#endif
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
 	BIGNUM *combo = NULL;
@@ -950,13 +934,13 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	BIGNUM *ncombos = NULL;
 	BIGNUM *seek = NULL;
 	BIGNUM *seq = NULL;
-	int (*action)(struct cmb_config *config, uint32_t nitems,
-		char *items[]) = cmb_print;
+	int (*action_bn)(struct cmb_config *config, BIGNUM *seq,
+	    uint32_t nitems, char *items[]) = cmb_print_bn;
 
 	/* Process config options */
 	if (config != NULL) {
-		if (config->action != NULL)
-			action = config->action;
+		if (config->action_bn != NULL)
+			action_bn = config->action_bn;
 		if (config->count_bn != NULL &&
 		    !BN_is_negative(config->count_bn) &&
 		    !BN_is_zero(config->count_bn))
@@ -1016,16 +1000,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		nextset = -1;
 
 	/* Initialize sequence number */
-#if CMB_DEBUG
-	if ((show_numbers || debug) && seq == NULL) {
-#else
-	if (show_numbers && seq == NULL) {
-#endif
-		if ((seq = BN_new()) == NULL)
-			goto cmb_bn_return;
-		if (!BN_one(seq))
-			goto cmb_bn_return;
-	}
+	if ((seq = BN_new()) == NULL)
+		goto cmb_bn_return;
+	if (!BN_one(seq))
+		goto cmb_bn_return;
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
@@ -1034,22 +1012,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			cmb_debug(">>> 0-item combinations <<<");
 #endif
 		if (!doseek) {
-			if (show_numbers) {
-				seq_str = BN_bn2dec(seq);
-				printf("%s ", seq_str);
-				if (!BN_add_word(seq, 1))
-					goto cmb_bn_return;
-#ifdef HAVE_OPENSSL_CRYPTO_H
-				OPENSSL_free(seq_str);
-#endif
-			}
-#if CMB_DEBUG
-			else if (debug) {
-				if (!BN_add_word(seq, 1))
-					goto cmb_bn_return;
-			}
-#endif
-			retval = action(config, 0, NULL);
+			if (!BN_add_word(seq, 1))
+				goto cmb_bn_return;
+			retval = action_bn(config, seq, 0, NULL);
 			if (retval != 0)
 				goto cmb_bn_return;
 			if (docount) {
@@ -1161,22 +1126,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 
 		/* Produce results with the first set of items */
 		if (!doseek) {
-			if (show_numbers) {
-				seq_str = BN_bn2dec(seq);
-				printf("%s ", seq_str);
-				if (!BN_add_word(seq, 1))
-					goto cmb_bn_return;
-#ifdef HAVE_OPENSSL_CRYPTO_H
-				OPENSSL_free(seq_str);
-#endif
-			}
-#if CMB_DEBUG
-			else if (debug) {
-				if (!BN_add_word(seq, 1))
-					goto cmb_bn_return;
-			}
-#endif
-			retval = action(config, curset, curitems);
+			if (!BN_add_word(seq, 1))
+				goto cmb_bn_return;
+			retval = action_bn(config, seq, curset, curitems);
 			if (retval != 0)
 				break;
 			if (docount) {
@@ -1299,22 +1251,10 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			}
 			if (!doseek || BN_is_one(seek)) {
 				doseek = FALSE;
-				if (show_numbers) {
-					seq_str = BN_bn2dec(seq);
-					printf("%s ", seq_str);
-					if (!BN_add_word(seq, 1))
-						goto cmb_bn_return;
-#ifdef HAVE_OPENSSL_CRYPTO_H
-					OPENSSL_free(seq_str);
-#endif
-				}
-#if CMB_DEBUG
-				else if (debug) {
-					if (!BN_add_word(seq, 1))
-						goto cmb_bn_return;
-				}
-#endif
-				retval = action(config, curset, curitems);
+				if (!BN_add_word(seq, 1))
+					goto cmb_bn_return;
+				retval = action_bn(config, seq, curset,
+				    curitems);
 				if (retval != 0)
 					goto cmb_bn_return;
 				if (docount) {
@@ -1344,22 +1284,9 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	if (nextset < 0 && show_empty) {
 		if ((!doseek || BN_is_one(seek)) &&
 		    (!docount || !BN_is_zero(count))) {
-			if (show_numbers) {
-				seq_str = BN_bn2dec(seq);
-				printf("%s ", seq_str);
-				if (!BN_add_word(seq, 1))
-					goto cmb_bn_return;
-#ifdef HAVE_OPENSSL_CRYPTO_H
-				OPENSSL_free(seq_str);
-#endif
-			}
-#if CMB_DEBUG
-			else if (debug) {
-				if (!BN_add_word(seq, 1))
-					goto cmb_bn_return;
-			}
-#endif
-			retval = action(config, 0, NULL);
+			if (!BN_add_word(seq, 1))
+				goto cmb_bn_return;
+			retval = action_bn(config, seq, 0, NULL);
 		}
 	}
 
@@ -1371,5 +1298,51 @@ cmb_bn_return:
 	BN_free(seq);
 
 	return (retval);
+}
+
+int
+cmb_print_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+    char *items[])
+{
+	uint8_t nul = FALSE;
+	uint8_t show_numbers = FALSE;
+	uint32_t n;
+	char *seq_str;
+	const char *delimiter = " ";
+	const char *prefix = NULL;
+	const char *suffix = NULL;
+
+	/* Process config options */
+	if (config != NULL) {
+		if (config->delimiter != NULL)
+			delimiter = config->delimiter;
+		nul = config->nul_terminate;
+		show_numbers = config->show_numbers;
+		prefix = config->prefix;
+		suffix = config->suffix;
+	}
+
+	if (show_numbers) {
+		seq_str = BN_bn2dec(seq);
+		printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+		OPENSSL_free(seq_str);
+#endif
+	}
+	if (prefix != NULL)
+		printf("%s", prefix);
+	for (n = 0; n < nitems; n++) {
+		printf("%s", items[n]);
+		if (n < nitems - 1)
+			printf("%s", delimiter);
+	}
+	if (suffix != NULL)
+		printf("%s", suffix);
+	if (nul)
+		printf("%c", 0);
+	else
+		printf("\n");
+
+	return (0);
 }
 #endif /* HAVE_OPENSSL_BN_H */

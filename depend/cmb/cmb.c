@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-17 01:12:45 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-17 02:23:26 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 1.9 $";
+static char version[] = "$Version: 2.0 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -70,7 +70,10 @@ static char *pgm; /* set to argv[0] by main() */
 /* Function prototypes */
 static void	_Noreturn usage(void);
 static uint64_t	rand_range(uint64_t range);
-static int	nop(struct cmb_config *config, uint32_t nitems, char *items[]);
+static int	nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+static int	nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+#endif
 
 /* Inline functions */
 static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
@@ -364,10 +367,17 @@ main(int argc, char *argv[])
 	 * Time-based benchmarking option (-S for silent).
 	 *
 	 * NB: The call-stack is still incremented into the action, while using
-	 *     a nop action allows us to benchmark various action overhead.
+	 *     a nop function allows us to benchmark various action overhead.
 	 */
 	if (opt_silent) {
-		config->action = nop;
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+		if (opt_nossl)
+#endif
+			config->action = nop;
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+		else
+			config->action_bn = nop_bn;
+#endif
 		config->show_numbers = FALSE;
 	}
 
@@ -513,10 +523,22 @@ rand_range(uint64_t range)
  * For performance benchmarking
  */
 static int
-nop(struct cmb_config *config, uint32_t nitems, char *items[])
+nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[])
 {
 	(void)config;
+	(void)seq;
 	(void)nitems;
 	(void)items;
 	return (0);
 }
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+static int
+nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+#endif
