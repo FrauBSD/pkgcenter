@@ -1,0 +1,6 @@
+Revision history for Perl extension Cmb.
+
+0.01  Sun Dec 16 19:18:25 2018
+	- original version; created by h2xs 1.23 with options
+		-b 5.8.5 cmb.h -lcmb
+
