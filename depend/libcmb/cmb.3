@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-12-12 17:39:56 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2018-12-17 00:45:50 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd December 12, 2018
+.Dd December 17, 2018
 .Dt CMB 3
 .Os
 .Sh NAME
@@ -79,10 +79,6 @@ struct cmb_config {
     uint64_t count;        /* Number of combinations */
     uint64_t start;        /* Starting combination */
 
-    /* OpenSSL bn(3) support */
-    BIGNUM  *count_bn;     /* Number of combinations */
-    BIGNUM  *start_bn;     /* Starting combination */
-
     /*
      * Function pointer; action to perform for each combination
      * (default is cmb_print()). If the return from action() is non-
@@ -91,6 +87,10 @@ struct cmb_config {
      */
     int (*action)(struct cmb_config *config, uint32_t nitems,
         char *items[]);
+
+    /* OpenSSL bn(3) support */
+    BIGNUM  *count_bn;     /* Number of combinations */
+    BIGNUM  *start_bn;     /* Starting combination */
 };
 .Ed
 .Pp
