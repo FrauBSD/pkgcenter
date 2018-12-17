@@ -12,4 +12,4 @@ my $total = $cmb->count($nitems);
 open our $DPV, "|-", "dpv -l $total:perl" or die "dpv: $!";
 END { close $DPV }
 
-$cmb->cmb_callback($nitems, \@items, sub { print $DPV "@_\n" });
+$cmb->cmb_callback($nitems, \@items, sub { print $DPV "@_\n"; return 0 });

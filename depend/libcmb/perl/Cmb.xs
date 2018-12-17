@@ -16,6 +16,7 @@ AV *g_args = NULL;
 int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	uint32_t i;
+	int result = 0;
 	dTHX;
 	dSP;
 	dMULTICALL;
@@ -38,9 +39,10 @@ int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 		MULTICALL;
 	}
 
+	result = SvIV(*PL_stack_sp);
 	POP_MULTICALL;
 
-	return (0);
+	return (result);
 }
 
 MODULE = Cmb		PACKAGE = Cmb		

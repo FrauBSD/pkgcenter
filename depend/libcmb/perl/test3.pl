@@ -9,4 +9,4 @@ my $nitems = $#items + 1;
 
 printf STDERR "Enumerating choose-%s from %u:\n", $choose, $nitems;
 my $cmb = new Cmb { size_min => $choose, size_max => $choose };
-$cmb->cmb_callback($nitems, \@items, sub { printf "\t%s\n", "@_" });
+$cmb->cmb_callback($nitems, \@items, sub { printf "\t%s\n", "@_"; return 0 });
