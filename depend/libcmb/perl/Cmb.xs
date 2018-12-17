@@ -9,11 +9,11 @@
 
 #include "const-c.inc"
 
-typedef struct cmb_config * Cmb;
-
 SV *g_action = NULL;
 AV *g_args = NULL;
-int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
+
+int
+g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 {
 	uint32_t i;
 	int result = 0;
@@ -45,36 +45,15 @@ int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 	return (result);
 }
 
-MODULE = Cmb		PACKAGE = Cmb		
-
-INCLUDE: const-xs.inc
-
-TYPEMAP: <<EOF
-struct cmb_config *	T_PTROBJ
-Cmb			T_PTROBJ
-uint32_t		T_U_LONG
-unsigned long long	T_U_LONG_LONG
-uint64_t		T_U_LONG_LONG
-
-INPUT
-T_U_LONG_LONG
-	$var = (unsigned long long)SvUv($arg)
-
-OUTPUT
-T_U_LONG_LONG
-	sv_setuv($arg, (UV)$var);
-EOF
-
 void
-config(c, config_hash)
-	Cmb c
-	SV *config_hash
-CODE:
-	HV *config = (HV *)SvRV(config_hash);
+_config(struct cmb_config *c, SV *hash)
+{
+	HV *config = (HV *)SvRV(hash);
 	HE *entry;
 	char *k;
 	SV *v;
 	I32 len;
+	dTHX;
 
 	(void)hv_iterinit(config);
 	while ((entry = hv_iternext(config))) {
@@ -104,48 +83,44 @@ CODE:
 			c->start = SvIV(v);
 		}
 	}
+}
+
+typedef struct cmb_config * Cmb;
+
+MODULE = Cmb		PACKAGE = Cmb		
+
+INCLUDE: const-xs.inc
+
+TYPEMAP: <<EOF
+struct cmb_config *	T_PTROBJ
+Cmb			T_PTROBJ
+uint32_t		T_U_LONG
+unsigned long long	T_U_LONG_LONG
+uint64_t		T_U_LONG_LONG
+
+INPUT
+T_U_LONG_LONG
+	$var = (unsigned long long)SvUv($arg)
+
+OUTPUT
+T_U_LONG_LONG
+	sv_setuv($arg, (UV)$var);
+EOF
+
+void
+config(c, hash)
+	Cmb c
+	SV *hash
+CODE:
+	_config(c, hash);
 
 Cmb
 new(char *class, ...)
 CODE:
 	(void)class;
 	struct cmb_config *c = calloc(1, sizeof(struct cmb_config));
-	if (items > 1) {
-		HV *config = (HV *)SvRV(ST(1));
-		HE *entry;
-		char *k;
-		SV *v;
-		I32 len;
-
-		(void)hv_iterinit(config);
-		while ((entry = hv_iternext(config))) {
-			k = hv_iterkey(entry, &len);
-			v = hv_iterval(config, entry);
-			if (strEQ(k, "debug")) {
-				c->debug = SvIV(v);
-			} else if (strEQ(k, "nul_terminate")) {
-				c->nul_terminate = SvIV(v);
-			} else if (strEQ(k, "show_empty")) {
-				c->show_empty = SvIV(v);
-			} else if (strEQ(k, "show_numbers")) {
-				c->show_numbers = SvIV(v);
-			} else if (strEQ(k, "delimiter")) {
-				c->delimiter = SvPV(v, PL_na);
-			} else if (strEQ(k, "prefix")) {
-				c->prefix = SvPV(v, PL_na);
-			} else if (strEQ(k, "suffix")) {
-				c->suffix = SvPV(v, PL_na);
-			} else if (strEQ(k, "size_min")) {
-				c->size_min = SvIV(v);
-			} else if (strEQ(k, "size_max")) {
-				c->size_max = SvIV(v);
-			} else if (strEQ(k, "count")) {
-				c->count = SvIV(v);
-			} else if (strEQ(k, "start")) {
-				c->start = SvIV(v);
-			}
-		}
-	}
+	if (items > 1)
+		_config(c, ST(1));
 	RETVAL = c;
 OUTPUT:
 	RETVAL
