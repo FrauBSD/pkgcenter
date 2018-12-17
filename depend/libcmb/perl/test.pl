@@ -21,7 +21,7 @@ print join "", map { qq/\t$_ => "$config->{$_}",\n/ } sort keys %$config;
 print "};\n";
 
 
-my $vers = 0; # Short version
+my $vers = 1; # Long version
 my @items = qw/a b c d/;
 my $count = $#items + 1;
 my $ilist = join ", ", @items;
@@ -33,6 +33,7 @@ my $res;
 printf "==> Method A:\n";
 my $cmbA = new Cmb $config;
 printf "\tnew Cmb created\n";
+printf "\tCmb::cmb_version(): %s\n", Cmb::cmb_version();
 printf "\tCmb::cmb_version(%i): %s\n", $vers, Cmb::cmb_version($vers);
 printf "\tsize_min=%u size_max=%u\n", $config->{size_min}, $config->{size_max};
 printf "\tCmb::cmb_count(config, %u) = %u\n", $count,
@@ -53,6 +54,7 @@ printf "==> Method B:\n";
 my $cmbB = new Cmb;
 printf "\tnew Cmb created\n";
 $cmbB->config($config);
+printf "\t\$cmb->version(): %s\n", $cmbB->version();
 printf "\t\$cmb->version(%i): %s\n", $vers, $cmbB->version($vers);
 printf "\tsize_min=%u size_max=%u\n", $config->{size_min}, $config->{size_max};
 printf "\t\$cmb->count(%u) = %u\n", $count, $cmbB->count($count);

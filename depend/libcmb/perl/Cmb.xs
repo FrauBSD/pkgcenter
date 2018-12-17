@@ -157,16 +157,18 @@ CODE:
 	free(c);
 
 const char *
-cmb_version(type)
-	int type
+cmb_version(...)
+CODE:
+	RETVAL = cmb_version(items > 0 ? SvIV(ST(0)) : 0);
+OUTPUT:
+	RETVAL
 
 const char *
-version(c, type)
+version(c, ...)
 	Cmb c
-	int type
 CODE:
 	(void)c;
-	RETVAL = cmb_version(type);
+	RETVAL = cmb_version(items > 1 ? SvIV(ST(1)) : 0);
 OUTPUT:
 	RETVAL
 
