@@ -39,7 +39,6 @@ int g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 	}
 
 	POP_MULTICALL;
-	(void)newsp;
 
 	return (0);
 }
