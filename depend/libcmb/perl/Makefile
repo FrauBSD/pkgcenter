@@ -38,7 +38,7 @@ Cmb/Makefile:
 .PHONY: realclean cleandir
 
 realclean cleandir:
-	[ ! -e Cmb/Makefile ] || $(MAKE) realclean
+	[ ! -e Cmb/Makefile ] || ( cd Cmb && $(MAKE) realclean )
 	cd Cmb && rm -f $(XS) const-c.inc const-xs.inc
 
 ################################################################################
