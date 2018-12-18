@@ -41,6 +41,10 @@ realclean:
 	cd Cmb && [ -e Makefile ] && $(MAKE) realclean
 	cd Cmb && rm -f $(XS) const-c.inc const-xs.inc
 
+.PHONY: cleandir
+
+cleandir: realclean
+
 ################################################################################
 # END
 ################################################################################
