@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-12-17 02:23:26 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2018-12-18 03:35:00 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -93,6 +93,9 @@ struct cmb_config {
 	    char *items[]);
 
 #ifdef HAVE_OPENSSL_BN_H
+	BIGNUM	*count_bn;	/* bn(3) number of combinations */
+	BIGNUM	*start_bn;	/* bn(3) starting combination */
+
 	/*
 	 * cmb_bn(3) function callback; called for each combination (default is
 	 * cmb_print_bn()). If the return from action_bn() is non-zero,
@@ -101,9 +104,6 @@ struct cmb_config {
 	 */
 	int (*action_bn)(struct cmb_config *config, BIGNUM *seq,
 	    uint32_t nitems, char *items[]);
-
-	BIGNUM	*count_bn;	/* bn(3) number of combinations */
-	BIGNUM	*start_bn;	/* bn(3) starting combination */
 #endif
 };
 
