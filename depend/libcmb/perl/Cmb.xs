@@ -25,6 +25,10 @@ g_callback(struct cmb_config *config, uint32_t nitems, char *items[])
 	U8 gimme = G_SCALAR;
 	CV *cv;
 
+#ifdef __linux__
+	(void)newsp;
+#endif
+
 	cv = sv_2cv(g_action, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 
