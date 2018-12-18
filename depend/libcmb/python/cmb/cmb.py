@@ -7,7 +7,7 @@
 #
 # $Title: Python bindings for libcmb $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-18 03:28:13 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-18 06:19:03 -0800 freebsdfrau $
 #
 ############################################################ LICENSE
 #
@@ -51,28 +51,9 @@ import ctypes
 #
 libcmb = ctypes.CDLL('libcmb.so.0')
 
-#
-# Function pointers
-#
-CMB_CALLBACK = ctypes.CFUNCTYPE(ctypes.c_int)
-
 ############################################################ CLASSES
 
 class CMB(ctypes.Structure):
-    _fields_ = [
-        ("debug", ctypes.c_uint8),
-        ("nul_terminate", ctypes.c_uint8),
-        ("show_empty", ctypes.c_uint8),
-        ("show_numbers", ctypes.c_uint8),
-        ("delimiter", ctypes.c_char_p),
-        ("prefix", ctypes.c_char_p),
-        ("suffix", ctypes.c_char_p),
-        ("size_min", ctypes.c_uint32),
-        ("size_max", ctypes.c_uint32),
-        ("count", ctypes.c_uint64),
-        ("start", ctypes.c_uint64),
-        ("action", CMB_CALLBACK),
-    ]
 
     def keys(self):
         keys = []
@@ -99,6 +80,28 @@ class CMB(ctypes.Structure):
 
     def __setitem__(self, key, value):
         return setattr(self, key, value)
+
+
+#
+# Function pointers
+#
+CMB_CALLBACK = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(CMB),
+    ctypes.c_uint64, ctypes.c_uint32, ctypes.POINTER(ctypes.c_char_p))
+
+CMB._fields_ = [
+        ("debug", ctypes.c_uint8),
+        ("nul_terminate", ctypes.c_uint8),
+        ("show_empty", ctypes.c_uint8),
+        ("show_numbers", ctypes.c_uint8),
+        ("delimiter", ctypes.c_char_p),
+        ("prefix", ctypes.c_char_p),
+        ("suffix", ctypes.c_char_p),
+        ("size_min", ctypes.c_uint32),
+        ("size_max", ctypes.c_uint32),
+        ("count", ctypes.c_uint64),
+        ("start", ctypes.c_uint64),
+        ("action", CMB_CALLBACK),
+    ]
 
 ############################################################ TYPES
 
