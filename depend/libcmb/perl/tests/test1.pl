@@ -20,7 +20,6 @@ print "my \$config = {\n";
 print join "", map { qq/\t$_ => "$config->{$_}",\n/ } sort keys %$config;
 print "};\n";
 
-
 my $vers = 1; # Long version
 my @items = qw/a b c d/;
 my $count = $#items + 1;
@@ -73,7 +72,7 @@ printf "\t\tRESULT: %i\n", $res;
 printf "==> Callback Method:\n";
 my $cmbC = new Cmb $config;
 $cmbC->config({ show_numbers => 0 });
-printf "\tcmb->cmb_callback(%u, [%s], sum):\n", $count, $ilist;
+printf "\tcmb->cmb_callback(%u, [%s], sub):\n", $count, $ilist;
 our $num_calls = 0;
 $res = $cmbC->cmb_callback($count, \@items, sub { $num_calls++; return 0 });
 printf "\t\tnum_calls: %i\n", $num_calls;
