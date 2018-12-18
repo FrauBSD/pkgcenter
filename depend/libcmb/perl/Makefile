@@ -35,15 +35,11 @@ Cmb/.h2xs_done:
 Cmb/Makefile:
 	cd Cmb && perl Makefile.PL
 
-.PHONY: realclean
+.PHONY: realclean cleandir
 
-realclean:
+realclean cleandir:
 	[ ! -e Cmb/Makefile ] || $(MAKE) realclean
 	cd Cmb && rm -f $(XS) const-c.inc const-xs.inc
-
-.PHONY: cleandir
-
-cleandir: realclean
 
 ################################################################################
 # END
