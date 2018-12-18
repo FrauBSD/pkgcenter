@@ -7,7 +7,7 @@
 #
 # $Title: Python bindings for libcmb $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-18 06:19:03 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-18 07:17:20 -0800 freebsdfrau $
 #
 ############################################################ LICENSE
 #
@@ -45,6 +45,8 @@ ctypes interface to libcmb.
 import ctypes
 
 ############################################################ GLOBALS
+
+g_action = None;
 
 #
 # Library instance
@@ -141,13 +143,24 @@ def cmb(config, nitems, items):
     return libcmb.cmb(ctypes.pointer(config), nitems, citems)
 
 #
+# Callback for cmb_callback
+#
+def g_callback(config, seq, nitems, items):
+    pitems = []
+    for i in range(0, nitems):
+        pitems.append(items[i])
+    return g_action(config, seq, nitems, pitems)
+
+#
 # Combine options to callbacks
 #
-def cmb_callback(config, nitems, items, callback):
+def cmb_callback(config, nitems, items, action):
+    global g_action
     citems = (ctypes.c_char_p * len(items))()
     citems[:] = items
     _action = config["action"]
-    config["action"] = CMB_CALLBACK(callback)
+    g_action = action
+    config["action"] = CMB_CALLBACK(g_callback)
     res = libcmb.cmb(ctypes.pointer(config), nitems, citems)
     config["action"] = _action
     return res
