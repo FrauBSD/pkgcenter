@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 from cmb import *
+import signal
+import sys
+
+def interrupt(sig, frame):
+    print ""
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, interrupt)
 
 total = 0
 choice = 2
