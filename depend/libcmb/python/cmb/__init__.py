@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/__init__.py 2018-12-20 18:10:18 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/__init__.py 2018-12-20 18:35:16 -0800 freebsdfrau $
 #-
 # Copyright (c) 2018 Devin Teske. All rights reserved.
 #
@@ -26,4 +26,4 @@
 from cmb import *
 
 
-__version__ = "2.2"
+__version__ = "2.2.1"
