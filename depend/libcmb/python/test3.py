@@ -8,7 +8,7 @@ nitems = len(items)
 
 print >> stderr, "Enumerating choose-%s from %u:" % (choose, nitems)
 config = CMB(size_min = choose, size_max = choose)
-def afunc(config, seq, nitems, items):
+def afunc(items):
     print "\t%s" % " ".join(items)
     return 0
 cmb_callback(config, nitems, items, afunc)

@@ -11,7 +11,7 @@ count = len(items)
 config = CMB(size_min = choice, size_max = choice)
 
 print "Silently enumerating choose-%u from %u:" % (choice, num)
-def afunc(config, seq, nitems, items):
+def afunc(items):
     global total
     total += 1
     return 0

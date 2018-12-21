@@ -7,7 +7,7 @@
 #
 # $Title: Python bindings for libcmb $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-18 07:17:20 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-20 17:38:35 -0800 freebsdfrau $
 #
 ############################################################ LICENSE
 #
@@ -112,6 +112,13 @@ CMB._fields_ = [
 #
 libcmb.cmb_version.restype = ctypes.c_char_p
 
+#
+# Integers
+#
+libcmb.cmb_count.restype = ctypes.c_uint64
+libcmb.cmb_print.restype = ctypes.c_int
+libcmb.cmb.restype = ctypes.c_int
+
 ############################################################ FUNCTIONS
 
 #
@@ -149,7 +156,10 @@ def g_callback(config, seq, nitems, items):
     pitems = []
     for i in range(0, nitems):
         pitems.append(items[i])
-    return g_action(config, seq, nitems, pitems)
+    if (config.contents.show_numbers):
+        return g_action(seq, pitems)
+    else:
+        return g_action(pitems)
 
 #
 # Combine options to callbacks
@@ -157,7 +167,7 @@ def g_callback(config, seq, nitems, items):
 def cmb_callback(config, nitems, items, action):
     global g_action
     citems = (ctypes.c_char_p * len(items))()
-    citems[:] = items
+    citems[:] = ["%s" % x for x in items]
     _action = config["action"]
     g_action = action
     config["action"] = CMB_CALLBACK(g_callback)
