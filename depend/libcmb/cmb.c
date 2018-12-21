@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-20 18:11:17 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-20 18:36:28 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -57,7 +57,7 @@ __FBSDID("$FreeBSD$");
 #define CMB_DEBUG_PREFIX	"DEBUG: "
 #define CMB_DEBUG_PREFIX_LEN	7
 #ifndef CMB_DEBUG_BUFSIZE
-#define CMB_DEBUG_BUFSIZE 2048
+#define CMB_DEBUG_BUFSIZE	2048
 #endif
 #endif
 
