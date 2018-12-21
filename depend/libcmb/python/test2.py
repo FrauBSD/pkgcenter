@@ -3,7 +3,7 @@ from cmb import *
 
 total = 0
 choice = 2
-num = 10000
+num = 1000
 
 items = range(0, num)
 count = len(items)
