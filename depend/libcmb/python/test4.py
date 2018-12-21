@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 def interrupt(sig, frame):
+    print ""
     sys.exit(0)
 
 signal.signal(signal.SIGINT, interrupt)
