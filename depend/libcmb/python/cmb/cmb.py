@@ -7,7 +7,7 @@
 #
 # $Title: Python bindings for libcmb $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-20 17:38:35 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-20 18:34:20 -0800 freebsdfrau $
 #
 ############################################################ LICENSE
 #
@@ -60,7 +60,6 @@ class CMB(ctypes.Structure):
     def keys(self):
         keys = []
         for key in (
-            "action",
             "count",
             "debug",
             "delimiter",
