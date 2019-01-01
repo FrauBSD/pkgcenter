@@ -19,7 +19,7 @@ for key in config.keys():
     print "\t\"%s\": \"%s\"," % (key, config[key])
 print "}"
 
-vers = 1;
+vers = 1
 items = ["a", "b", "c", "d"]
 count = len(items)
 ilist = ", ".join(items)
@@ -41,7 +41,7 @@ print "\tRESULT: %i" % res
 # Callbacks:
 #
 config["show_numbers"] = 0
-print "cmb_callback(%u, [%s], afunc):" % (count, ilist)
+print "cmb_callback(config, %u, [%s], afunc):" % (count, ilist)
 num_calls = 0
 def afunc(*args):
     global num_calls
