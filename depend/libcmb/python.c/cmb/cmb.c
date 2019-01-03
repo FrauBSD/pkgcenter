@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2018-12-31 23:23:46 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-01-02 23:39:06 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -33,10 +33,20 @@ __FBSDID("$FreeBSD$");
 #include <cmb.h>
 #include "structmember.h"
 
+#define DEBUG	0
+
 /* Helpers */
+#if PY_MAJOR_VERSION == 2
 #define KeyEq(x)	(strcmp(x, key) == 0)
+#else
+#define KeyEq(x)	(_PyUnicode_EqualToASCIIString(key, x))
+#endif
 #define CONFIG(y)	((self->config_set & CONFIG_SET_##y) == CONFIG_SET_##y)
 #define LIST_APPEND(x)	(PyList_Append(list, Py_BuildValue("s", x)) != 0)
+#define DPRINT(x)	fprintf(stderr, \
+    "%s:%d:%s: " x "\n", __FILE__, __LINE__, __func__)
+#define DPRINTF(x,...)	fprintf(stderr, \
+    "%s:%d:%s: " x "\n", __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 /* Attribute management */
 #define CONFIG_SET_DEBUG		0x00000001
@@ -58,8 +68,13 @@ __FBSDID("$FreeBSD$");
 #define CONFIG_SET_RESERVED6		0x00010000
 
 /* DLL import/export */
+#undef PyMODINIT_FUNC
 #ifndef PyMODINIT_FUNC
+#if PY_MAJOR_VERSION == 2
 #define PyMODINIT_FUNC void
+#else
+#define PyMODINIT_FUNC PyObject *
+#endif
 #endif
 
 /* Custom types */
@@ -70,11 +85,29 @@ typedef struct {
 } PyCmbObject;
 
 /* Function prototypes */
-static PyObject * CmbNew(PyTypeObject *type, PyObject *args, PyObject *kwds);
-static int        CmbInit(PyCmbObject *self, PyObject *args, PyObject *kwds);
-static PyObject * CmbGet(PyCmbObject *self, char *name);
-static int        CmbSet(PyCmbObject *self, char *name, PyObject *value);
 static void       CmbDealloc(PyCmbObject *self);
+static PyObject * CmbError(PyObject *m);
+#if PY_MAJOR_VERSION == 2
+static PyObject * CmbGet(PyCmbObject *self, const char *key);
+#else
+static PyObject * CmbGetO(PyCmbObject *self, PyObject *key);
+#endif
+static int        CmbInit(PyCmbObject *self, PyObject *args, PyObject *kwds);
+static PyObject * CmbNew(PyTypeObject *type, PyObject *args, PyObject *kwds);
+#if PY_MAJOR_VERSION == 2
+static int        CmbSet(PyCmbObject *self, const char *key, PyObject *value);
+#else
+static int        CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value);
+#endif
+#if PY_MAJOR_VERSION >= 3
+static int        cmb_traverse(PyObject *m, visitproc visit, void *arg);
+static int        cmb_clear(PyObject *m);
+#endif
+static PyObject * pycmb(PyObject *obj, PyObject *args);
+static PyObject * pycmb_callback(PyObject *obj, PyObject *args);
+static PyObject * pycmb_count(PyObject *obj, PyObject *args);
+static PyObject * pycmb_print(PyObject *obj, PyObject *args);
+static PyObject * pycmb_version(PyObject *obj, PyObject *args);
 
 /*
  * Globals
@@ -83,47 +116,56 @@ static void       CmbDealloc(PyCmbObject *self);
 static PyObject *py_cmb_func = NULL;
 
 static PyTypeObject PyCmbType = {
-	PyObject_HEAD_INIT(NULL)
-	0,                      /* ob_size */
-	"cmb.CMB",              /* tp_name */
-	sizeof(PyCmbObject),    /* tp_basicsize */
-	0,                      /* tp_itemsize */
-	(destructor)CmbDealloc, /* tp_dealloc */
-	NULL,                   /* tp_print */
-	(getattrfunc)CmbGet,    /* tp_getattr */
-	(setattrfunc)CmbSet,    /* tp_setattr */
-	NULL,                   /* tp_compare */
-	NULL,                   /* tp_repr */
-	NULL,                   /* tp_as_number */
-	NULL,                   /* tp_as_sequence */
-	NULL,                   /* tp_as_mapping */
-	NULL,                   /* tp_hash  */
-	NULL,                   /* tp_call */
-	NULL,                   /* tp_str */
-	NULL,                   /* tp_getattro */
-	NULL,                   /* tp_setattro */
-	NULL,                   /* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-	                        /* tp_flags */
-	"cmb objects",          /* tp_doc */
-	NULL,                   /* tp_traverse */
-	NULL,                   /* tp_clear */
-	NULL,                   /* tp_richcompare */
-	0,                      /* tp_weaklistoffset */
-	NULL,                   /* tp_iter */
-	NULL,                   /* tp_iternext */
-	NULL,                   /* tp_methods */
-	NULL,                   /* tp_members */
-	NULL,                   /* tp_getset */
-	NULL,                   /* tp_base */
-	NULL,                   /* tp_dict */
-	NULL,                   /* tp_descr_get */
-	NULL,                   /* tp_descr_set */
-	0,                      /* tp_dictoffset */
-	(initproc)CmbInit,      /* tp_init */
-	NULL,                   /* tp_alloc */
-	CmbNew,                 /* tp_new */
+	PyVarObject_HEAD_INIT(NULL, 0)
+	.tp_name = "cmb.CMB",
+	.tp_basicsize = sizeof(PyCmbObject),
+	.tp_itemsize = 0,
+	.tp_dealloc = (destructor)CmbDealloc,
+	.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+#if PY_MAJOR_VERSION == 2
+	.tp_getattr = (getattrfunc)CmbGet,
+	.tp_setattr = (setattrfunc)CmbSet,
+#else
+	.tp_getattro = (getattrofunc)CmbGetO,
+	.tp_setattro = (setattrofunc)CmbSetO,
+#endif
+	.tp_doc = "cmb objects",
+	.tp_init = (initproc)CmbInit,
+	.tp_new = CmbNew,
 };
+
+static PyMethodDef cmbMethods[] = {
+	{ "cmb", pycmb, METH_VARARGS },
+	{ "cmb_callback", pycmb_callback, METH_VARARGS },
+	{ "cmb_count", pycmb_count, METH_VARARGS },
+	{ "cmb_print", pycmb_print, METH_VARARGS },
+	{ "cmb_version", pycmb_version, METH_VARARGS },
+	{ "error_out", (PyCFunction)CmbError, METH_NOARGS },
+	{ NULL, NULL },
+};
+
+struct module_state {
+	PyObject *error;
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state *)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef cmbModule = {
+	PyModuleDef_HEAD_INIT,
+	.m_name = "cmb",
+	.m_doc = "combinatorics library",
+	.m_size = sizeof(PyCmbObject),
+	.m_methods = cmbMethods,
+	.m_traverse = cmb_traverse,
+	.m_clear = cmb_clear,
+};
+#endif
 
 /*
  * Type implementation
@@ -134,6 +176,9 @@ CmbDealloc(PyCmbObject *self)
 {
 	struct cmb_config *config = self->config;
 
+#if DEBUG
+	DPRINT("here");
+#endif
 	if (config != NULL) {
 		if (config->delimiter != NULL) {
 			free(config->delimiter);
@@ -150,7 +195,11 @@ CmbDealloc(PyCmbObject *self)
 		free(config);
 		self->config = NULL;
 	}
-	self->ob_type->tp_free((PyObject *)self);
+#if PY_MAJOR_VERSION == 2
+	Py_TYPE(self)->tp_free((PyObject *)self);
+#else
+	Py_CLEAR(self);
+#endif
 }
 
 static PyObject *
@@ -170,7 +219,7 @@ CmbNew(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	return ((PyObject *)self);
 }
 
-static char *keywords[] = {
+static const char *keywords[] = {
 	"count",
 	"debug",
 	"delimiter",
@@ -188,14 +237,26 @@ static char *keywords[] = {
 static int
 CmbInit(PyCmbObject *self, PyObject *args, PyObject *kwds)
 {
-	char **k;
+	const char *k;
 	PyObject *value;
+#if PY_MAJOR_VERSION >= 3
+	PyObject *key;
+#endif
+	int i = -1;
 
-	if (kwds != NULL && PyDict_Check(kwds)) {
-		k = keywords - 1;
-		while (*++k != NULL)
-			if ((value = PyDict_GetItemString(kwds, *k)) != NULL)
-				CmbSet(self, *k, value);
+	if (kwds == NULL || !PyDict_Check(kwds))
+		return (0);
+
+	while ((k = keywords[++i]) != NULL) {
+		if ((value = PyDict_GetItemString(kwds, k)) == NULL)
+			continue;
+#if PY_MAJOR_VERSION == 2
+		CmbSet(self, k, value);
+#else
+		key = Py_BuildValue("s", k);
+		CmbSetO(self, key, value);
+		Py_CLEAR(key);
+#endif
 	}
 
 	return (0);
@@ -234,7 +295,11 @@ cmb_keys_error:
 }
 
 static PyObject *
-CmbGet(PyCmbObject *self, char *key)
+#if PY_MAJOR_VERSION == 2
+CmbGet(PyCmbObject *self, const char *key)
+#else
+CmbGetO(PyCmbObject *self, PyObject *key)
+#endif
 {
 	struct cmb_config *config = self->config;
 
@@ -263,17 +328,36 @@ CmbGet(PyCmbObject *self, char *key)
 	else if (KeyEq("suffix"))
 		return Py_BuildValue("s", config->suffix);
 
-	Py_INCREF(Py_None);
-	return (Py_None);
+	PyErr_Format(PyExc_AttributeError,
+	    "'%.200s' object has no attribute '%s'",
+	    Py_TYPE(self)->tp_name, key);
+	return (NULL);
 }
 
 static int
-CmbSet(PyCmbObject *self, char *key, PyObject *value)
+#if PY_MAJOR_VERSION == 2
+CmbSet(PyCmbObject *self, const char *key, PyObject *value)
+#else
+CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
+#endif
 {
 	struct cmb_config *config = self->config;
 	char *tmp;
 	size_t len;
 
+#if PY_MAJOR_VERSION >= 3
+	if (!PyUnicode_Check(key)) {
+		PyErr_Format(PyExc_TypeError,
+			"attribute name must be string, not '%.200s'",
+			Py_TYPE(key)->tp_name);
+		return (-1);
+	}
+#endif
+
+	if (key == NULL) {
+		printf("hi\n");
+		return (-1);
+	}
 	if (KeyEq("keys")) {
 		self->config_set = 0;
 		bzero(self->config, sizeof(struct cmb_config));
@@ -299,8 +383,13 @@ CmbSet(PyCmbObject *self, char *key, PyObject *value)
 			free(config->delimiter);
 			config->delimiter = NULL;
 		}
+#if PY_MAJOR_VERSION == 2
 		if (PyString_Check(value) &&
 		    (tmp = PyString_AsString(value)) != NULL) {
+#else
+		if (PyUnicode_Check(value) &&
+		    (tmp = PyUnicode_AsUTF8(value)) != NULL) {
+#endif
 			len = strlen(tmp) + 1;
 			if ((config->delimiter = (char *)malloc(len)) != NULL) {
 				memcpy(config->delimiter, tmp, len);
@@ -322,8 +411,13 @@ CmbSet(PyCmbObject *self, char *key, PyObject *value)
 			free(config->prefix);
 			config->prefix = NULL;
 		}
+#if PY_MAJOR_VERSION == 2
 		if (PyString_Check(value) &&
 		    (tmp = PyString_AsString(value)) != NULL) {
+#else
+		if (PyUnicode_Check(value) &&
+		    (tmp = PyUnicode_AsUTF8(value)) != NULL) {
+#endif
 			len = strlen(tmp) + 1;
 			if ((config->prefix = (char *)malloc(len)) != NULL) {
 				memcpy(config->prefix, tmp, len);
@@ -380,8 +474,13 @@ CmbSet(PyCmbObject *self, char *key, PyObject *value)
 			free(config->suffix);
 			config->suffix = NULL;
 		}
+#if PY_MAJOR_VERSION == 2
 		if (PyString_Check(value) &&
 		    (tmp = PyString_AsString(value)) != NULL) {
+#else
+		if (PyUnicode_Check(value) &&
+		    (tmp = PyUnicode_AsUTF8(value)) != NULL) {
+#endif
 			len = strlen(tmp) + 1;
 			if ((config->suffix = (char *)malloc(len)) != NULL) {
 				memcpy(config->suffix, tmp, len);
@@ -396,6 +495,15 @@ CmbSet(PyCmbObject *self, char *key, PyObject *value)
 /*
  * Module implementation
  */
+
+static PyObject *
+CmbError(PyObject *m)
+{
+    struct module_state *st = GETSTATE(m);
+
+    PyErr_SetString(st->error, "something bad happened");
+    return (NULL);
+}
 
 static PyObject *
 pycmb(PyObject *obj, PyObject *args)
@@ -422,7 +530,11 @@ pycmb(PyObject *obj, PyObject *args)
 	v = (char **)malloc(sizeof(char *) * size);
 	for (i = 0; i < size; i++) {
 		pListItem = PyList_GetItem(list, i);
+#if PY_MAJOR_VERSION == 2
 		if ((tmp = PyString_AsString(pListItem)) != NULL) {
+#else
+		if ((tmp = PyUnicode_AsUTF8(pListItem)) != NULL) {
+#endif
 			len = strlen(tmp) + 1;
 			v[i] = (char *)malloc(len);
 			memcpy(v[i], tmp, len);
@@ -441,32 +553,50 @@ pycmb_error:
 	return (Py_BuildValue("i", res));
 }
 
+static uint32_t stub_cmb_func_list_size = 0;
+static PyObject *stub_cmb_func_list = NULL;
+static PyObject *stub_cmb_func_args = NULL;
+
 static int
 stub_cmb_func(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	char *items[])
 {
-	PyObject *list = PyList_New(0);
-	PyObject *args = Py_BuildValue("(O)", list);
 	PyObject *resObj;
 	int res = 0;
 	uint32_t i;
 
-	if (args == NULL) {
-		if (list != NULL)
-			Py_DECREF(list);
-		return (1);
+	/* Resize list arguments if necessary */
+	if (stub_cmb_func_list_size != nitems) {
+		PyObject *old = stub_cmb_func_list;
+		stub_cmb_func_list =
+		    PyList_New(stub_cmb_func_list_size = nitems);
+		PyTuple_SET_ITEM(stub_cmb_func_args, 0, stub_cmb_func_list);
+		Py_CLEAR(old);
 	}
 
-	for (i = 0; i < nitems; i++)
-		PyList_Append(list, (PyObject *)items[i]);
-
-	resObj = PyObject_CallObject(py_cmb_func, args);
-	Py_DECREF(args);
-	Py_DECREF(list);
-
+	for (i = 0; i < nitems; i++) {
+		PyList_SET_ITEM(stub_cmb_func_list, i, (PyObject *)items[i]);
+#if DEBUG
+		DPRINTF("items[%i].ob_refcnt = %zi", i,
+		    ((PyObject *)items[i])->ob_refcnt);
+#endif
+	}
+#if DEBUG
+	DPRINT("calling python function");
+#endif
+	resObj = PyObject_CallObject(py_cmb_func, stub_cmb_func_args);
+	if (resObj == NULL) {
+#if DEBUG
+		DPRINT("something went wrong");
+#endif
+		PyErr_Print();
+	}
 	res = (int)PyLong_AsLong(resObj);
-	if (resObj != NULL)
-		Py_DECREF(resObj);
+#if DEBUG
+	DPRINTF("result: %i", res);
+	DPRINTF("py_cmb_func.ob_refcnt = %zi", py_cmb_func->ob_refcnt);
+#endif
+	Py_CLEAR(resObj);
 
 	return (res);
 }
@@ -493,16 +623,67 @@ pycmb_callback(PyObject *obj, PyObject *args)
 	}
 
 	/* Allocate memory */
-	py_cmb_func = func;
+	Py_XINCREF(self);
+	Py_XINCREF(list);
+	Py_XDECREF(py_cmb_func);
+	Py_XINCREF(py_cmb_func = func);
+#if DEBUG
+	DPRINT("initializing");
+	DPRINTF("self.ob_refcnt = %zi", self->ob_refcnt);
+	DPRINTF("args.ob_refcnt = %zi", args->ob_refcnt);
+#endif
 	size = PyList_Size(list);
 	v = (PyObject **)malloc(sizeof(PyObject *) * size);
-	for (i = 0; i < (uint32_t)size; i++)
+	for (i = 0; i < (uint32_t)size; i++) {
 		v[i] = PyList_GetItem(list, i); /* borrowed ref */
+#if DEBUG
+		DPRINTF("v[%i].ob_refcnt = %zi", i, v[i]->ob_refcnt);
+#endif
+	}
+#if DEBUG
+	DPRINTF("py_cmb_func.ob_refcnt = %zi", py_cmb_func->ob_refcnt);
+#endif
 
 	self->config->action = stub_cmb_func;
+	stub_cmb_func_list_size = 0;
+	stub_cmb_func_list = PyList_New(stub_cmb_func_list_size);
+#if DEBUG
+	DPRINTF("stub_cmb_func_list.ob_refcnt = %zi",
+	    stub_cmb_func_list->ob_refcnt);
+#endif
+	stub_cmb_func_args = Py_BuildValue("(O)", stub_cmb_func_list);
+#if DEBUG
+	DPRINTF("stub_cmb_func_list.ob_refcnt = %zi",
+	    stub_cmb_func_list->ob_refcnt);
+#endif
+	Py_DECREF(stub_cmb_func_list);
+#if DEBUG
+	DPRINTF("stub_cmb_func_list.ob_refcnt = %zi",
+	    stub_cmb_func_list->ob_refcnt);
+	DPRINT("initialized");
+#endif
+
 	res = cmb(self->config, nitems, (char **)v);
 
+#if DEBUG
+	DPRINT("cleaning up");
+	DPRINTF("self.ob_refcnt = %zi", self->ob_refcnt);
+	DPRINTF("args.ob_refcnt = %zi", args->ob_refcnt);
+	for (i = 0; i < (uint32_t)size; i++)
+		DPRINTF("v[%i].ob_refcnt = %zi", i, v[i]->ob_refcnt);
+	DPRINTF("py_cmb_func.ob_refcnt = %zi", py_cmb_func->ob_refcnt);
+	DPRINTF("stub_cmb_func_list.ob_refcnt = %zi",
+	    stub_cmb_func_list->ob_refcnt);
+#endif
+
 	/* Free memory */
+	Py_DECREF(args);
+	Py_DECREF(py_cmb_func);
+	Py_DECREF(stub_cmb_func_args);
+	Py_DECREF(stub_cmb_func_list);
+	stub_cmb_func_args = NULL;
+	stub_cmb_func_list = NULL;
+	stub_cmb_func_list_size = 0;
 	free(v);
 
 	usleep(5000);
@@ -555,7 +736,11 @@ pycmb_print(PyObject *obj, PyObject *args)
 		pListItem = PyList_GetItem(list, i);
 		if (pListItem == NULL)
 			continue;
+#if PY_MAJOR_VERSION == 2
 		if ((tmp = PyString_AsString(pListItem)) != NULL) {
+#else
+		if ((tmp = PyUnicode_AsUTF8(pListItem)) != NULL) {
+#endif
 			len = strlen(tmp) + 1;
 			v[i] = (char *)malloc(len);
 			memcpy(v[i], tmp, len);
@@ -579,33 +764,82 @@ pycmb_version(PyObject *obj, PyObject *args)
 {
 	PyObject *pytype;
 	int type = 0;
+#if PY_MAJOR_VERSION == 2
+	const char *opt = "O";
+#else
+	const char *opt = "|O";
+#endif
 
-	if (PyArg_ParseTuple(args, "O", &pytype) && PyNumber_Check(pytype))
+	if (PyArg_ParseTuple(args, opt, &pytype) && PyNumber_Check(pytype))
 		type = (int)PyLong_AsLong(pytype);
 	return (Py_BuildValue("s", cmb_version(type)));
 }
 
-static PyMethodDef cmbMethods[] = {
-	{ "cmb", pycmb, METH_VARARGS },
-	{ "cmb_callback", pycmb_callback, METH_VARARGS },
-	{ "cmb_count", pycmb_count, METH_VARARGS },
-	{ "cmb_print", pycmb_print, METH_VARARGS },
-	{ "cmb_version", pycmb_version, METH_VARARGS },
-	{ NULL, NULL },
-};
+#if PY_MAJOR_VERSION >= 3
+static int
+cmb_traverse(PyObject *m, visitproc visit, void *arg)
+{
+	struct module_state *st;
+
+	st = GETSTATE(m);
+	if (st != NULL)
+		Py_VISIT(st->error);
+
+	return (0);
+}
+
+static int
+cmb_clear(PyObject *m)
+{
+	struct module_state *st;
+
+	st = GETSTATE(m);
+	if (st != NULL)
+		Py_CLEAR(st->error);
+
+	return (0);
+}
+#endif /* PY_MAJOR_VERSION >= 3 */
 
 PyMODINIT_FUNC
+#if PY_MAJOR_VERSION == 2
 initcmb(void)
+#else
+PyInit_cmb(void)
+#endif
 {
-	PyObject *m;
+	PyObject *m = NULL;
+	struct module_state *st;
 
 	if (PyType_Ready(&PyCmbType) < 0)
-		return;
+		goto initcmb_error;
 
+#if PY_MAJOR_VERSION == 2
 	m = Py_InitModule3("cmb", cmbMethods, "Combinatorics module");
+#else
+	m = PyModule_Create(&cmbModule);
+#endif
 	if (m == NULL)
-		return;
+		goto initcmb_error;
+
+	st = GETSTATE(m);
+	if (st == NULL)
+		goto initcmb_error;
+	st->error = PyErr_NewException("cmb.Error", NULL, NULL);
+	if (st->error == NULL) {
+		Py_DECREF(m);
+		m = NULL;
+		goto initcmb_error;
+	}
 
 	Py_INCREF(&PyCmbType);
 	PyModule_AddObject(m, "CMB", (PyObject *)&PyCmbType); /* steals ref */
+
+initcmb_error:
+	PyErr_Print();
+#if PY_MAJOR_VERSION >= 3
+	return (m);
+#else
+	return;
+#endif
 }
