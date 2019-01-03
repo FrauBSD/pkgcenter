@@ -1,0 +1,54 @@
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/configure.in 2019-01-03 02:11:25 -0800 freebsdfrau $
+
+AC_INIT
+############################################################ CONFIGURATION
+
+#
+# AC_PREREQ (VERSION)
+# 	Minimum version of autoconf required to generate `configure'.
+#
+AC_PREREQ(2.69)
+
+#
+# AC_REVISION (REVISION-INFO)
+# 	Place static version identifier information into autoconf-generated
+# 	`configure' for source-code tracking purposes.
+#
+AC_REVISION($Revision: 1.0 $)
+
+############################################################ OPTIONS
+
+AC_ARG_WITH(python,
+	AS_HELP_STRING([--with-python=CMD], [Destination python interpreter]))
+AS_IF(path=`which ${with_python:-python}`, [PYTHON="$path"], [PYTHON=python])
+
+############################################################ FUNCTIONS
+
+m4_define([PYTHON_CFG], [`$1 -c 'from distutils.sysconfig import *; \
+	print(get_config_var("$2"))' | sed -e 's/None//'`])
+
+############################################################ DEFINES
+
+AC_SUBST(LIBDEST,   PYTHON_CFG([$PYTHON], [LIBDEST]))
+AC_SUBST(SO,        PYTHON_CFG([$PYTHON], [SO]))
+AC_SUBST(INCLUDEPY, PYTHON_CFG([$PYTHON], [INCLUDEPY]))
+AC_SUBST(CCSHARED,  PYTHON_CFG([$PYTHON], [CCSHARED]))
+AC_SUBST(CFLAGS,    PYTHON_CFG([$PYTHON], [CFLAGS]))
+AC_SUBST(LDSHARED,  PYTHON_CFG([$PYTHON], [LDSHARED]))
+
+############################################################ OUTPUTS
+
+#
+# AC_CONFIG_FILES (FILE ..., [COMMANDS], [INIT-CMDS])
+# 	Files to instantiate.
+#
+AC_CONFIG_FILES(Makefile)
+
+#
+# Generate/launch `config.status' (which in-turn generates makefiles, etc.).
+#
+AC_OUTPUT
+
+################################################################################
+# END
+################################################################################

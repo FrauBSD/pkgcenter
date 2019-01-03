@@ -1,0 +1,62 @@
+############################################################ IDENT(1)
+#
+# $Title: Makefile to compile/install python extension $
+# $Copyright: 2018-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-01-03 02:11:25 -0800 freebsdfrau $
+#
+############################################################ OBJECTS
+
+SITE_PACKAGES=	@LIBDEST@/site-packages
+PACKAGE_NAME=	cmb
+PACKAGE_FILES=	__init__.py \
+		$(LIB)
+
+LIB=		cmb@SO@
+SRC=		cmb.c
+OBJ=		cmb.o
+
+PREFIX=		@prefix@
+INCLUDE=	-I$(PREFIX)/include -I@INCLUDEPY@
+CFLAGS=		@CCSHARED@ -g -Wall -Wno-missing-braces @CFLAGS@ $(INCLUDE)
+LDSHARED=	@LDSHARED@ -L$(PREFIX)/lib -lcmb
+
+############################################################ TARGETS
+
+.PHONY: all
+
+all: Makefile $(LIB)
+
+Makefile: Makefile.in configure config.status
+	./config.status --recheck
+	./config.status
+	$(MAKE) $(MFLAGS) clean
+
+$(LIB): Makefile $(OBJ)
+	$(LDSHARED) $(OBJ) -o $(@)
+
+$(OBJ): Makefile $(SRC)
+	$(CC) $(CFLAGS) -c $(SRC) -o $(OBJ)
+
+.PHONY: install uninstall
+
+install: Makefile $(LIB)
+	mkdir -p $(SITE_PACKAGES)/$(PACKAGE_NAME)
+	cp $(PACKAGE_FILES) $(SITE_PACKAGES)/$(PACKAGE_NAME)/
+
+uninstall: Makefile
+	( cd $(SITE_PACKAGES)/$(PACKAGE_NAME) && rm -f $(PACKAGE_FILES) )
+	rmdir $(SITE_PACKAGES)/$(PACKAGE_NAME) ||:
+
+.PHONY: distclean clean cleandir
+
+clean: Makefile
+	rm -f *.o *.pyc
+	rm -Rf __pycache__
+
+distclean cleandir: Makefile clean
+	rm -f $(LIB)
+	rm -Rf Makefile autom4te.cache config.log config.status
+
+################################################################################
+# END
+################################################################################
