@@ -1732,7 +1732,7 @@ LDSHARED=`$PYTHON -c 'from distutils.sysconfig import *; \
 # AC_CONFIG_FILES (FILE ..., [COMMANDS], [INIT-CMDS])
 # 	Files to instantiate.
 #
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile cmb/Makefile"
 
 
 #
@@ -2444,6 +2444,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "cmb/Makefile") CONFIG_FILES="$CONFIG_FILES cmb/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/configure.in 2019-01-03 02:11:25 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/configure.in 2019-01-03 05:22:51 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -42,7 +42,7 @@ AC_SUBST(LDSHARED,  PYTHON_CFG([$PYTHON], [LDSHARED]))
 # AC_CONFIG_FILES (FILE ..., [COMMANDS], [INIT-CMDS])
 # 	Files to instantiate.
 #
-AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(Makefile cmb/Makefile)
 
 #
 # Generate/launch `config.status' (which in-turn generates makefiles, etc.).

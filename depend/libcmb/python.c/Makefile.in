@@ -1,13 +1,18 @@
 ############################################################ IDENT(1)
 #
 # $Title: Makefile to run user-supplied targets in sub-directories $
-# $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/Makefile 2018-12-31 23:23:46 -0800 freebsdfrau $
+# $Copyright: 2018-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/Makefile.in 2019-01-03 05:22:51 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
 SUBDIRS=	cmb
-TARGETS=	clean cleandir install uninstall
+TARGETS=	clean cleandir distclean install uninstall
+RMPATHS=	Makefile autom4te.cache config.log config.status
+
+############################################################ FUNCTIONS
+
+EVAL2=		eval2(){ echo "$$*"; eval "$$@"; }
 
 ############################################################ TARGETS
 
@@ -15,8 +20,23 @@ TARGETS=	clean cleandir install uninstall
 
 .PHONY: $(TARGETS)
 
-all $(TARGETS):
-	@for dir in $(SUBDIRS); do ( cd $$dir && $(MAKE) $(@) ); done
+all $(TARGETS): Makefile
+	@$(EVAL2);                                 \
+	 set -e;                                   \
+	 for dir in $(SUBDIRS); do                 \
+	 	[ -e $$dir/Makefile ] || continue; \
+	 	eval2 cd $$dir;                    \
+	 	eval2 $(MAKE) $(@);                \
+	 	eval2 cd -;                        \
+	 done;                                     \
+	 case "$(@)" in cleandir|distclean)        \
+	 	eval2 rm -Rf $(RMPATHS) ;;         \
+	 esac
+	 	
+Makefile: Makefile.in configure config.status
+	./config.status --recheck
+	./config.status
+	$(MAKE) $(MFLAGS) clean
 
 ################################################################################
 # END

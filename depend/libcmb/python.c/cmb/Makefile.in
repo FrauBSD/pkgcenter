@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to compile/install python extension $
 # $Copyright: 2018-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-01-03 02:11:25 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-01-03 05:22:51 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -26,9 +26,8 @@ LDSHARED=	@LDSHARED@ -L$(PREFIX)/lib -lcmb
 
 all: Makefile $(LIB)
 
-Makefile: Makefile.in configure config.status
-	./config.status --recheck
-	./config.status
+Makefile: Makefile.in ../configure ../config.status
+	cd .. && ./config.status --recheck && ./config.status
 	$(MAKE) $(MFLAGS) clean
 
 $(LIB): Makefile $(OBJ)
@@ -54,8 +53,7 @@ clean: Makefile
 	rm -Rf __pycache__
 
 distclean cleandir: Makefile clean
-	rm -f $(LIB)
-	rm -Rf Makefile autom4te.cache config.log config.status
+	rm -f $(LIB) Makefile
 
 ################################################################################
 # END
