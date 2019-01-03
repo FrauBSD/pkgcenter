@@ -1,8 +1,8 @@
 ############################################################ IDENT(1)
 #
 # $Title: Makefile to compile/install python extension $
-# $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile 2019-01-02 23:39:06 -0800 freebsdfrau $
+# $Copyright: 2018-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile 2019-01-02 23:48:51 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
