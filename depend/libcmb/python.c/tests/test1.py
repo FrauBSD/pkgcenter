@@ -43,7 +43,7 @@ print("\tRESULT: %i" % res)
 config.show_numbers = 0
 print("cmb_callback(config, %u, [%s], afunc):" % (count, ilist))
 num_calls = 0
-def afunc(*args):
+def afunc(args):
     global num_calls
     num_calls += 1
     return 0
