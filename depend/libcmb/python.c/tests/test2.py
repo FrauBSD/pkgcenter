@@ -13,7 +13,7 @@ total = 0
 choice = 2
 num = 10000
 
-items = range(0, num)
+items = ["%s" % x for x in range(0, num)]
 count = len(items)
 
 config = CMB(size_min = choice, size_max = choice)

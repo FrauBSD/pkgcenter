@@ -10,7 +10,6 @@ def interrupt(sig, frame):
 
 signal.signal(signal.SIGINT, interrupt)
 
-#items = range(0, 10000)
 items = ["%s" % x for x in range(0, 10000)]
 choose = 2
 nitems = len(items)
