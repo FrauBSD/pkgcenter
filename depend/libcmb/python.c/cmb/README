@@ -1,0 +1,22 @@
+Compile C bindings for python:
+
+	./configure
+	make
+
+Install (as root):
+
+	make install
+
+Clean up object files:
+
+	make clean
+
+Compile C bindings for an alternate python:
+
+	./configure --with-python=python3
+	make
+
+Return directory to its distribution state (removes tarballs):
+
+	make cleandir
+
