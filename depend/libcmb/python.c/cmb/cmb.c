@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-01-03 05:45:42 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-01-03 05:51:59 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -331,7 +331,14 @@ CmbGetO(PyCmbObject *self, PyObject *key)
 
 	PyErr_Format(PyExc_AttributeError,
 	    "'%.200s' object has no attribute '%s'",
-	    Py_TYPE(self)->tp_name, key);
+	    Py_TYPE(self)->tp_name,
+#if PY_MAJOR_VERSION == 2
+	    key
+#else
+	    PyUnicode_AsUTF8(key)
+#endif
+	);
+
 	return (NULL);
 }
 
@@ -491,7 +498,13 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 	} else {
 		PyErr_Format(PyExc_AttributeError,
 		    "'%.200s' object has no attribute '%s'",
-		    Py_TYPE(self)->tp_name, key);
+		    Py_TYPE(self)->tp_name,
+#if PY_MAJOR_VERSION == 2
+		    key
+#else
+		    PyUnicode_AsUTF8(key)
+#endif
+		);
 		return (-1);
 	}
 
