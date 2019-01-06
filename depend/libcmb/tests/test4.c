@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test4.c 2019-01-06 08:49:01 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test4.c 2019-01-06 08:54:55 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -76,7 +76,7 @@ main(void)
 		dup2(dpv[0], STDIN_FILENO);
 		close(dpv[0]);
 		close(dpv[1]);
-		sprintf(count_arg, "%lu:-", cmb_count(&config, NITEMS));
+		sprintf(count_arg, "%lu:c", cmb_count(&config, NITEMS));
 		execlp("dpv", "dpv", "-l", count_arg, NULL);
 		err(EXIT_FAILURE, "dpv");
 		/* NOTREACHED */
