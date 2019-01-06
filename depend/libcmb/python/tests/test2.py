@@ -4,7 +4,7 @@ import signal
 import sys
 
 def interrupt(sig, frame):
-    print ""
+    print("")
     sys.exit(0)
 
 signal.signal(signal.SIGINT, interrupt)
@@ -18,10 +18,10 @@ count = len(items)
 
 config = CMB(size_min = choice, size_max = choice)
 
-print "Silently enumerating choose-%u from %u:" % (choice, num)
+print("Silently enumerating choose-%u from %u:" % (choice, num))
 def afunc(items):
     global total
     total += 1
     return 0
 cmb_callback(config, count, items, afunc)
-print "%u callbacks executed" % total
+print("%u callbacks executed" % total)

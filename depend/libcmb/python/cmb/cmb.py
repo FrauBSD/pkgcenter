@@ -7,7 +7,7 @@
 #
 # $Title: Python bindings for libcmb $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2018-12-20 18:34:20 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/cmb.py 2019-01-05 19:30:37 -0800 freebsdfrau $
 #
 ############################################################ LICENSE
 #
@@ -43,6 +43,7 @@ ctypes interface to libcmb.
 ############################################################ INCLUDES
 
 import ctypes
+import sys
 
 ############################################################ GLOBALS
 
@@ -80,7 +81,10 @@ class CMB(ctypes.Structure):
         return getattr(self, key)
 
     def __setitem__(self, key, value):
-        return setattr(self, key, value)
+        if (type(value) is str):
+            return setattr(self, key, value.encode('utf-8'))
+        else:
+            return setattr(self, key, value)
 
 
 #
@@ -137,7 +141,10 @@ def cmb_count(config, nitems):
 #
 def cmb_print(config, seq, nitems, items):
     citems = (ctypes.c_char_p * len(items))()
-    citems[:] = items
+    if sys.version_info[0] < 3:
+        citems[:] = items
+    else:
+        citems[:] = [bytes(x, 'utf-8') for x in items]
     return libcmb.cmb_print(ctypes.pointer(config), seq, nitems, citems)
 
 #
@@ -145,7 +152,10 @@ def cmb_print(config, seq, nitems, items):
 #
 def cmb(config, nitems, items):
     citems = (ctypes.c_char_p * len(items))()
-    citems[:] = items
+    if sys.version_info[0] < 3:
+        citems[:] = items
+    else:
+        citems[:] = [bytes(x, 'utf-8') for x in items]
     return libcmb.cmb(ctypes.pointer(config), nitems, citems)
 
 #
@@ -166,7 +176,10 @@ def g_callback(config, seq, nitems, items):
 def cmb_callback(config, nitems, items, action):
     global g_action
     citems = (ctypes.c_char_p * len(items))()
-    citems[:] = ["%s" % x for x in items]
+    if sys.version_info[0] < 3:
+        citems[:] = ["%s" % x for x in items]
+    else:
+        citems[:] = [bytes(y, 'utf-8') for y in ["%s" % x for x in items]]
     _action = config["action"]
     g_action = action
     config["action"] = CMB_CALLBACK(g_callback)

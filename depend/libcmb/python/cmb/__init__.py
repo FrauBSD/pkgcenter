@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/__init__.py 2019-01-05 18:21:45 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python/cmb/__init__.py 2019-01-05 19:30:37 -0800 freebsdfrau $
 #-
 # Copyright (c) 2018 Devin Teske. All rights reserved.
 #
@@ -23,6 +23,10 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-from cmb import *
+import sys
+if sys.version_info[0] < 3:
+    from cmb import *
+else:
+    from cmb.cmb import *
 
 __version__ = "2.2"

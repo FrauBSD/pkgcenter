@@ -5,12 +5,12 @@ import subprocess
 import sys
 
 def interrupt(sig, frame):
-    print ""
+    print("")
     sys.exit(0)
 
 signal.signal(signal.SIGINT, interrupt)
 
-items = range(0, 1000)
+items = ["%s" % x for x in range(0, 1000)]
 choose = 2
 nitems = len(items)
 
@@ -21,6 +21,7 @@ dpv = subprocess.Popen(["dpv", "-l", "%u:python" % total],
 
 def afunc(items):
     global dpv
-    dpv.stdin.write(" ".join(items) + "\n")
+    out = " ".join([x.decode('utf-8') for x in items]) + "\n"
+    dpv.stdin.write(out.encode('utf-8'))
     return 0
 cmb_callback(config, nitems, items, afunc)
