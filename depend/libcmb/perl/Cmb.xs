@@ -1,12 +1,10 @@
+#include <cmb.h>
+
 #define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-
 #include "ppport.h"
-
-#include <cmb.h>
-
 #include "const-c.inc"
 
 SV *g_action = NULL;
