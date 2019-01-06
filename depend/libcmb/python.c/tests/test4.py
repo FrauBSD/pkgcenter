@@ -16,7 +16,7 @@ nitems = len(items)
 
 config = CMB(size_min = choose, size_max = choose)
 total = cmb_count(config, nitems)
-dpv = subprocess.Popen(["dpv", "-l", "%u:ctypes" % total],
+dpv = subprocess.Popen(["dpv", "-l", "%u:cpython" % total],
     stdin = subprocess.PIPE,
     universal_newlines = True)
 
