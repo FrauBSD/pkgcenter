@@ -25,3 +25,5 @@ def afunc(items):
     dpv.stdin.write(out.encode('utf-8'))
     return 0
 cmb_callback(config, nitems, items, afunc)
+dpv.stdin.close()
+dpv.wait()
