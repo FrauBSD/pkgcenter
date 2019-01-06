@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test1.c 2019-01-05 21:10:56 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test1.c 2019-01-05 21:22:00 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -45,7 +45,7 @@ int
 main(void)
 {
 	uint32_t nitems = 4;
-	int retval = EXIT_SUCCESS;
+	int retval;
 	uint64_t seq = 1;
 	char *items[] = {"a", "b", "c", "d"};
 	char itemstr[] = "a, b, c, d";
@@ -102,5 +102,5 @@ main(void)
 	printf("\tnum_calls: %i\n", num_calls);
 	printf("\tRESULT: %i\n", retval);
 
-	return (0);
+	return (EXIT_SUCCESS);
 }
