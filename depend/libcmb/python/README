@@ -1,0 +1,6 @@
+Scripts to test alternative python solutions.
+
+To use a specific python interpreter:
+
+	export PYTHON=python3
+
