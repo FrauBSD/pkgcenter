@@ -80,7 +80,20 @@ Cmb - Perl extension for cmb(3) combinatorics library
 =head1 SYNOPSIS
 
   use Cmb;
-  blah blah blah
+
+  # Choose-2 from 3:
+  my $cmb = new Cmb { size_min => 2, size_max => 2 };
+  $cmb->cmb(3, [qw/a b c/]);
+
+  # Alternatively:
+  my $cmb = new Cmb;
+  $cmb->config({ size_min => 2, size_max => 2});
+  $cmb->cmb(3, [qw/a b c/]);
+
+  # Result:
+  a b
+  a c
+  b c
 
 =head1 DESCRIPTION
 
