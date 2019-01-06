@@ -16,7 +16,7 @@ nitems = len(items)
 
 config = CMB(size_min = choose, size_max = choose)
 total = cmb_count(config, nitems)
-dpv = subprocess.Popen(["dpv", "-l", "%u:python" % total],
+dpv = subprocess.Popen(["dpv", "-l", "%u:ctypes" % total],
     stdin = subprocess.PIPE)
 
 def afunc(items):
