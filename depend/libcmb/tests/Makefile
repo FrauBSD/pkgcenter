@@ -2,14 +2,14 @@
 #
 # $Title: Makefile to compile cmb(3) tests $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/tests/Makefile 2019-01-05 21:22:28 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/tests/Makefile 2019-01-05 21:28:16 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
 TESTS=		test1 test2
 SRCS=		test1.c test2.c
 
-CFLAGS=		-g -Wall -Werror -I/usr/local/include $$CFLAGS
+CFLAGS=		-g -Wall -Werror -I/usr/local/include -O2 -pipe
 LDFLAGS=	-L/usr/local/lib -lcmb -lcrypto
 
 ############################################################ FUNCTIONS
@@ -23,19 +23,12 @@ EVAL2=		eval2(){ echo "$$*"; eval "$$@"; }
 all: $(TESTS)
 
 $(TESTS): $(SRCS)
-	@$(EVAL2);                                                           \
-	 set -e;                                                             \
-	 [ $(@).o -nt $(@).c ] || eval2 $(CC) $(CFLAGS) -c $(@).c -o $(@).o; \
-	 [ $(@) -nt $(@).o ] || eval2 $(CC) $(LDFLAGS) $(@).o -o $(@)
+	@$(EVAL2); \
+	 [ $(@) -nt $(@).c ] || eval2 $(CC) $(CFLAGS) $(LDFLAGS) $(@).c -o $(@)
 
-.PHONY: clean
+.PHONY: clean cleandir distclean
 
-clean:
-	rm -f *.o
-
-.PHONY: cleandir distclean
-
-cleandir distclean: clean
+clean cleandir distclean:
 	rm -f $(TESTS)
 
 ################################################################################
