@@ -2,12 +2,12 @@
 #
 # $Title: Makefile to compile cmb(3) tests $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/tests/Makefile 2019-01-05 21:10:56 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/tests/Makefile 2019-01-05 21:22:28 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
-TESTS=		test1
-SRCS=		test1.c
+TESTS=		test1 test2
+SRCS=		test1.c test2.c
 
 CFLAGS=		-g -Wall -Werror -I/usr/local/include $$CFLAGS
 LDFLAGS=	-L/usr/local/lib -lcmb -lcrypto
