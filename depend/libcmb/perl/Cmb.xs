@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-01-05 18:25:57 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-01-10 10:24:44 -0800 freebsdfrau $");
 #endif
 
 #include <cmb.h>
@@ -94,28 +94,28 @@ _config(struct cmb_config *c, SV *hash)
 	while ((entry = hv_iternext(config))) {
 		k = hv_iterkey(entry, &len);
 		v = hv_iterval(config, entry);
-		if (strEQ(k, "debug")) {
+		if (strEQ(k, "count")) {
+			c->count = SvIV(v);
+		} else if (strEQ(k, "debug")) {
 			c->debug = SvIV(v);
+		} else if (strEQ(k, "delimiter")) {
+			c->delimiter = SvPV(v, PL_na);
 		} else if (strEQ(k, "nul_terminate")) {
 			c->nul_terminate = SvIV(v);
 		} else if (strEQ(k, "show_empty")) {
 			c->show_empty = SvIV(v);
 		} else if (strEQ(k, "show_numbers")) {
 			c->show_numbers = SvIV(v);
-		} else if (strEQ(k, "delimiter")) {
-			c->delimiter = SvPV(v, PL_na);
 		} else if (strEQ(k, "prefix")) {
 			c->prefix = SvPV(v, PL_na);
-		} else if (strEQ(k, "suffix")) {
-			c->suffix = SvPV(v, PL_na);
-		} else if (strEQ(k, "size_min")) {
-			c->size_min = SvIV(v);
 		} else if (strEQ(k, "size_max")) {
 			c->size_max = SvIV(v);
-		} else if (strEQ(k, "count")) {
-			c->count = SvIV(v);
+		} else if (strEQ(k, "size_min")) {
+			c->size_min = SvIV(v);
 		} else if (strEQ(k, "start")) {
 			c->start = SvIV(v);
+		} else if (strEQ(k, "suffix")) {
+			c->suffix = SvPV(v, PL_na);
 		}
 	}
 }
