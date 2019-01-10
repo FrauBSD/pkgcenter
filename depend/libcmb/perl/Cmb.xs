@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-01-10 10:24:44 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-01-10 13:04:20 -0800 freebsdfrau $");
 #endif
 
 #include <cmb.h>
@@ -36,9 +36,6 @@ __FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-01-10 10:24:44 -080
 #include "XSUB.h"
 #include "ppport.h"
 #include "const-c.inc"
-
-SV *g_action = NULL;
-AV *g_args = NULL;
 
 int
 g_callback(struct cmb_config *config, uint64_t seq, uint32_t nitems,
@@ -53,24 +50,29 @@ g_callback(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	GV *gv;
 	U8 gimme = G_SCALAR;
 	CV *cv;
+	SV *perlfunc;
+	AV *perlargs;
 
 #ifdef __linux__
 	(void)newsp;
 #endif
 
-	cv = sv_2cv(g_action, &stash, &gv, 0);
+	perlfunc = (SV *)((void **)config->data)[0];
+	perlargs = (AV *)((void **)config->data)[1];
+
+	cv = sv_2cv(perlfunc, &stash, &gv, 0);
 	PUSH_MULTICALL(cv);
 
-	av_clear(g_args);
-	if (config != NULL && config->show_numbers)
-		av_push(g_args, (SV *)newSViv(seq));
+	av_clear(perlargs);
+	if (config->show_numbers)
+		av_push(perlargs, (SV *)newSViv(seq));
 	for (i = 1; i <= nitems; i++) {
-		av_push(g_args, (SV *)items[i-1]);
+		av_push(perlargs, (SV *)items[i-1]);
 		SvREFCNT_inc((SV *)items[i-1]);
 	}
 
 	{
-		GvAV(PL_defgv) = g_args;
+		GvAV(PL_defgv) = perlargs;
 		MULTICALL;
 	}
 
@@ -96,6 +98,8 @@ _config(struct cmb_config *c, SV *hash)
 		v = hv_iterval(config, entry);
 		if (strEQ(k, "count")) {
 			c->count = SvIV(v);
+		} else if (strEQ(k, "data")) {
+			c->data = v;
 		} else if (strEQ(k, "debug")) {
 			c->debug = SvIV(v);
 		} else if (strEQ(k, "delimiter")) {
@@ -217,6 +221,7 @@ CODE:
 		}
 	}
 	RETVAL = cmb_print(c, seq, nitems, array);
+	free(array);
 OUTPUT:
 	RETVAL
 
@@ -240,6 +245,7 @@ CODE:
 		}
 	}
 	RETVAL = cmb(c, nitems, array);
+	free(array);
 OUTPUT:
 	RETVAL
 
@@ -250,6 +256,7 @@ PREINIT:
 	char **array;
 	int i;
 	SV **item;
+	void *_data;
 	int (*_action)(struct cmb_config *c, uint64_t seq, uint32_t nitems,
 	    char *array[]);
 INPUT:
@@ -263,11 +270,12 @@ CODE:
 	c->action = g_callback;
 
 	/* Configure which Perl subroutine g_callback() should call */
-	g_action = name;
+	_data = c->data;
+	c->data = (void *)calloc(2, sizeof(void *));
+	((void **)c->data)[0] = name;
 
 	/* Initialize globals used by g_callback() */
-	if (g_args == NULL)
-		g_args = (AV *)sv_2mortal((SV *)newAV());
+	((void **)c->data)[1] = (void *)sv_2mortal((SV *)newAV());
 
 	/* Copy elements from arrayref to C array of SV pointers */
 	inum = av_len(arrayref);
@@ -280,6 +288,12 @@ CODE:
 
 	/* Combine scalar value reference pointers using g_callback() */
 	RETVAL = cmb(c, nitems, array);
-	c->action = _action; /* restore previous callback */
+
+	free(array);
+	free(c->data);
+
+	/* restore previous data */
+	c->action = _action;
+	c->data = _data;
 OUTPUT:
 	RETVAL
