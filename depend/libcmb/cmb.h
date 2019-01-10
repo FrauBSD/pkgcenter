@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2002-2018 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2002-2019 Devin Teske <dteske@FreeBSD.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-01-05 21:21:10 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-01-10 12:54:37 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -82,6 +82,8 @@ struct cmb_config {
 
 	uint64_t count;		/* Number of combinations */
 	uint64_t start;		/* Starting combination */
+
+	void *data;		/* Reserved for action callback */
 
 	/*
 	 * cmb(3) function callback; called for each combination (default is

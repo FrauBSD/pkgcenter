@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2002-2018 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2002-2019 Devin Teske <dteske@FreeBSD.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2018-12-20 18:36:28 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-01-10 12:54:37 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 2.2";
-static const char version_long[] = "$Version: libcmb 2.2 $";
+static const char version[] = "libcmb 2.3";
+static const char version_long[] = "$Version: libcmb 2.3 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
