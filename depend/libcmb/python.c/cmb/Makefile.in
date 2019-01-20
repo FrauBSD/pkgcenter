@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to compile/install python extension $
 # $Copyright: 2018-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-01-03 05:22:51 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-01-19 17:34:40 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -41,6 +41,12 @@ $(OBJ): Makefile $(SRC)
 install: Makefile $(LIB)
 	mkdir -p $(SITE_PACKAGES)/$(PACKAGE_NAME)
 	cp $(PACKAGE_FILES) $(SITE_PACKAGES)/$(PACKAGE_NAME)/
+	@eval2(){ echo "$$*"; eval "$$@"; };               \
+	 case "$$( uname )" in                             \
+	 Darwin) eval2 install_name_tool -change           \
+	 	libcmb.so.0 /usr/local/lib/libcmb.so.0     \
+	 	$(SITE_PACKAGES)/$(PACKAGE_NAME)/$(LIB) ;; \
+	 esac
 
 uninstall: Makefile
 	( cd $(SITE_PACKAGES)/$(PACKAGE_NAME) && rm -f $(PACKAGE_FILES) )

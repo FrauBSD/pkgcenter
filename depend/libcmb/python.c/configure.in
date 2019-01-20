@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/configure.in 2019-01-03 05:22:51 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/configure.in 2019-01-19 17:34:40 -0800 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -26,15 +26,25 @@ AS_IF(path=`which ${with_python:-python}`, [PYTHON="$path"], [PYTHON=python])
 
 m4_define([PYTHON_CFG], [`$1 -c 'from distutils.sysconfig import *; \
 	print(get_config_var("$2"))' | sed -e 's/None//'`])
+m4_define([PYTHON_VER], [`$1 -c 'from distutils.sysconfig import *; \
+	print(get_python_version())'`])
+m4_define([CONCAT], ["$1$2"])
 
 ############################################################ DEFINES
 
-AC_SUBST(LIBDEST,   PYTHON_CFG([$PYTHON], [LIBDEST]))
 AC_SUBST(SO,        PYTHON_CFG([$PYTHON], [SO]))
 AC_SUBST(INCLUDEPY, PYTHON_CFG([$PYTHON], [INCLUDEPY]))
 AC_SUBST(CCSHARED,  PYTHON_CFG([$PYTHON], [CCSHARED]))
 AC_SUBST(CFLAGS,    PYTHON_CFG([$PYTHON], [CFLAGS]))
 AC_SUBST(LDSHARED,  PYTHON_CFG([$PYTHON], [LDSHARED]))
+case "`uname`" in
+Darwin)
+  AC_SUBST(LIBDEST, CONCAT("/Library/Python/", PYTHON_VER([$PYTHON])))
+  LDSHARED=`echo "$LDSHARED" | sed -e 's/\(-arch x86_64\) -arch i386 /\1 /'`
+  ;;
+*)
+  AC_SUBST(LIBDEST, PYTHON_CFG([$PYTHON], [LIBDEST]))
+esac
 
 ############################################################ OUTPUTS
 

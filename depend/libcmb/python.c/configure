@@ -584,12 +584,12 @@ PACKAGE_URL=
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LIBDEST
 LDSHARED
 CFLAGS
 CCSHARED
 INCLUDEPY
 SO
-LIBDEST
 target_alias
 host_alias
 build_alias
@@ -1705,10 +1705,9 @@ fi
 
 
 
-############################################################ DEFINES
 
-LIBDEST=`$PYTHON -c 'from distutils.sysconfig import *; \
-	print(get_config_var("LIBDEST"))' | sed -e 's/None//'`
+
+############################################################ DEFINES
 
 SO=`$PYTHON -c 'from distutils.sysconfig import *; \
 	print(get_config_var("SO"))' | sed -e 's/None//'`
@@ -1725,6 +1724,18 @@ CFLAGS=`$PYTHON -c 'from distutils.sysconfig import *; \
 LDSHARED=`$PYTHON -c 'from distutils.sysconfig import *; \
 	print(get_config_var("LDSHARED"))' | sed -e 's/None//'`
 
+case "`uname`" in
+Darwin)
+  LIBDEST=""/Library/Python/"`$PYTHON -c 'from distutils.sysconfig import *; \
+	print(get_python_version())'`"
+
+  LDSHARED=`echo "$LDSHARED" | sed -e 's/\(-arch x86_64\) -arch i386 /\1 /'`
+  ;;
+*)
+  LIBDEST=`$PYTHON -c 'from distutils.sysconfig import *; \
+	print(get_config_var("LIBDEST"))' | sed -e 's/None//'`
+
+esac
 
 ############################################################ OUTPUTS
 
