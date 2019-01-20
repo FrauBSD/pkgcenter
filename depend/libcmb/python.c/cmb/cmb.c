@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-01-03 05:51:59 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-01-19 17:33:04 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -529,8 +529,8 @@ pycmb(PyObject *obj, PyObject *args)
 {
 	int i = 0;
 	int res = 0;
-	int size = 0;
 	size_t len;
+	ssize_t size = 0;
 	PyObject *list;
 	PyObject *pysize;
 	PyObject *pListItem;
@@ -624,8 +624,8 @@ static PyObject *
 pycmb_callback(PyObject *obj, PyObject *args)
 {
 	int res = 0;
-	int size;
 	uint32_t nitems, i;
+	ssize_t size;
 	PyCmbObject *self;
 	PyObject *func;
 	PyObject *list;
@@ -737,10 +737,10 @@ pycmb_print(PyObject *obj, PyObject *args)
 	PyCmbObject *self;
 	int i;
 	int res = 0;
-	int size;
 	uint32_t nitems;
 	uint64_t seq;
 	size_t len;
+	ssize_t size;
 	char **v, *tmp;
 
 	if (!PyArg_ParseTuple(args, "OKIO", &self, &seq, &nitems, &list))
