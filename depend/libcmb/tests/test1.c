@@ -25,11 +25,12 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test1.c 2019-01-05 21:22:00 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test1.c 2019-01-19 16:48:37 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
 #include <cmb.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -73,21 +74,22 @@ main(void)
 	printf("\t.suffix = \"%s\",\n", config.suffix);
 	printf("\t.size_min = %u,\n", config.size_min);
 	printf("\t.size_max = %u,\n", config.size_max);
-	printf("\t.count = %lu,\n", config.count);
-	printf("\t.start = %lu,\n", config.start);
+	printf("\t.count = %"PRIu64",\n", config.count);
+	printf("\t.start = %"PRIu64",\n", config.start);
 	printf("}\n");
 
 	printf("cmb_version(%u): %s\n", CMB_VERSION, cmb_version(CMB_VERSION));
 	printf("cmb_version(%u): %s\n", CMB_VERSION_LONG,
 	    cmb_version(CMB_VERSION_LONG));
 	printf("size_min=%u size_max=%u\n", config.size_min, config.size_max);
-	printf("cmb_count(config, %u) = %lu\n", nitems,
+	printf("cmb_count(config, %u) = %"PRIu64"\n", nitems,
 	    cmb_count(&config, nitems));
-	printf("cmb_print(config, %lu, %u, [%s]):\n", seq, nitems, itemstr);
+	printf("cmb_print(config, %"PRIu64", %u, [%s]):\n", seq, nitems,
+	    itemstr);
 	retval = cmb_print(&config, seq, nitems, items);
 	printf("\tRESULT: %i\n", retval);
 	printf("cmb(config, %u, [%s]):\n", nitems, itemstr);
-	printf("NOTE: { .start = %lu, .count = %lu }\n",
+	printf("NOTE: { .start = %"PRIu64", .count = %"PRIu64" }\n",
 	    config.start, config.count);
 	retval = cmb(&config, nitems, items);
 	printf("\tRESULT: %i\n", retval);

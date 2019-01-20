@@ -25,11 +25,12 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test5.c 2019-01-06 08:54:10 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test5.c 2019-01-19 16:48:37 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
 #include <cmb.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -52,7 +53,7 @@ main(void)
 
 	printf("Testing non-zero callback return:\n");
 	(void)cmb(&config, nitems, items);
-	printf("%u of %lu callbacks executed\n",
+	printf("%u of %"PRIu64" callbacks executed\n",
 	    total, cmb_count(&config, nitems));
 
 	return (EXIT_SUCCESS);
