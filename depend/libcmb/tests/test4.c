@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test4.c 2019-01-19 16:48:37 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test4.c 2019-01-19 17:52:40 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -94,6 +94,7 @@ main(void)
 	}
 	(void)cmb(&config, NITEMS, items);
 
+	fflush(stdout);
 	close(STDOUT_FILENO);
 	waitpid(pid, &status, 0);
 
