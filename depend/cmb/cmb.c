@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2018-12-17 02:23:26 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-01-27 17:02:00 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 2.0 $";
+static char version[] = "$Version: 2.1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -122,13 +122,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING1 "0c:d:ef:i:k:Nn:op:s:StT:v"
-#if CMB_DEBUG
-#define OPTSTRING2 OPTSTRING1 "D"
-#else
-#define OPTSTRING2 OPTSTRING1
-#endif
-#define OPTSTRING OPTSTRING2
+#define OPTSTRING "0c:d:Def:i:k:Nn:op:s:StT:v"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -160,11 +154,9 @@ main(int argc, char *argv[])
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
 			break;
-#if CMB_DEBUG
 		case 'D': /* debug */
 			config->debug = TRUE;
 			break;
-#endif
 		case 'e': /* empty */
 			opt_empty = TRUE;
 			config->show_empty = opt_empty;
@@ -477,11 +469,9 @@ usage(void)
 	    "NUL terminate combinations (use with `xargs -0').");
 	fprintf(stderr, OPTFMT, "-c num",
 	    "Produce num combinations (default `0' for all).");
-#if CMB_DEBUG
 	fprintf(stderr, OPTFMT, "-D",
 	    "Enable debugging information on stderr."
 	);
-#endif
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
 	fprintf(stderr, OPTFMT, "-i num",

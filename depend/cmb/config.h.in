@@ -1,11 +1,8 @@
 /*-
- * $FrauBSD: pkgcenter/depend/cmb/config.h.in 2018-11-05 17:44:49 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/cmb/config.h.in 2019-01-27 17:02:00 -0800 freebsdfrau $
  */
 
 /* config.h.in.  Generated from configure.in by autoheader.  */
-
-/* Define to 1 if you want to enable extra debugging options. */
-#undef CMB_DEBUG
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H

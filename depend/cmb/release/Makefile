@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to produce release tarballs $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/release/Makefile 2018-11-29 11:32:16 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/release/Makefile 2019-01-27 17:02:00 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -60,7 +60,7 @@ cmb:
 	 cd ..;                                                               \
 	 [ ! -e cmb ] || fail build directory not clean;                      \
 	 ok build directory clean;                                            \
-	 cmb -e D:--enable-debug o:--without-openssl | while read line; do    \
+	 cmb -e o:--without-openssl | while read line; do                     \
 	 	variant=;                                                     \
 	 	args="$(DEFAULT_ARGS)";                                       \
 	 	set -- $$line;                                                \

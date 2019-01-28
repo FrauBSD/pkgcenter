@@ -6,9 +6,7 @@ Produces the variants with these properties:
 
 	FILE			CONFIGURE ARGS
 	cmb-{version}.tgz	Default (none)
-	cmb-{version}-D.tgz	--enable-debug
 	cmb-{version}-o.tgz	--without-openssl
-	cmb-{version}-Do.tgz	--enable-debug --without-openssl
 
 Each tarball contains:
 
