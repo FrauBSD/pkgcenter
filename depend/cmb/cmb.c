@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-01-27 17:02:00 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-01-31 07:36:33 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 2.1 $";
+static char version[] = "$Version: 2.1+1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -151,11 +151,11 @@ main(int argc, char *argv[])
 			}
 #endif
 			break;
-		case 'd': /* delimiter */
-			config->delimiter = optarg;
-			break;
 		case 'D': /* debug */
 			config->debug = TRUE;
+			break;
+		case 'd': /* delimiter */
+			config->delimiter = optarg;
 			break;
 		case 'e': /* empty */
 			opt_empty = TRUE;
@@ -264,9 +264,6 @@ main(int argc, char *argv[])
 		case 's': /* suffix */
 			config->suffix = optarg;
 			break;
-		case 't': /* total */
-			opt_total = TRUE;
-			break;
 		case 'T': /* total w/ num items */
 			if (*optarg < 48 || *optarg > 57) {
 				errno = EINVAL;
@@ -280,6 +277,9 @@ main(int argc, char *argv[])
 				err(EXIT_FAILURE, "-T");
 				/* NOTREACHED */
 			}
+			break;
+		case 't': /* total */
+			opt_total = TRUE;
 			break;
 		case 'v': /* version */
 			opt_version = TRUE;
