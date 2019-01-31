@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-01-31 07:05:41 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-01-31 07:31:38 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd January 31, 2019
@@ -53,6 +53,16 @@
 .Op Fl p Ar str
 .Op Fl s Ar str
 .Nm
+.Fl r Ar range
+.Op Fl 0DeNo
+.Op Fl c Ar num
+.Op Fl d Ar str
+.Op Fl i Ar num
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Op Fl p Ar str
+.Op Fl s Ar str
+.Nm
 .Fl t
 .Op Fl Deo
 .Op Fl k Ar size
@@ -63,6 +73,12 @@
 .Fl t
 .Fl f Ar file
 .Op Fl 0Deo
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Nm
+.Fl t
+.Fl r Ar range
+.Op Fl Deo
 .Op Fl k Ar size
 .Op Fl n Ar num
 .Nm
@@ -91,7 +107,7 @@ The order of combinations within a single set of N-items
 is dependent upon the order of items on the command-line.
 .Pp
 Available options:
-.Bl -tag -width ".Fl r Ar size"
+.Bl -tag -width ".Fl r Ar range"
 .It Fl 0
 Terminate combinations with ASCII NUL
 .Pq character code 0
@@ -122,7 +138,9 @@ A single combination containing no-items.
 Read items from
 .Ar file ,
 one item per line.
-Command-line arguments ignored when used.
+Command-line arguments and
+.Ql Fl r Ar range
+ignored when used.
 With
 .Ql Fl 0 ,
 use NUL
@@ -206,6 +224,16 @@ options.
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .
+.It Fl r Ar range
+If a single number,
+use numbers 1 to num as combination items instead of command-line arguments.
+If a range
+.Pq Qo min..max Qc or Qo min-max Qc ,
+use numbers min to max.
+Numbers must be whole positive integers between 0 and 4294967295.
+Ignored if
+.Ql Fl f Ar file
+is given.
 .It Fl s Ar text
 Suffix each combination with
 .Ar text .
