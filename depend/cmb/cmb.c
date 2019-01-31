@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2018 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2018-2019 Devin Teske <dteske@FreeBSD.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-01-31 07:36:33 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-01-31 07:39:05 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 2.1+1 $";
+static char version[] = "$Version: 2.1+2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
