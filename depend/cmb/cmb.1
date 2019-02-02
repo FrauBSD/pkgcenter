@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-01-31 07:31:38 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-02-02 14:30:36 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd January 31, 2019
+.Dd February 2, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -63,6 +63,10 @@
 .Op Fl p Ar str
 .Op Fl s Ar str
 .Nm
+.Fl T Ar num
+.Op Fl Deo
+.Op Fl k Ar size
+.Nm
 .Fl t
 .Op Fl Deo
 .Op Fl k Ar size
@@ -81,10 +85,6 @@
 .Op Fl Deo
 .Op Fl k Ar size
 .Op Fl n Ar num
-.Nm
-.Fl T Ar num
-.Op Fl Deo
-.Op Fl k Ar size
 .Nm
 .Fl v
 .Sh DESCRIPTION
