@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-01-31 07:39:05 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-02-02 16:11:51 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 2.1+2 $";
+static char version[] = "$Version: 2.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -89,6 +89,7 @@ main(int argc, char *argv[])
 	uint8_t opt_nossl = FALSE;
 #endif
 	uint8_t opt_randi = FALSE;
+	uint8_t opt_range = FALSE;
 	uint8_t opt_silent = FALSE;
 	uint8_t opt_total = FALSE;
 	uint8_t opt_total_num = FALSE;
@@ -99,8 +100,13 @@ main(int argc, char *argv[])
 	const char *libver = cmb_version(CMB_VERSION);
 	char *opt_file = NULL;
 	int ch;
+	int len;
 	int retval = EXIT_SUCCESS;
+	uint32_t n;
 	uint32_t nitems = 0;
+	uint32_t r;
+	uint32_t range_max = 0;
+	uint32_t range_min = 0;
 	uint32_t titems = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
@@ -111,6 +117,7 @@ main(int argc, char *argv[])
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
 	struct timeval tv;
+	char range_tmp[11];
 
 	pgm = argv[0]; /* store a copy of invocation name */
 
@@ -122,7 +129,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:d:Def:i:k:Nn:op:s:StT:v"
+#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:r:Ss:T:tv"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -258,6 +265,41 @@ main(int argc, char *argv[])
 		case 'p': /* prefix */
 			config->prefix = optarg;
 			break;
+		case 'r': /* range */
+			if (*optarg < 48 || *optarg > 57) {
+				errno = EINVAL;
+				err(EXIT_FAILURE, "-r");
+				/* NOTREACHED */
+			}
+			errno = 0;
+			range_min = (uint32_t)strtoul(optarg,
+			    (char **)NULL, 10);
+			if (errno != 0) {
+				err(EXIT_FAILURE, "-r");
+				/* NOTREACHED */
+			}
+			if ((cp = strstr(optarg, "..")) != NULL) {
+				errno = 0;
+				range_max = (uint32_t)strtoul(cp + 2,
+				    (char **)NULL, 10);
+				if (errno != 0) {
+					err(EXIT_FAILURE, "-r");
+					/* NOTREACHED */
+				}
+			} else if ((cp = strstr(optarg, "-")) != NULL) {
+				errno = 0;
+				range_max = (uint32_t)strtoul(cp + 1,
+				    (char **)NULL, 10);
+				if (errno != 0) {
+					err(EXIT_FAILURE, "-r");
+					/* NOTREACHED */
+				}
+			} else {
+				range_max = range_min;
+				range_min = 1;
+			}
+			opt_range = TRUE;
+			break;
 		case 'S': /* silent */
 			opt_silent = TRUE;
 			break;
@@ -305,9 +347,15 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* Print total for num items if given `-T num' */
-	if (opt_total_num) {
+	/* Print total for num items if given `-T num' or `-t -r range' */
+	if (opt_total_num || (opt_total && opt_range)) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+		if (!opt_total_num) {
+			if (range_min < range_max)
+				titems = range_max - range_min + 1;
+			else
+				titems = range_min - range_max + 1;
+		}
 		if (!opt_nossl) {
 			char *count_str;
 
@@ -336,13 +384,14 @@ main(int argc, char *argv[])
 	}
 
 	/* At least one non-option argument is required */
-	if (argc == 0 && !opt_empty && opt_file == NULL) {
+	if (argc == 0 && !opt_empty && opt_file == NULL && !opt_range) {
 		usage();
 		/* NOTREACHED */
 	}
 
-	/* Read arguments from file if give `-f file' */
+	/* Read arguments ... */
 	if (opt_file != NULL) {
+		/* ... from file if give `-f file' */
 		if (argc > 0)
 			warnx("arguments ignored when `-f file' given");
 		if ((items = malloc(sizeof(char *) * 0xffffffff)) == NULL)
@@ -352,7 +401,22 @@ main(int argc, char *argv[])
 			err(EXIT_FAILURE, NULL);
 			/* NOTREACHED */
 		}
+	} else if (opt_range) {
+		/* ... generated from `-r range' */
+		nitems = range_max - range_min + 1;
+		items = calloc(nitems, sizeof(char *));
+		r = range_min;
+		for (n = 0; n < nitems; n++) {
+			len = snprintf(range_tmp, sizeof(range_tmp), "%u", r);
+			items[n] = (char *)malloc((unsigned long)len + 1);
+			memcpy(items[n], range_tmp, len + 1);
+			if (range_min > range_max)
+				r--;
+			else
+				r++;
+		}
 	} else if (nitems == 0 || nitems > (uint32_t)argc)
+		/* ... from command-line */
 		nitems = (uint32_t)argc;
 
 	/*
