@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-02-02 15:05:37 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-02-02 16:25:37 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd February 2, 2019
@@ -62,10 +62,6 @@
 .Op Fl n Ar num
 .Op Fl p Ar str
 .Op Fl s Ar str
-.Nm
-.Fl T Ar num
-.Op Fl Deo
-.Op Fl k Ar size
 .Nm
 .Fl t
 .Op Fl Deo
@@ -233,16 +229,10 @@ use numbers min to max.
 Numbers must be whole positive integers between 0 and 4294967295.
 Ignored if
 .Ql Fl f Ar file
-or
-.Ql Fl T Ar num
 is given.
 .It Fl s Ar text
 Suffix each combination with
 .Ar text .
-.It Fl T Ar num
-Print number of combinations for
-.Ar num
-items and exit.
 .It Fl t
 Print total number of combinations and exit.
 .It Fl v

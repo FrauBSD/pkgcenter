@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-02-02 16:11:51 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-02-02 16:25:37 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -62,7 +62,7 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 2.2 $";
+static char version[] = "$Version: 2.3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -92,7 +92,6 @@ main(int argc, char *argv[])
 	uint8_t opt_range = FALSE;
 	uint8_t opt_silent = FALSE;
 	uint8_t opt_total = FALSE;
-	uint8_t opt_total_num = FALSE;
 	uint8_t opt_version = FALSE;
 	char *cp;
 	char *cmdver = version;
@@ -107,7 +106,6 @@ main(int argc, char *argv[])
 	uint32_t r;
 	uint32_t range_max = 0;
 	uint32_t range_min = 0;
-	uint32_t titems = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
 	struct cmb_config *config = NULL;
@@ -129,7 +127,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:r:Ss:T:tv"
+#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:r:Ss:tv"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -306,20 +304,6 @@ main(int argc, char *argv[])
 		case 's': /* suffix */
 			config->suffix = optarg;
 			break;
-		case 'T': /* total w/ num items */
-			if (*optarg < 48 || *optarg > 57) {
-				errno = EINVAL;
-				err(EXIT_FAILURE, "-T");
-				/* NOTREACHED */
-			}
-			opt_total_num = TRUE;
-			errno = 0;
-			titems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
-			if (errno != 0) {
-				err(EXIT_FAILURE, "-T");
-				/* NOTREACHED */
-			}
-			break;
 		case 't': /* total */
 			opt_total = TRUE;
 			break;
@@ -347,20 +331,18 @@ main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	/* Print total for num items if given `-T num' or `-t -r range' */
-	if (opt_total_num || (opt_total && opt_range)) {
+	/* Print total for num items if given `-t -r range' */
+	if (opt_total && opt_range) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-		if (!opt_total_num) {
-			if (range_min < range_max)
-				titems = range_max - range_min + 1;
-			else
-				titems = range_min - range_max + 1;
-		}
+		if (range_min < range_max)
+			nitems = range_max - range_min + 1;
+		else
+			nitems = range_min - range_max + 1;
 		if (!opt_nossl) {
 			char *count_str;
 
 			if ((count_bn =
-			    cmb_count_bn(config, titems)) != NULL) {
+			    cmb_count_bn(config, nitems)) != NULL) {
 				count_str = BN_bn2dec(count_bn);
 				printf("%s\n", count_str);
 #ifdef HAVE_OPENSSL_CRYPTO_H
@@ -371,7 +353,7 @@ main(int argc, char *argv[])
 				printf("0\n");
 		} else {
 #endif
-			count = cmb_count(config, titems);
+			count = cmb_count(config, nitems);
 			if (errno) {
 				err(EXIT_FAILURE, NULL);
 				/* NOTREACHED */
