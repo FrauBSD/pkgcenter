@@ -1,10 +1,10 @@
-Scripts to test alternative python solutions.
+Scripts to test alternative solutions.
 
 To use a specific python interpreter:
 
-	# sh bash zsh
+	# If your shell is one of: sh bash zsh
 	export PYTHON=python3
 
-	# csh tcsh
+	# If your shell is one of: csh tcsh
 	setenv PYTHON python3
 
