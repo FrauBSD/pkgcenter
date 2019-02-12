@@ -23,5 +23,5 @@ for i in range(0, len(M[0])):
 EOF
 ${PYTHON:-python} -c "$(cat <&9)" | {
 	read LINE
-	( echo "$LINE"; cat ) | dpv -l 49995000:-
+	( echo "$LINE"; cat ) | dpv -l 49995000:numpy
 }
