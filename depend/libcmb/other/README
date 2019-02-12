@@ -1,10 +1,12 @@
 Scripts to test alternative solutions.
 
-To use a specific python interpreter:
+To use a specific python/R interpreter:
 
 	# If your shell is one of: sh bash zsh
 	export PYTHON=python3
+	export R=Rscript-3.5.2
 
 	# If your shell is one of: csh tcsh
 	setenv PYTHON python3
+	setenv R Rscript-3.5.2
 
