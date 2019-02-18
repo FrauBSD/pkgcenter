@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:49:38 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:50:11 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -42,7 +42,7 @@ __FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019
 #endif
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
 	int has_lm = 0;
 	char *cpu_vendor;
