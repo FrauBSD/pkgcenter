@@ -3,21 +3,9 @@
 
 ############################################### Configuration
 
-PROG_NAME    = util
-SRCS         = main.c
-             
-SLEEP        = sleep
-SLEEP_SRCS   = sleep.c
-             
-SWAPSZ       = swapsz
-SWAPSZ_SRCS  = swapsz.c
-             
 HTT          = htt
 HTT_SRCS     = htt.c
              
-PHYSMEM      = physmem
-PHYSMEM_SRCS = physmem.c
-
 X86_64       = x86_64
 X86_64_SRCS  = x86_64.c
 
@@ -38,29 +26,9 @@ DU           = /usr/bin/du
 
 noargs: all
 
-all: $(PROG_NAME) $(SLEEP) $(SWAPSZ) $(HTT) $(PHYSMEM) $(X86_64)
-
-$(PROG_NAME): $(SRCS)
-	$(CC) $(LDFLAGS) $(CFLAGS) $(>) -o $(@)
-	$(STRIP) -s $(@)
-	$(DU) -h $(@)
-
-$(SLEEP): $(SLEEP_SRCS)
-	$(CC) $(LDFLAGS) $(CFLAGS) $(>) -o $(@)
-	$(STRIP) -s $(@)
-	$(DU) -h $(@)
-
-$(SWAPSZ): $(SWAPSZ_SRCS)
-	$(CC) $(LDFLAGS) $(CFLAGS) $(>) -o $(@)
-	$(STRIP) -s $(@)
-	$(DU) -h $(@)
+all: $(HTT) $(X86_64)
 
 $(HTT): $(HTT_SRCS)
-	$(CC) $(LDFLAGS) $(CFLAGS) $(>) -o $(@)
-	$(STRIP) -s $(@)
-	$(DU) -h $(@)
-
-$(PHYSMEM): $(PHYSMEM_SRCS)
 	$(CC) $(LDFLAGS) $(CFLAGS) $(>) -o $(@)
 	$(STRIP) -s $(@)
 	$(DU) -h $(@)
@@ -75,11 +43,7 @@ clean:
 	$(RM) -f *.core
 
 distclean: clean
-	$(RM) -f $(PROG_NAME)
-	$(RM) -f $(SLEEP)
-	$(RM) -f $(SWAPSZ)
 	$(RM) -f $(HTT)
-	$(RM) -f $(PHYSMEM)
 	$(RM) -f $(X86_64)
 
 ################################################################################
