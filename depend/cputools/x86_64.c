@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:53:30 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:54:15 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -54,7 +54,7 @@ main(int argc, char *argv[])
 	u_int eflags;
 #endif
 
-	/* Check for presence of "cpuid". */
+	/* Check for presence of "cpuid" */
 #ifdef __amd64__
 	rflags = read_rflags();
 	write_rflags(rflags ^ PSL_ID);
@@ -65,22 +65,22 @@ main(int argc, char *argv[])
 	if (((eflags ^ read_eflags()) & PSL_ID) != 0)
 #endif
 	{
-		/* Fetch the vendor string. */
+		/* Fetch the vendor string */
 		do_cpuid(0, regs);
 		vendor[0] = regs[1];
 		vendor[1] = regs[3];
 		vendor[2] = regs[2];
 		cpu_vendor = (char *)vendor;
 
-		/* check for vendors that support AMD features. */
+		/* Check for vendors that support AMD features */
 		if (strncmp(cpu_vendor, "GenuineIntel", 12) == 0 ||
 		    strncmp(cpu_vendor, "AuthenticAMD", 12) == 0)
 		{
-			/* Has to support AMD features. */
+			/* Has to support AMD features */
 			do_cpuid(0x80000000, regs);
 			if (regs[0] >= 0x80000001)
 			{
-				/* Check for long mode. */
+				/* Check for long mode */
 				do_cpuid(0x80000001, regs);
 				has_lm = (regs[3] & AMDID_LM);
 			}
