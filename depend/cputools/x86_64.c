@@ -3,6 +3,11 @@
 
 /* Devin Teske (c)2010, July 26, 11:42:38. All Rights Reserved. */
 
+#include <sys/cdefs.h>
+#ifdef __FBSDID
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:44:54 -0800 freebsdfrau $");
+#endif
+
 /* system includes */
 #include <stdio.h>				/* printf(3) */
 #include <stdlib.h>				/* EXIT_SUCCESS exit(3) */
