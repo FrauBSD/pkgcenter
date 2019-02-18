@@ -2,7 +2,7 @@
 #
 # $Title: Makefile for cputools $
 # $Copyright: 2006-2019 Devin Teske. All rights reserved. $
-# $Header: /cvsroot/druidbsd/druidbsd/druid/dep/freebsd/util/Makefile,v 1.1 2012/01/28 06:59:47 devinteske Exp $
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/Makefile 2019-02-17 20:02:00 -0800 freebsdfrau $
 #
 ############################################### CONFIGURATION
 
