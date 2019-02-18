@@ -25,101 +25,65 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 20:39:45 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 21:16:26 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
-#include <sys/sysctl.h>
-#include <sys/syslog.h>
 
-#include <err.h>
+#include <machine/cpufunc.h>
+#include <machine/psl.h>
+#include <machine/specialreg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* dmesg `Features' string to search for (from beginning of line) */
-#define SEARCH		"  Features=0x"
-#define SEARCH_LEN	13
-
-/* CPUID features bit signifying HyperThreading support */
-#define HTT_FLAG	0x10000000
+#ifndef HTT_FLAG
+#define HTT_FLAG 0x10000000
+#endif
 
 int
 main(int argc, char *argv[])
 {
-	int all = 0, pri = 0;
-	int bufpos;
-	int ch, newl, skip;
-	char *p, *ep, *bp;
-	size_t buflen;
-	unsigned long features;
-	char buf[SEARCH_LEN + 8 + 1];
+	int has_feature = 0;
+	int vendor[3];
+	char *cpu_vendor;
+	u_int regs[4];
+#ifdef __amd64__
+	register_t rflags;
+#else
+	u_int eflags;
+#endif
 
-	/* Running kernel. Use sysctl. */
-	if (sysctlbyname("kern.msgbuf", NULL, &buflen, NULL, 0) == -1)
-		err(1, "sysctl kern.msgbuf");
-	if ((bp = malloc(buflen)) == NULL)
-		errx(1, "malloc failed");
-	if (sysctlbyname("kern.msgbuf", bp, &buflen, NULL, 0) == -1)
-		err(1, "sysctl kern.msgbuf");
+	/* Check for presence of "cpuid" */
+#ifdef __amd64__
+	rflags = read_rflags();
+	write_rflags(rflags ^ PSL_ID);
+	if (((rflags ^ read_rflags()) & PSL_ID) != 0)
+#else
+	eflags = read_eflags();
+	write_eflags(eflags ^ PSL_ID);
+	if (((eflags ^ read_eflags()) & PSL_ID) != 0)
+#endif
+	{
+		/* Fetch the vendor string */
+		do_cpuid(0, regs);
+		vendor[0] = regs[1]; /* %ebx */
+		vendor[1] = regs[3]; /* %edx */
+		vendor[2] = regs[2]; /* %ecx */
+		cpu_vendor = (char *)vendor;
 
-	memset(buf, 0, sizeof(buf));
-	bufpos = 0;
-
-	/*
-	 * The message buffer is circular. If the buffer has wrapped, the
-	 * write pointer points to the oldest data. Otherwise, the write
-	 * pointer points to \0's following the data. Read the entire
-	 * buffer starting at the write pointer and ignore nulls so that
-	 * we effectively start at the oldest data.
-	 */
-	p = bp;
-	ep = bp + buflen;
-	newl = skip = 0;
-	do {
-		if (p == bp + buflen)
-			p = bp;
-		ch = *p;
-		/* Skip "\n<.*>" syslog sequences. */
-		if (skip) {
-			if (ch == '\n') {
-				skip = 0;
-				newl = 1;
-			} if (ch == '>') {
-				if (LOG_FAC(pri) == LOG_KERN || all)
-					newl = skip = 0;
-			} else if (ch >= '0' && ch <= '9') {
-				pri *= 10;
-				pri += ch - '0';
-			}
-			continue;
+		/* Check for vendors that support features */
+		if (strncmp(cpu_vendor, "GenuineIntel", 12) == 0 ||
+		    strncmp(cpu_vendor, "AuthenticAMD", 12) == 0)
+		{
+			/* Check for HTT feature */
+			do_cpuid(0x1, regs);
+			has_feature = (regs[3] & HTT_FLAG);
 		}
-		if (newl && ch == '<') {
-			pri = 0;
-			skip = 1;
-			continue;
-		}
-		if (ch == '\0')
-			continue;
-		newl = ch == '\n';
-		if (ch == '\n') {
-			memset(buf, 0, sizeof(buf));
-			bufpos = 0;
-		} else if (bufpos < SEARCH_LEN + 8) {
-			buf[bufpos++] = ch;
-			if ((bufpos == SEARCH_LEN + 8) && !strncmp(buf, SEARCH,
-			    SEARCH_LEN)) {
-				features = strtoul((char *)(buf + SEARCH_LEN),
-				    0, 16);
-				if (features & HTT_FLAG)
-					printf("HyperThreading Status: YES\n");
-				else
-					printf("HyperThreading Status: NO\n");
-				return (EXIT_SUCCESS);
-			}
-		}
-	} while (++p != ep);
+	}
 
-	printf("HyperThreading Status: ERROR\n");
-	return (EXIT_FAILURE);
+	printf("HyperThreading Status: %s\n",
+	    has_feature ? "YES" : "NO" );
+
+	return (EXIT_SUCCESS);
 }
