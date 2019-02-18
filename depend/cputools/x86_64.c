@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:55:36 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 21:13:14 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -44,7 +44,7 @@ __FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019
 int
 main(int argc, char *argv[])
 {
-	int has_lm = 0;
+	int has_feature = 0;
 	int vendor[3];
 	char *cpu_vendor;
 	u_int regs[4];
@@ -82,11 +82,12 @@ main(int argc, char *argv[])
 			{
 				/* Check for long mode */
 				do_cpuid(0x80000001, regs);
-				has_lm = (regs[3] & AMDID_LM);
+				has_feature = (regs[3] & AMDID_LM);
 			}
 		}
 	}
 
-	printf("x86_64 support: %s\n", has_lm ? "YES" : "NO" );
+	printf("x86_64 support: %s\n",
+	    has_feature ? "YES" : "NO" );
 	return (EXIT_SUCCESS);
 }
