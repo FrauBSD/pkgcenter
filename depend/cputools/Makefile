@@ -1,6 +1,3 @@
-# -*- tab-width:  4 -*- ;; Emacs
-# vi: set tabstop=4     :: Vi/ViM
-
 ############################################### Configuration
 
 HTT          = htt
