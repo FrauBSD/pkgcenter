@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:34:31 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:35:50 -0800 freebsdfrau $");
 #endif
 
 #include <sys/sysctl.h>
@@ -53,6 +53,7 @@ main(int argc, char *argv[])
 	int all = 0, pri = 0;
 	size_t buflen;
 	int bufpos;
+	unsigned long features;
 
 	/* Running kernel. Use sysctl. */
 	if (sysctlbyname("kern.msgbuf", NULL, &buflen, NULL, 0) == -1)
@@ -108,7 +109,6 @@ main(int argc, char *argv[])
 			buf[bufpos++] = ch;
 			if ((bufpos == SEARCH_LEN + 8) && !strncmp(buf, SEARCH,
 			    SEARCH_LEN)) {
-				unsigned long features;
 				features = strtoul((char *)(buf + SEARCH_LEN),
 				    0, 16);
 				if (features & HTT_FLAG)
