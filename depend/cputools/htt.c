@@ -1,7 +1,32 @@
-/* -*- tab-width:  4 -*- ;; Emacs  */
-/* vi: set tabstop=4     :: Vi/ViM */
+/*-
+ * Copyright (c) 2006-2019 Devin Teske <dteske@FreeBSD.org>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
-/* Devin Teske (c)2006, April 19, 09:21:12. All Rights Reserved. */
+#include <sys/cdefs.h>
+#ifdef __FBSDID
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:22:56 -0800 freebsdfrau $");
+#endif
 
 /* system includes */
 #include <sys/types.h>	/* standard types */
@@ -100,18 +125,3 @@ main (int argc, char *argv[])
    printf("HyperThreading Status: ERROR\n");
    return(EXIT_FAILURE);
 }
-
-/*
- * $Header: /cvsroot/druidbsd/druidbsd/druid/dep/freebsd/util/htt.c,v 1.2 2012/09/02 16:04:27 devinteske Exp $
- *
- * $Copyright: 2006-2012 Devin Teske. All rights reserved. $
- *
- * $Log: htt.c,v $
- * Revision 1.2  2012/09/02 16:04:27  devinteske
- * Update copyright
- *
- * Revision 1.1  2012/01/28 06:59:47  devinteske
- * Commit initial public beta release (beta 56)
- *
- *
- */
