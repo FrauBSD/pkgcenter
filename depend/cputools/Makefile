@@ -1,3 +1,8 @@
+############################################### IDENT(1)
+#
+# $Copyright: 2006-2012 Devin Teske. All rights reserved. $
+# $Header: /cvsroot/druidbsd/druidbsd/druid/dep/freebsd/util/Makefile,v 1.1 2012/01/28 06:59:47 devinteske Exp $
+#
 ############################################### CONFIGURATION
 
 HTT          = htt
@@ -45,15 +50,4 @@ distclean: clean
 
 ################################################################################
 # END
-################################################################################
-#
-# $Header: /cvsroot/druidbsd/druidbsd/druid/dep/freebsd/util/Makefile,v 1.1 2012/01/28 06:59:47 devinteske Exp $
-#
-# $Copyright: 2006-2012 Devin Teske. All rights reserved. $
-#
-# $Log: Makefile,v $
-# Revision 1.1  2012/01/28 06:59:47  devinteske
-# Commit initial public beta release (beta 56)
-#
-#
 ################################################################################
