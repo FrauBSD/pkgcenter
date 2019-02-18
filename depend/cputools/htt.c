@@ -25,21 +25,17 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:24:29 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:29:04 -0800 freebsdfrau $");
 #endif
 
-/* system includes */
-#include <sys/sysctl.h>	/* sysctlbyname() */
-#include <sys/syslog.h>	/* LOG_FAC() LOG_KERN */
-#include <sys/types.h>	/* standard types */
+#include <sys/sysctl.h>
+#include <sys/syslog.h>
+#include <sys/types.h>
 
-#include <err.h>	/* err() errx() */
-#include <stdio.h>	/* printf() */
-#include <stdlib.h>	/* malloc() EXIT_SUCCESS EXIT_FAILURE strtoul() */
-#include <string.h>     /* strncmp() */
-
-
-/* Preprocessor Macros */
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* dmesg `Features' string to search for (from beginning of line) */
 #define SEARCH		"  Features=0x"
@@ -48,9 +44,8 @@ __FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02
 /* CPUID features bit signifying HyperThreading support */
 #define HTT_FLAG	0x10000000
 
-
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
    int ch, newl, skip;
    char *p, *ep, *bp;
