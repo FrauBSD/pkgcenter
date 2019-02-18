@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:51:00 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:53:30 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -45,14 +45,14 @@ int
 main(int argc, char *argv[])
 {
 	int has_lm = 0;
-	char *cpu_vendor;
 	int vendor[3];
+	char *cpu_vendor;
+	u_int regs[4];
 #ifdef __amd64__
 	register_t rflags;
 #else
 	u_int eflags;
 #endif
-	u_int regs[4];
 
 	/* Check for presence of "cpuid". */
 #ifdef __amd64__
