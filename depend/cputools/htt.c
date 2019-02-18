@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:33:24 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:34:31 -0800 freebsdfrau $");
 #endif
 
 #include <sys/sysctl.h>
@@ -66,9 +66,9 @@ main(int argc, char *argv[])
 	bufpos = 0;
 
 	/*
-	 * The message buffer is circular.  If the buffer has wrapped, the
-	 * write pointer points to the oldest data.  Otherwise, the write
-	 * pointer points to \0's following the data.  Read the entire
+	 * The message buffer is circular. If the buffer has wrapped, the
+	 * write pointer points to the oldest data. Otherwise, the write
+	 * pointer points to \0's following the data. Read the entire
 	 * buffer starting at the write pointer and ignore nulls so that
 	 * we effectively start at the oldest data.
 	 */
