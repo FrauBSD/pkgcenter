@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:49:11 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:49:38 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -40,7 +40,6 @@ __FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019
 #ifndef AMDID_LM
 #define AMDID_LM 0x20000000
 #endif
-
 
 int
 main (int argc, char *argv[])
