@@ -1,10 +1,10 @@
 /*-
- * Devin Teske (c)2010, July 26, 11:42:38. All Rights Reserved.
+ * Copyright (c) 2006-2019 Devin Teske <dteske@FreeBSD.org>
  */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:45:57 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:47:22 -0800 freebsdfrau $");
 #endif
 
 /* system includes */
@@ -73,15 +73,3 @@ main (int argc, char *argv[])
 	printf("x86_64 support: %s\n", has_lm ? "YES" : "NO" );
 	exit(EXIT_SUCCESS);
 }
-
-/*
- * $Header: /cvsroot/druidbsd/druidbsd/druid/dep/freebsd/util/x86_64.c,v 1.1 2012/01/28 06:59:48 devinteske Exp $
- *
- * $Copyright: 2006-2012 Devin Teske. All rights reserved. $
- *
- * $Log: x86_64.c,v $
- * Revision 1.1  2012/01/28 06:59:48  devinteske
- * Commit initial public beta release (beta 56)
- *
- *
- */
