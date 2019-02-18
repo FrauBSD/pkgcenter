@@ -25,16 +25,17 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:22:56 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:24:29 -0800 freebsdfrau $");
 #endif
 
 /* system includes */
-#include <sys/types.h>	/* standard types */
-#include <stdio.h>	/* printf() */
 #include <sys/sysctl.h>	/* sysctlbyname() */
-#include <stdlib.h>	/* malloc() EXIT_SUCCESS EXIT_FAILURE strtoul() */
-#include <err.h>	/* err() errx() */
 #include <sys/syslog.h>	/* LOG_FAC() LOG_KERN */
+#include <sys/types.h>	/* standard types */
+
+#include <err.h>	/* err() errx() */
+#include <stdio.h>	/* printf() */
+#include <stdlib.h>	/* malloc() EXIT_SUCCESS EXIT_FAILURE strtoul() */
 #include <string.h>     /* strncmp() */
 
 
