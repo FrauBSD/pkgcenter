@@ -1,8 +1,10 @@
-/* Devin Teske (c)2010, July 26, 11:42:38. All Rights Reserved. */
+/*-
+ * Devin Teske (c)2010, July 26, 11:42:38. All Rights Reserved.
+ */
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:45:26 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:45:57 -0800 freebsdfrau $");
 #endif
 
 /* system includes */
