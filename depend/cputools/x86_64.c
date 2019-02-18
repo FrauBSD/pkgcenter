@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 21:13:14 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 21:14:13 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -67,9 +67,9 @@ main(int argc, char *argv[])
 	{
 		/* Fetch the vendor string */
 		do_cpuid(0, regs);
-		vendor[0] = regs[1];
-		vendor[1] = regs[3];
-		vendor[2] = regs[2];
+		vendor[0] = regs[1]; /* %ebx */
+		vendor[1] = regs[3]; /* %edx */
+		vendor[2] = regs[2]; /* %ecx */
 		cpu_vendor = (char *)vendor;
 
 		/* Check for vendors that support AMD features */
