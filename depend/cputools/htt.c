@@ -25,12 +25,12 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 19:42:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 20:39:45 -0800 freebsdfrau $");
 #endif
 
+#include <sys/types.h>
 #include <sys/sysctl.h>
 #include <sys/syslog.h>
-#include <sys/types.h>
 
 #include <err.h>
 #include <stdio.h>
