@@ -1,6 +1,7 @@
 ############################################### IDENT(1)
 #
-# $Copyright: 2006-2012 Devin Teske. All rights reserved. $
+# $Title: Makefile for cputools $
+# $Copyright: 2006-2019 Devin Teske. All rights reserved. $
 # $Header: /cvsroot/druidbsd/druidbsd/druid/dep/freebsd/util/Makefile,v 1.1 2012/01/28 06:59:47 devinteske Exp $
 #
 ############################################### CONFIGURATION
