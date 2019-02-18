@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 21:14:13 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 21:15:01 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -89,5 +89,6 @@ main(int argc, char *argv[])
 
 	printf("x86_64 support: %s\n",
 	    has_feature ? "YES" : "NO" );
+
 	return (EXIT_SUCCESS);
 }
