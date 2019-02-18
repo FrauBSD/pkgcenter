@@ -25,21 +25,17 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:48:31 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/x86_64.c 2019-02-17 19:49:11 -0800 freebsdfrau $");
 #endif
 
-/* system includes */
-#include <sys/types.h>			/* u_int/register_t (for machine/cpufunc.h) */
+#include <sys/types.h>
 
-#include <stdio.h>				/* printf(3) */
-#include <stdlib.h>				/* EXIT_SUCCESS exit(3) */
-#include <string.h>				/* strncmp(3) */
-#include <machine/cpufunc.h>	/* read_e/rflags() write_e/rflags()
-                            	 * do_cpuid() */
-#include <machine/psl.h>		/* PSL_ID */
-#include <machine/specialreg.h>	/* AMDID_LM */
-
-/* Preprocessor Macros */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <machine/cpufunc.h>
+#include <machine/psl.h>
+#include <machine/specialreg.h>
 
 #ifndef AMDID_LM
 #define AMDID_LM 0x20000000
