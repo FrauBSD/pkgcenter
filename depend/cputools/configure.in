@@ -1,0 +1,125 @@
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/configure.in 2019-02-18 19:14:24 -0800 freebsdfrau $
+
+AC_INIT
+############################################################ CONFIGURATION
+
+#
+# AC_PREREQ (VERSION)
+# 	Minimum version of autoconf required to generate `configure'.
+#
+AC_PREREQ(2.69)
+
+#
+# AC_REVISION (REVISION-INFO)
+# 	Place static version identifier information info autoconf-generated
+# 	`configure' for source-code tracking purposes.
+#
+AC_REVISION($Revision: 1.0 $)
+
+#
+# AC_CONFIG_HEADERS (HEADER ..., [CMDS], [INIT-CMDS])
+# 	Define header containing C preprocessor #define statements.
+#
+AC_CONFIG_HEADERS(config.h)
+
+#
+# AC_CONFIG_AUX_DIR (DIR)
+# 	Use auxiliary build tools (e.g., `install-sh', `config.sub',
+# 	`config.guess', etc.) in directory DIR.
+#
+AC_CONFIG_AUX_DIR(cfgaux)
+
+############################################################ DEFINES
+
+#
+# Definitions for autoheader (creates config.h.in)
+#
+if ! :; then
+AC_DEFINE(HAVE_MACHINE_CPUFUNC_H, [],
+	[Define to 1 if you have the <machine/cpufunc.h> header file.])
+AC_DEFINE(HAVE_MACHINE_PSL_H, [],
+	[Define to 1 if you have the <machine/psl.h> headfer file.])
+AC_DEFINE(HAVE_MACHINE_SPECIALREG_H, [],
+	[Define to 1 if you have the <machine/specialreg.h> header file.])
+fi
+
+############################################################ TESTS
+
+#
+# Change prefix to suitable default if none given
+#
+[[ "${prefix#NONE}" ]] || prefix=/usr/local
+if [[ "$prefix" != /usr ]]; then
+	CFLAGS="${CFLAGS:+$CFLAGS }-I$prefix/include"
+fi
+
+#
+# Compute the canonical host-system type variable (`host') and its three
+# individual parts `host_cpu', `host_vendor', and `host_os'.
+#
+AC_CANONICAL_HOST
+
+#
+# Compute CC variable
+#
+AC_PROG_CC(clang gcc cc cl.exe)
+
+#
+# Generic header checks
+#
+# AC_CHECK_HEADER (HEADER-FILE, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# 	Define HAVE_* if header-file exists.
+#
+AC_CHECK_HEADER(machine/cpufunc.h, AC_DEFINE(HAVE_MACHINE_CPUFUNC_H, 1))
+AC_CHECK_HEADER(machine/psl.h, AC_DEFINE(HAVE_MACHINE_PSL_H, 1))
+AC_CHECK_HEADER(machine/specialreg.h, AC_DEFINE(HAVE_MACHINE_SPECIALREG_H, 1))
+
+############################################################ OUTPUTS
+
+#
+# Defaults
+#
+STRIP_ARGS=-s
+
+#
+# Compiler/linker flags
+#
+AS_IF([test "$host_os" != "${host_os#darwin}"],
+[
+	CFLAGS="${CFLAGS:+$CFLAGS }-mmacosx-version-min=\$(OSX_MIN)"
+	LDFLAGS="${LDFLAGS:+$LDFLAGS }-isysroot /"
+	STRIP_ARGS=-x
+],
+[
+	LDFLAGS="${LDFLAGS:+$LDFLAGS }-static"
+])
+AS_IF(test "$CC" = clang, [
+	CFLAGS="${CFLAGS:+$CFLAGS }$( echo \
+		-Weverything \
+		-Wno-extra-semi \
+		-Wno-reserved-id-macro \
+		-Wno-sign-conversion \
+		-Wno-unused-parameter \
+	)"
+])
+
+#
+# AC_SUBST (VARIABLE, [VALUE])
+# 	Replace @VARIABLE@ with environment variable value in outputs.
+#
+AC_SUBST(STRIP_ARGS)
+
+#
+# AC_CONFIG_FILES (FILE ..., [CMDS], [INIT-CMDS])
+# 	Files to instantiate.
+#
+AC_CONFIG_FILES(GNUmakefile)
+
+#
+# Generate/launch `config.status' (which in-turn generates makefiles, etc).
+#
+AC_OUTPUT
+
+################################################################################
+# END
+################################################################################

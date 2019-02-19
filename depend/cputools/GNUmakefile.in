@@ -1,0 +1,63 @@
+############################################### IDENT(1)
+#
+# $Title: Makefile for cputools $
+# $Copyright: 2006-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/GNUmakefile.in 2019-02-18 19:14:24 -0800 freebsdfrau $
+#
+############################################### CONFIGURATION
+
+HTT          = htt
+X86_64       = x86_64
+
+OSX_MIN      = 10.8
+
+DEP          = GNUmakefile config.h
+
+############################################### COMPILER
+
+CC           = @CC@
+
+LDFLAGS      = @LDFLAGS@
+INCLUDE      = -I.
+CFLAGS       = -Wall -O -pipe $(INCLUDE) @CFLAGS@
+
+RM           = /bin/rm
+STRIP        = /usr/bin/strip @STRIP_ARGS@
+DU           = /usr/bin/du
+
+############################################### TARGETS
+
+noargs: all
+
+all: $(HTT) $(X86_64)
+
+GNUmakefile: configure config.h.in config.status GNUmakefile.in
+	./config.status --recheck
+	./config.status
+	$(MAKE) $(MFLAGS) clean
+
+$(HTT): $(DEP) $(HTT).c
+	$(CC) -c $(CFLAGS) $(@).c -o $(@).o
+	$(CC) $(LDFLAGS) $(@).o -o $(@)
+	$(STRIP) $(@)
+	$(DU) -h $(@)
+
+$(X86_64): $(DEP) $(X86_64).c
+	$(CC) -c $(CFLAGS) $(@).c -o $(@).o
+	$(CC) $(LDFLAGS) $(@).o -o $(@)
+	$(STRIP) $(@)
+	$(DU) -h $(@)
+
+clean:
+	$(RM) -f *.o
+	$(RM) -f *.core
+
+distclean cleandir: clean
+	$(RM) -f $(HTT)
+	$(RM) -f $(X86_64)
+	$(RM) -f GNUmakefile config.h config.log config.status
+	$(RM) -Rf autom4te.cache
+
+################################################################################
+# END
+################################################################################

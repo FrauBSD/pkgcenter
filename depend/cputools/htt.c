@@ -25,21 +25,16 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-17 21:16:26 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/htt.c 2019-02-18 19:14:24 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
 
-#include <machine/cpufunc.h>
-#include <machine/psl.h>
-#include <machine/specialreg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef HTT_FLAG
-#define HTT_FLAG 0x10000000
-#endif
+#include "cputools.h"
 
 int
 main(int argc, char *argv[])
