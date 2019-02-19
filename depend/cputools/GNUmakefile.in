@@ -2,7 +2,7 @@
 #
 # $Title: Makefile for cputools $
 # $Copyright: 2006-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/GNUmakefile.in 2019-02-18 19:21:12 -0800 freebsdfrau $
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/GNUmakefile.in 2019-02-19 09:55:42 -0800 freebsdfrau $
 #
 ############################################### CONFIGURATION
 
@@ -32,7 +32,7 @@ noargs: all
 
 all: $(HTT) $(VTX) $(X86_64)
 
-GNUmakefile: configure config.h.in config.status GNUmakefile.in
+$(DEP): configure config.h.in config.status GNUmakefile.in
 	./config.status --recheck
 	./config.status
 	$(MAKE) $(MFLAGS) clean
@@ -63,7 +63,7 @@ distclean cleandir: clean
 	$(RM) -f $(HTT)
 	$(RM) -f $(VTX)
 	$(RM) -f $(X86_64)
-	$(RM) -f GNUmakefile config.h config.log config.status
+	$(RM) -f $(DEP) config.log config.status
 	$(RM) -Rf autom4te.cache
 
 ################################################################################
