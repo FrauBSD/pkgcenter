@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/cputools.h 2019-02-18 19:14:24 -0800 freebsdfrau $
+ * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/cputools.h 2019-02-18 19:21:12 -0800 freebsdfrau $
  */
 
 #ifndef _CPUTOOLS_H_
@@ -89,6 +89,10 @@ do_cpuid(u_int ax, u_int *p)
 
 #ifndef HTT_FLAG
 #define HTT_FLAG 0x10000000
+#endif
+
+#ifndef VMX_FLAG
+#define VMX_FLAG 0x200000
 #endif
 
 #ifndef AMDID_LM
