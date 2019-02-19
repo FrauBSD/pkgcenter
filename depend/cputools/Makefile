@@ -2,10 +2,11 @@
 #
 # $Title: Makefile for cputools $
 # $Copyright: 2006-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/Makefile 2019-02-18 19:21:12 -0800 freebsdfrau $
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/Makefile 2019-02-19 11:43:31 -0800 freebsdfrau $
 #
 ############################################### CONFIGURATION
 
+EPT          = ept
 HTT          = htt
 VTX          = vtx
 X86_64       = x86_64
@@ -26,7 +27,13 @@ DU           = /usr/bin/du
 
 noargs: all
 
-all: $(HTT) $(VTX) $(X86_64)
+all: $(EPT) $(HTT) $(VTX) $(X86_64)
+
+$(EPT): $(EPT).c
+	$(CC) -c $(CFLAGS) $(@).c -o $(@).o
+	$(CC) $(LDFLAGS) $(@).o -o $(@)
+	$(STRIP) -s $(@)
+	$(DU) -h $(@)
 
 $(HTT): $(HTT).c
 	$(CC) -c $(CFLAGS) $(@).c -o $(@).o
@@ -51,6 +58,7 @@ clean:
 	$(RM) -f *.core
 
 distclean cleandir: clean
+	$(RM) -f $(EPT)
 	$(RM) -f $(HTT)
 	$(RM) -f $(VTX)
 	$(RM) -f $(X86_64)
