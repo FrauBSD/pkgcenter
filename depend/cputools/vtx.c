@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/vtx.c 2019-02-18 19:21:12 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/vtx.c 2019-02-19 10:16:31 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>
@@ -71,7 +71,7 @@ main(int argc, char *argv[])
 		if (strncmp(cpu_vendor, "GenuineIntel", 12) == 0 ||
 		    strncmp(cpu_vendor, "AuthenticAMD", 12) == 0)
 		{
-			/* Check for HTT feature */
+			/* Check for VT-x feature */
 			do_cpuid(0x1, regs);
 			has_feature = (regs[2] & VMX_FLAG);
 		}
