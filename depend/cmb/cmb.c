@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-02-02 16:25:37 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 12:58:49 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -37,6 +37,7 @@ __FBSDID("$FreeBSD$");
 #include <errno.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +63,11 @@ __FBSDID("$FreeBSD$");
 #include <openssl/crypto.h>
 #endif
 
-static char version[] = "$Version: 2.3 $";
+#ifndef UINT_MAX
+#define UINT_MAX 0xFFFFFFFF
+#endif
+
+static char version[] = "$Version: 2.3.1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -114,6 +119,7 @@ main(int argc, char *argv[])
 #endif
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
+	uint64_t ull;
 	struct timeval tv;
 	char range_tmp[11];
 
@@ -213,28 +219,39 @@ main(int argc, char *argv[])
 				}
 			}
 			errno = 0;
-			config->size_min = (uint32_t)strtoul(optarg,
-			    (char **)NULL, 10);
+			ull = strtoull(optarg, (char **)NULL, 10);
 			if (errno != 0) {
 				err(EXIT_FAILURE, "-k");
 				/* NOTREACHED */
+			} else if (ull > UINT_MAX) {
+				errx(EXIT_FAILURE, "-k: Result too large");
+				/* NOTREACHED */
 			}
+			config->size_min = (uint32_t)ull;
 			if ((cp = strstr(optarg, "..")) != NULL) {
 				errno = 0;
-				config->size_max = (uint32_t)strtoul(cp + 2,
-				    (char **)NULL, 10);
+				ull = strtoull(cp + 2, (char **)NULL, 10);
 				if (errno != 0) {
 					err(EXIT_FAILURE, "-k");
 					/* NOTREACHED */
+				} else if (ull > UINT_MAX) {
+					errx(EXIT_FAILURE,
+					    "-k: Result too large");
+					/* NOTREACHED */
 				}
+				config->size_max = (uint32_t)ull;
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
 				errno = 0;
-				config->size_max = (uint32_t)strtoul(cp + 1,
-				    (char **)NULL, 10);
+				ull = strtoull(cp + 1, (char **)NULL, 10);
 				if (errno != 0) {
 					err(EXIT_FAILURE, "-k");
 					/* NOTREACHED */
+				} else if (ull > UINT_MAX) {
+					errx(EXIT_FAILURE,
+					    "-k: Result too large");
+					/* NOTREACHED */
 				}
+				config->size_max = (uint32_t)ull;
 			} else {
 				config->size_max = config->size_min;
 			}
@@ -249,11 +266,15 @@ main(int argc, char *argv[])
 				/* NOTREACHED */
 			}
 			errno = 0;
-			nitems = (uint32_t)strtoul(optarg, (char **)NULL, 10);
+			ull = strtoull(optarg, (char **)NULL, 10);
 			if (errno != 0) {
 				err(EXIT_FAILURE, "-n");
 				/* NOTREACHED */
+			} else if (ull > UINT_MAX) {
+				errx(EXIT_FAILURE, "-n: Result too large");
+				/* NOTREACHED */
 			}
+			nitems = (uint32_t)ull;
 			break;
 		case 'o': /* disable openssl */
 #ifdef HAVE_LIBCRYPTO
@@ -270,28 +291,37 @@ main(int argc, char *argv[])
 				/* NOTREACHED */
 			}
 			errno = 0;
-			range_min = (uint32_t)strtoul(optarg,
-			    (char **)NULL, 10);
+			ull = strtoull(optarg, (char **)NULL, 10);
 			if (errno != 0) {
 				err(EXIT_FAILURE, "-r");
 				/* NOTREACHED */
+			} else if (ull > UINT_MAX) {
+				errx(EXIT_FAILURE, "-r: Result too large");
+				/* NOTREACHED */
 			}
+			range_min = (uint32_t)ull;
 			if ((cp = strstr(optarg, "..")) != NULL) {
 				errno = 0;
-				range_max = (uint32_t)strtoul(cp + 2,
-				    (char **)NULL, 10);
+				ull = strtoull(cp + 2, (char **)NULL, 10);
 				if (errno != 0) {
 					err(EXIT_FAILURE, "-r");
 					/* NOTREACHED */
+				} else if (ull > UINT_MAX) {
+					errx(EXIT_FAILURE,
+					    "-r: Result too large");
 				}
+				range_max = (uint32_t)ull;
 			} else if ((cp = strstr(optarg, "-")) != NULL) {
 				errno = 0;
-				range_max = (uint32_t)strtoul(cp + 1,
-				    (char **)NULL, 10);
+				ull = strtoull(cp + 1, (char **)NULL, 10);
 				if (errno != 0) {
 					err(EXIT_FAILURE, "-r");
 					/* NOTREACHED */
+				} else if (ull > UINT_MAX) {
+					errx(EXIT_FAILURE,
+					    "-r: Result too large");
 				}
+				range_max = (uint32_t)ull;
 			} else {
 				range_max = range_min;
 				range_min = 1;
