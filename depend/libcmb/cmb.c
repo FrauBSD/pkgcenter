@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-01-10 12:54:37 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.c 2019-02-23 10:36:40 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -756,7 +756,7 @@ cmb_print(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	}
 
 	if (show_numbers)
-		printf("%"PRIu64" ", seq++);
+		printf("%"PRIu64" ", seq);
 	if (prefix != NULL)
 		printf("%s", prefix);
 	for (n = 0; n < nitems; n++) {
@@ -976,6 +976,8 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 #endif
 				if ((seq = BN_dup(seek)) == NULL)
 					goto cmb_bn_return;
+				if (!BN_sub_word(seq, 1))
+					goto cmb_bn_return;
 			}
 		}
 	}
@@ -1000,10 +1002,12 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		nextset = -1;
 
 	/* Initialize sequence number */
-	if ((seq = BN_new()) == NULL)
-		goto cmb_bn_return;
-	if (!BN_one(seq))
-		goto cmb_bn_return;
+	if (seq == NULL) {
+		if ((seq = BN_new()) == NULL)
+			goto cmb_bn_return;
+		if (!BN_zero(seq))
+			goto cmb_bn_return;
+	}
 
 	/* Show the empty set consisting of a single combination of no-items */
 	if (nextset > 0 && show_empty) {
