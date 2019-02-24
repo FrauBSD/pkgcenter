@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 16:00:41 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 16:05:47 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 2.3.2 $";
+static char version[] = "$Version: 2.3.3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -539,7 +539,8 @@ static void
 usage(void)
 {
 	fprintf(stderr, "usage: %s [options] item1 [item2 ...]\n", pgm);
-#define OPTFMT "\t%-10s %s\n"
+#define OPTFMT		"\t%-10s %s\n"
+#define OPTFMT_1U	"\t%-10s %s%u%s\n"
 	fprintf(stderr, "OPTIONS:\n");
 	fprintf(stderr, OPTFMT, "-0",
 	    "NUL terminate combinations (use with `xargs -0').");
@@ -560,8 +561,8 @@ usage(void)
 	    "Limit arguments taken from the command-line.");
 	fprintf(stderr, OPTFMT, "-o",
 	    "Disable OpenSSL (limits calculations to 64-bits).");
-	fprintf(stderr, OPTFMT, "-r range",
-	    "Specify range of up-to 4294967295 items.");
+	fprintf(stderr, OPTFMT_1U, "-r range",
+	    "Specify range of up-to ", UINT_MAX, " items.");
 	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");
 	fprintf(stderr, OPTFMT, "-S", "Silent (for performance benchmarks).");
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
