@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 12:58:49 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 16:00:41 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 2.3.1 $";
+static char version[] = "$Version: 2.3.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -550,6 +550,7 @@ usage(void)
 	);
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
+	fprintf(stderr, OPTFMT, "-f", "Read items from file; `-' for stdin.");
 	fprintf(stderr, OPTFMT, "-i num",
 	    "Skip the first num-1 combinations.");
 	fprintf(stderr, OPTFMT, "-k size",
@@ -558,14 +559,14 @@ usage(void)
 	fprintf(stderr, OPTFMT, "-n num",
 	    "Limit arguments taken from the command-line.");
 	fprintf(stderr, OPTFMT, "-o",
-		"Disable OpenSSL (limits calculations to 64-bits).");
+	    "Disable OpenSSL (limits calculations to 64-bits).");
+	fprintf(stderr, OPTFMT, "-r range",
+	    "Specify range of up-to 4294967295 items.");
 	fprintf(stderr, OPTFMT, "-p str", "Prefix text for each line.");
 	fprintf(stderr, OPTFMT, "-S", "Silent (for performance benchmarks).");
 	fprintf(stderr, OPTFMT, "-s str", "Suffix text for each line.");
 	fprintf(stderr, OPTFMT, "-t",
 	    "Print number of combinations and exit.");
-	fprintf(stderr, OPTFMT, "-T num",
-	    "Print number of combinations for num items and exit.");
 	fprintf(stderr, OPTFMT, "-v",
 	    "Print version info to stdout and exit.");
 	exit(EXIT_FAILURE);
