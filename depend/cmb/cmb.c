@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 16:05:47 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 16:08:34 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 2.3.3 $";
+static char version[] = "$Version: 2.3.4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -551,7 +551,8 @@ usage(void)
 	);
 	fprintf(stderr, OPTFMT, "-d str", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
-	fprintf(stderr, OPTFMT, "-f", "Read items from file; `-' for stdin.");
+	fprintf(stderr, OPTFMT, "-f file",
+	    "Read items from file; `-' for stdin.");
 	fprintf(stderr, OPTFMT, "-i num",
 	    "Skip the first num-1 combinations.");
 	fprintf(stderr, OPTFMT, "-k size",
