@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 18:28:37 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 18:32:36 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-beta-1 $";
+static char version[] = "$Version: 3.0-beta-2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -680,6 +680,8 @@ cmb_usage(void)
 	    "Print number of combinations and exit.");
 	fprintf(stderr, OPTFMT, "-v",
 	    "Print version info to stdout and exit.");
+	fprintf(stderr, OPTFMT, "-X op",
+	    "Perform math on items where `op' is add, sub, div, or mul.");
 	exit(EXIT_FAILURE);
 }
 
