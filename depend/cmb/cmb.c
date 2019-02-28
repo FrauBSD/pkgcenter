@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:49:35 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 18:25:37 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-alpha-7 $";
+static char version[] = "$Version: 3.0-alpha-8 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -80,9 +80,9 @@ static void	_Noreturn cmb_usage(void);
 static uint64_t	cmb_rand_range(uint64_t range);
 static int	cmb_add(struct cmb_config *config, uint64_t seq,
 		    uint32_t nitems, char *items[]);
-#if 0
 static int	cmb_div(struct cmb_config *config, uint64_t seq,
 		    uint32_t nitems, char *items[]);
+#if 0
 static int	cmb_mul(struct cmb_config *config, uint64_t seq,
 		    uint32_t nitems, char *items[]);
 #endif /* 0 */
@@ -93,9 +93,9 @@ static int	cmb_sub(struct cmb_config *config, uint64_t seq,
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
-#if 0
 static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
+#if 0
 static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
 #endif /* 0 */
@@ -496,7 +496,9 @@ main(int argc, char *argv[])
 			else
 				config->action_bn = cmb_mul_bn;
 #endif
-		} else if (strncmp("divide", opt_transform, optlen) == 0) {
+		}
+#endif /* 0 */
+		else if (strncmp("divide", opt_transform, optlen) == 0) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			if (opt_nossl)
 #endif
@@ -505,9 +507,7 @@ main(int argc, char *argv[])
 			else
 				config->action_bn = cmb_div_bn;
 #endif
-		} else
-#endif /* 0 */
-		if (strncmp("add", opt_transform, optlen) == 0) {
+		} else if (strncmp("add", opt_transform, optlen) == 0) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			if (opt_nossl)
 #endif
@@ -745,18 +745,39 @@ cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	(void)items;
 	return (0);
 }
+#endif /* 0 */
 
 static int
 cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems,
     char *items[])
 {
-	(void)config;
-	(void)seq;
-	(void)nitems;
-	(void)items;
+	uint8_t show_numbers = FALSE;
+	uint32_t n;
+	long double ld;
+	long double total = 0;
+
+	if (config != NULL)
+		show_numbers = config->show_numbers;
+	if (show_numbers)
+		printf("%"PRIu64" ", seq);
+	if (nitems > 0) {
+		memcpy(&ld, items[0], sizeof(long double));
+		printf("%.*Lf", cmb_transform_precision, ld);
+		total = ld;
+		if (nitems > 1)
+			printf(" / ");
+	}
+	for (n = 1; n < nitems; n++) {
+		memcpy(&ld, items[n], sizeof(long double));
+		printf("%.*Lf", cmb_transform_precision, ld);
+		total /= ld;
+		if (n < nitems - 1)
+			printf(" / ");
+	}
+	printf(" = %.*Lf", cmb_transform_precision, total);
+	printf("\n");
 	return (0);
 }
-#endif /* 0 */
 
 static int
 cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems,
@@ -831,18 +852,45 @@ cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	(void)items;
 	return (0);
 }
+#endif /* 0 */
 
 static int
 cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
     char *items[])
 {
-	(void)config;
-	(void)seq;
-	(void)nitems;
-	(void)items;
+	uint8_t show_numbers = FALSE;
+	uint32_t n;
+	char *seq_str;
+	long double ld;
+	long double total = 0;
+
+	if (config != NULL)
+		show_numbers = config->show_numbers;
+	if (show_numbers) {
+		seq_str = BN_bn2dec(seq);
+		printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+		OPENSSL_free(seq_str);
+#endif
+	}
+	if (nitems > 0) {
+		memcpy(&ld, items[0], sizeof(long double));
+		printf("%.*Lf", cmb_transform_precision, ld);
+		total = ld;
+		if (nitems > 1)
+			printf(" / ");
+	}
+	for (n = 1; n < nitems; n++) {
+		memcpy(&ld, items[n], sizeof(long double));
+		printf("%.*Lf", cmb_transform_precision, ld);
+		total /= ld;
+		if (n < nitems - 1)
+			printf(" / ");
+	}
+	printf(" = %.*Lf", cmb_transform_precision, total);
+	printf("\n");
 	return (0);
 }
-#endif /* 0 */
 
 static int
 cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
