@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-23 16:24:53 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 16:44:50 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,17 +67,36 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 2.3.7 $";
+static char version[] = "$Version: 3.0-alpha-1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
 
+/* Globals */
+static int cmb_transform_precision = 0;
+
 /* Function prototypes */
-static void	_Noreturn usage(void);
-static uint64_t	rand_range(uint64_t range);
-static int	nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+static void	_Noreturn cmb_usage(void);
+static uint64_t	cmb_rand_range(uint64_t range);
+static int	cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+#if 0
+static int	cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+static int	cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+#endif /* 0 */
+static int	cmb_nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+#if 0
+static int	cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+#endif /* 0 */
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-static int	nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+#if 0
+static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+#endif /* 0 */
+static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+#if 0
+static int	cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+#endif /* 0 */
 #endif
 
 /* Inline functions */
@@ -101,8 +120,10 @@ main(int argc, char *argv[])
 	char *cp;
 	char *cmdver = version;
 	char **items = argv;
+	char **items_tmp = NULL;
 	const char *libver = cmb_version(CMB_VERSION);
 	char *opt_file = NULL;
+	char *opt_transform = NULL;
 	int ch;
 	int len;
 	int retval = EXIT_SUCCESS;
@@ -120,6 +141,8 @@ main(int argc, char *argv[])
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
 	uint64_t ull;
+	unsigned long ul;
+	long double ld;
 	struct timeval tv;
 	char range_tmp[11];
 
@@ -133,7 +156,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:r:Ss:tv"
+#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:r:Ss:tvX:"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -337,11 +360,14 @@ main(int argc, char *argv[])
 		case 't': /* total */
 			opt_total = TRUE;
 			break;
+		case 'X': /* transform */
+			opt_transform = optarg;
+			break;
 		case 'v': /* version */
 			opt_version = TRUE;
 			break;
 		default: /* unhandled argument (based on switch) */
-			usage();
+			cmb_usage();
 			/* NOTREACHED */
 		}
 	}
@@ -397,7 +423,7 @@ main(int argc, char *argv[])
 
 	/* At least one non-option argument is required */
 	if (argc == 0 && !opt_empty && opt_file == NULL && !opt_range) {
-		usage();
+		cmb_usage();
 		/* NOTREACHED */
 	}
 
@@ -432,21 +458,100 @@ main(int argc, char *argv[])
 		nitems = (uint32_t)argc;
 
 	/*
-	 * Time-based benchmarking option (-S for silent).
+	 * Time-based benchmarking (-S for silent) and transforms (-X func).
 	 *
-	 * NB: The call-stack is still incremented into the action, while using
-	 *     a nop function allows us to benchmark various action overhead.
+	 * NB: For benchmarking, the call-stack is still incremented into the
+	 *     action, while using a nop function allows us to benchmark
+	 *     various action overhead.
 	 */
 	if (opt_silent) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		if (opt_nossl)
 #endif
-			config->action = nop;
+			config->action = cmb_nop;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		else
-			config->action_bn = nop_bn;
+			config->action_bn = cmb_nop_bn;
 #endif
 		config->show_numbers = FALSE;
+	} else if (opt_transform != NULL) {
+		if ((optlen = strlen(opt_transform)) == 0) {
+			errno = EINVAL;
+			err(EXIT_FAILURE, "-X");
+			/* NOTREACHED */
+		}
+#if 0
+		if (strncmp("multiply", opt_transform, optlen) == 0) {
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			if (opt_nossl)
+#endif
+				config->action = cmb_mul;
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			else
+				config->action_bn = cmb_mul_bn;
+#endif
+		} else if (strncmp("divide", opt_transform, optlen) == 0) {
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			if (opt_nossl)
+#endif
+				config->action = cmb_div;
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			else
+				config->action_bn = cmb_div_bn;
+#endif
+		} else
+#endif /* 0 */
+		if (strncmp("add", opt_transform, optlen) == 0) {
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			if (opt_nossl)
+#endif
+				config->action = cmb_add;
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			else
+				config->action_bn = cmb_add_bn;
+#endif
+		}
+#if 0
+		else if (strncmp("subtract", opt_transform, optlen) == 0) {
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			if (opt_nossl)
+#endif
+				config->action = cmb_sub;
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+			else
+				config->action_bn = cmb_sub_bn;
+#endif
+		} else {
+			errno = EINVAL;
+			err(EXIT_FAILURE, "-X");
+			/* NOTREACHED */
+		}
+#endif /* 0 */ 
+
+		/*
+		 * Convert items into array of pointers to long double
+		 * NB: Transformation function does not perform conversions
+		 */
+		if ((items_tmp = calloc(nitems, sizeof(long double *))) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+			/* NOTREACHED */
+		for (n = 0; n < nitems; n++) {
+			ul = sizeof(long double);
+			if ((items_tmp[n] = (char *)malloc(ul)) == NULL)
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			ld = strtold(items[n], NULL);
+			memcpy(items_tmp[n], &ld, ul);
+			if ((cp = strstr(items[n], ".")) != NULL) {
+				len = (int)strlen(items[n]);
+				len -= cp - items[n] + 1;
+				if (len > cmb_transform_precision) {
+					cmb_transform_precision = len;
+					printf("precision bumped to %i\n", len);
+				}
+			}
+		}
+		items = items_tmp;
 	}
 
 	/*
@@ -509,7 +614,7 @@ main(int argc, char *argv[])
 			}
 			if (gettimeofday(&tv,NULL) == 0) {
 				srand48((long)tv.tv_usec);
-				config->start = rand_range(count) + 1;
+				config->start = cmb_rand_range(count) + 1;
 			}
 		} else if (nstart != 0) {
 			count = cmb_count(config, nitems);
@@ -529,6 +634,15 @@ main(int argc, char *argv[])
 		}
 	}
 
+	/*
+	 * Clean up
+	 */
+	if (opt_transform) {
+		for (n = 0; n < nitems; n++)
+			free(items_tmp[n]);
+		free(items_tmp);
+	}
+
 	return (retval);
 }
 
@@ -536,7 +650,7 @@ main(int argc, char *argv[])
  * Print short usage statement to stderr and exit with error status.
  */
 static void
-usage(void)
+cmb_usage(void)
 {
 	fprintf(stderr, "usage: %s [options] item1 [item2 ...]\n", pgm);
 #define OPTFMT		"\t%-10s %s\n"
@@ -578,7 +692,7 @@ usage(void)
  * Return pseudo-random 64-bit unsigned integer in range 0 <= return <= range.
  */
 static uint64_t
-rand_range(uint64_t range)
+cmb_rand_range(uint64_t range)
 {
 	static const uint64_t M = (uint64_t)~0;
 	uint64_t exclusion = p2(range) ? 0 : M % range + 1;
@@ -592,7 +706,8 @@ rand_range(uint64_t range)
  * For performance benchmarking
  */
 static int
-nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[])
+cmb_nop(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
 {
 	(void)config;
 	(void)seq;
@@ -602,7 +717,8 @@ nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[])
 }
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 static int
-nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[])
+cmb_nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+    char *items[])
 {
 	(void)config;
 	(void)seq;
@@ -611,3 +727,123 @@ nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[])
 	return (0);
 }
 #endif
+
+/*
+ * Set transformations
+ */
+
+#if 0
+static int
+cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+
+static int
+cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+#endif /* 0 */
+
+static int
+cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
+{
+	uint8_t show_numbers = FALSE;
+	uint32_t n;
+	long double ld;
+	long double total = 0;
+
+	if (config != NULL)
+		show_numbers = config->show_numbers;
+	if (show_numbers)
+		printf("%"PRIu64" ", seq);
+	for (n = 0; n < nitems; n++) {
+		memcpy(&ld, items[n], sizeof(long double));
+		printf("%.*Lf", cmb_transform_precision, ld);
+		total += ld;
+		if (n < nitems - 1)
+			printf(" + ");
+	}
+	printf(" = %.*Lf", cmb_transform_precision, total);
+	printf("\n");
+	return (0);
+}
+
+#if 0
+static int
+cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+#endif /* 0 */
+
+/*
+ * Set transformations (OpenSSL bn(3) implementations)
+ */
+
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+#if 0
+static int
+cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+
+static int
+cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+#endif /* 0 */
+
+static int
+cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+
+#if 0
+static int
+cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+    char *items[])
+{
+	(void)config;
+	(void)seq;
+	(void)nitems;
+	(void)items;
+	return (0);
+}
+#endif /* 0 */
+#endif /* defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H) */
