@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:35:21 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:37:43 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-alpha-3 $";
+static char version[] = "$Version: 3.0-alpha-4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -521,12 +521,13 @@ main(int argc, char *argv[])
 			else
 				config->action_bn = cmb_sub_bn;
 #endif
-		} else {
+		}
+#endif /* 0 */ 
+		else {
 			errno = EINVAL;
 			err(EXIT_FAILURE, "-X");
 			/* NOTREACHED */
 		}
-#endif /* 0 */ 
 
 		/*
 		 * Convert items into array of pointers to long double
