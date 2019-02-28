@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 18:32:36 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-28 13:55:28 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,12 +67,13 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-beta-2 $";
+static char version[] = "$Version: 3.0-beta-3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
 
 /* Globals */
+static uint8_t opt_silent = FALSE;
 static int cmb_transform_precision = 0;
 
 /* Function prototypes */
@@ -116,7 +117,6 @@ main(int argc, char *argv[])
 #endif
 	uint8_t opt_randi = FALSE;
 	uint8_t opt_range = FALSE;
-	uint8_t opt_silent = FALSE;
 	uint8_t opt_total = FALSE;
 	uint8_t opt_version = FALSE;
 	char *cp;
@@ -466,7 +466,7 @@ main(int argc, char *argv[])
 	 *     action, while using a nop function allows us to benchmark
 	 *     various action overhead.
 	 */
-	if (opt_silent) {
+	if (opt_silent && opt_transform == NULL) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		if (opt_nossl)
 #endif
@@ -740,15 +740,19 @@ cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers)
+	if (show_numbers && !opt_silent)
 		printf("%"PRIu64" ", seq);
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total *= ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" * ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -765,22 +769,29 @@ cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers)
+	if (show_numbers && !opt_silent)
 		printf("%"PRIu64" ", seq);
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total = ld;
-		if (nitems > 1)
-			printf(" / ");
+		if (!opt_silent)
+		{
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (nitems > 1)
+				printf(" / ");
+		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total /= ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" / ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -797,15 +808,19 @@ cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers)
+	if (show_numbers && !opt_silent)
 		printf("%"PRIu64" ", seq);
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total += ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" + ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -822,22 +837,28 @@ cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers)
+	if (show_numbers && !opt_silent)
 		printf("%"PRIu64" ", seq);
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total = ld;
-		if (nitems > 1)
-			printf(" - ");
+		if (!opt_silent) {
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (nitems > 1)
+				printf(" - ");
+		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total -= ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" - ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -860,7 +881,7 @@ cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers) {
+	if (show_numbers && !opt_silent) {
 		seq_str = BN_bn2dec(seq);
 		printf("%s ", seq_str);
 #ifdef HAVE_OPENSSL_CRYPTO_H
@@ -869,11 +890,15 @@ cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	}
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total *= ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" * ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -891,7 +916,7 @@ cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers) {
+	if (show_numbers && !opt_silent) {
 		seq_str = BN_bn2dec(seq);
 		printf("%s ", seq_str);
 #ifdef HAVE_OPENSSL_CRYPTO_H
@@ -900,18 +925,24 @@ cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	}
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total = ld;
-		if (nitems > 1)
-			printf(" / ");
+		if (!opt_silent) {
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (nitems > 1)
+				printf(" / ");
+		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total /= ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" / ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -929,7 +960,7 @@ cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers) {
+	if (show_numbers && !opt_silent) {
 		seq_str = BN_bn2dec(seq);
 		printf("%s ", seq_str);
 #ifdef HAVE_OPENSSL_CRYPTO_H
@@ -938,11 +969,15 @@ cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	}
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total += ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" + ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
@@ -960,7 +995,7 @@ cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 
 	if (config != NULL)
 		show_numbers = config->show_numbers;
-	if (show_numbers) {
+	if (show_numbers && !opt_silent) {
 		seq_str = BN_bn2dec(seq);
 		printf("%s ", seq_str);
 #ifdef HAVE_OPENSSL_CRYPTO_H
@@ -969,18 +1004,24 @@ cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	}
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total = ld;
-		if (nitems > 1)
-			printf(" - ");
+		if (!opt_silent) {
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (nitems > 1)
+				printf(" - ");
+		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		printf("%.*Lf", cmb_transform_precision, ld);
 		total -= ld;
+		if (opt_silent)
+			continue;
+		printf("%.*Lf", cmb_transform_precision, ld);
 		if (n < nitems - 1)
 			printf(" + ");
 	}
+	if (opt_silent)
+		return (0);
 	printf(" = %.*Lf", cmb_transform_precision, total);
 	printf("\n");
 	return (0);
