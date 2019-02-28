@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:44:48 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:47:15 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-alpha-5 $";
+static char version[] = "$Version: 3.0-alpha-6 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -78,21 +78,31 @@ static int cmb_transform_precision = 0;
 /* Function prototypes */
 static void	_Noreturn cmb_usage(void);
 static uint64_t	cmb_rand_range(uint64_t range);
-static int	cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+static int	cmb_add(struct cmb_config *config, uint64_t seq,
+		    uint32_t nitems, char *items[]);
 #if 0
-static int	cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
-static int	cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+static int	cmb_div(struct cmb_config *config, uint64_t seq,
+		    uint32_t nitems, char *items[]);
+static int	cmb_mul(struct cmb_config *config, uint64_t seq,
+		    uint32_t nitems, char *items[]);
 #endif /* 0 */
-static int	cmb_nop(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
-static int	cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems, char *items[]);
+static int	cmb_nop(struct cmb_config *config, uint64_t seq,
+		    uint32_t nitems, char *items[]);
+static int	cmb_sub(struct cmb_config *config, uint64_t seq,
+		    uint32_t nitems, char *items[]);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq,
+		    uint32_t nitems, char *items[]);
 #if 0
-static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
-static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq,
+		    uint32_t nitems, char *items[]);
+static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq,
+		    uint32_t nitems, char *items[]);
 #endif /* 0 */
-static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
-static int	cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, char *items[]);
+static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq,
+		    uint32_t nitems, char *items[]);
+static int	cmb_sub_bn(struct cmb_config *config, BIGNUM *seq,
+		    uint32_t nitems, char *items[]);
 #endif
 
 /* Inline functions */
@@ -525,7 +535,8 @@ main(int argc, char *argv[])
 		 * Convert items into array of pointers to long double
 		 * NB: Transformation function does not perform conversions
 		 */
-		if ((items_tmp = calloc(nitems, sizeof(long double *))) == NULL)
+		items_tmp = calloc(nitems, sizeof(long double *));
+		if (items_tmp == NULL)
 			errx(EXIT_FAILURE, "Out of memory?!");
 			/* NOTREACHED */
 		for (n = 0; n < nitems; n++) {
