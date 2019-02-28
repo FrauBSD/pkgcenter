@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:47:15 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:49:35 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-alpha-6 $";
+static char version[] = "$Version: 3.0-alpha-7 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -91,15 +91,15 @@ static int	cmb_nop(struct cmb_config *config, uint64_t seq,
 static int	cmb_sub(struct cmb_config *config, uint64_t seq,
 		    uint32_t nitems, char *items[]);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
 #if 0
-static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq,
-		    uint32_t nitems, char *items[]);
 static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
+static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq,
+		    uint32_t nitems, char *items[]);
 #endif /* 0 */
-static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
 static int	cmb_sub_bn(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
