@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 16:44:50 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-27 17:31:38 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-alpha-1 $";
+static char version[] = "$Version: 3.0-alpha-2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -545,10 +545,8 @@ main(int argc, char *argv[])
 			if ((cp = strstr(items[n], ".")) != NULL) {
 				len = (int)strlen(items[n]);
 				len -= cp - items[n] + 1;
-				if (len > cmb_transform_precision) {
+				if (len > cmb_transform_precision)
 					cmb_transform_precision = len;
-					printf("precision bumped to %i\n", len);
-				}
 			}
 		}
 		items = items_tmp;
