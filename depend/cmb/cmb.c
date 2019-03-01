@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-28 22:56:51 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-01 12:56:04 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-beta-4 $";
+static char version[] = "$Version: 3.0-beta-5 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -91,15 +91,15 @@ static int	cmb_nop(struct cmb_config *config, uint64_t seq,
 static int	cmb_sub(struct cmb_config *config, uint64_t seq,
 		    uint32_t nitems, char *items[]);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_bn_add(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
-static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_bn_div(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
-static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_bn_mul(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
-static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_bn_nop(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
-static int	cmb_sub_bn(struct cmb_config *config, BIGNUM *seq,
+static int	cmb_bn_sub(struct cmb_config *config, BIGNUM *seq,
 		    uint32_t nitems, char *items[]);
 #endif
 
@@ -477,7 +477,7 @@ main(int argc, char *argv[])
 			config->action = cmb_nop;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		else
-			config->action_bn = cmb_nop_bn;
+			config->action_bn = cmb_bn_nop;
 #endif
 		config->show_numbers = FALSE;
 	} else if (opt_transform != NULL) {
@@ -493,7 +493,7 @@ main(int argc, char *argv[])
 				config->action = cmb_mul;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			else
-				config->action_bn = cmb_mul_bn;
+				config->action_bn = cmb_bn_mul;
 #endif
 		} else if (strncmp("divide", opt_transform, optlen) == 0) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
@@ -502,7 +502,7 @@ main(int argc, char *argv[])
 				config->action = cmb_div;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			else
-				config->action_bn = cmb_div_bn;
+				config->action_bn = cmb_bn_div;
 #endif
 		} else if (strncmp("add", opt_transform, optlen) == 0) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
@@ -511,7 +511,7 @@ main(int argc, char *argv[])
 				config->action = cmb_add;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			else
-				config->action_bn = cmb_add_bn;
+				config->action_bn = cmb_bn_add;
 #endif
 		} else if (strncmp("subtract", opt_transform, optlen) == 0) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
@@ -520,7 +520,7 @@ main(int argc, char *argv[])
 				config->action = cmb_sub;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 			else
-				config->action_bn = cmb_sub_bn;
+				config->action_bn = cmb_bn_sub;
 #endif
 		} else {
 			errno = EINVAL;
@@ -718,7 +718,7 @@ cmb_nop(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 }
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 static int
-cmb_nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
+cmb_bn_nop(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
     char *items[])
 {
 	(void)config;
@@ -734,132 +734,72 @@ cmb_nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
  */
 
 static int
-cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-    char *items[])
-{
-	uint8_t show_numbers = FALSE;
-	uint32_t n;
-	long double ld;
-	long double total = 1;
-
-	if (config != NULL)
-		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent)
-		printf("%"PRIu64" ", seq);
-	for (n = 0; n < nitems; n++) {
-		memcpy(&ld, items[n], sizeof(long double));
-		total *= ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " * " : "");
-		}
-	}
-	if (!opt_silent) {
-		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
-		    cmb_transform_precision, total);
-	}
-	return (0);
-}
-
-static int
-cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-    char *items[])
+cmb_transform(struct cmb_config *config,
+    uint64_t seq, uint32_t nitems, char *items[],
+    long double (*op)(long double a, long double b), const char *opstr)
 {
 	uint8_t show_numbers = FALSE;
 	uint32_t n;
 	long double ld;
 	long double total = 0;
+	const char *delimiter = " ";
+	const char *prefix = NULL;
+	const char *suffix = NULL;
 
-	if (config != NULL)
+	if (config != NULL) {
+		if (config->delimiter != NULL)
+			delimiter = config->delimiter;
 		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent)
-		printf("%"PRIu64" ", seq);
+		prefix = config->prefix;
+		suffix = config->suffix;
+	}
+	if (!opt_silent) {
+		if (show_numbers)
+			printf("%"PRIu64" ", seq);
+		if (prefix != NULL && !opt_quiet)
+			printf("%s", prefix);
+	}
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
 		total = ld;
 		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    nitems > 1 ? " / " : "");
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (nitems > 1)
+				printf("%s%s%s", delimiter, opstr, delimiter);
 		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		total /= ld;
+		total = op(total, ld);
 		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " / " : "");
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (n < nitems - 1)
+				printf("%s%s%s", delimiter, opstr, delimiter);
 		}
 	}
 	if (!opt_silent) {
+		if (suffix != NULL && !opt_quiet)
+			printf("%s", suffix);
 		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
 		    cmb_transform_precision, total);
 	}
 	return (0);
 }
 
-static int
-cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-    char *items[])
-{
-	uint8_t show_numbers = FALSE;
-	uint32_t n;
-	long double ld;
-	long double total = 0;
+#define CMB_TRANSFORM_FUNC(x, op) \
+    static inline long double \
+    cmb_op_##x(long double a, long double b) { return (a op b); } \
+    static int \
+    cmb_##x (struct cmb_config *config, uint64_t seq, uint32_t nitems, \
+        char *items[]) \
+    { \
+    	return (cmb_transform(config, seq, nitems, items, cmb_op_##x, #op)); \
+    }
 
-	if (config != NULL)
-		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent)
-		printf("%"PRIu64" ", seq);
-	for (n = 0; n < nitems; n++) {
-		memcpy(&ld, items[n], sizeof(long double));
-		total += ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " + " : "");
-		}
-	}
-	if (!opt_silent) {
-		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
-		    cmb_transform_precision, total);
-	}
-	return (0);
-}
-
-static int
-cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-    char *items[])
-{
-	uint8_t show_numbers = FALSE;
-	uint32_t n;
-	long double ld;
-	long double total = 0;
-
-	if (config != NULL)
-		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent)
-		printf("%"PRIu64" ", seq);
-	if (nitems > 0) {
-		memcpy(&ld, items[0], sizeof(long double));
-		total = ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    nitems > 1 ? " - " : "");
-		}
-	}
-	for (n = 1; n < nitems; n++) {
-		memcpy(&ld, items[n], sizeof(long double));
-		total -= ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " - " : "");
-		}
-	}
-	if (!opt_silent) {
-		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
-		    cmb_transform_precision, total);
-	}
-	return (0);
-}
+CMB_TRANSFORM_FUNC(add, +);
+CMB_TRANSFORM_FUNC(div, /);
+CMB_TRANSFORM_FUNC(mul, *);
+CMB_TRANSFORM_FUNC(sub, -);
 
 /*
  * Set transformations (OpenSSL bn(3) implementations)
@@ -867,154 +807,75 @@ cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 static int
-cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
-    char *items[])
-{
-	uint8_t show_numbers = FALSE;
-	uint32_t n;
-	char *seq_str;
-	long double ld;
-	long double total = 1;
-
-	if (config != NULL)
-		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent) {
-		seq_str = BN_bn2dec(seq);
-		printf("%s ", seq_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
-		OPENSSL_free(seq_str);
-#endif
-	}
-	for (n = 0; n < nitems; n++) {
-		memcpy(&ld, items[n], sizeof(long double));
-		total *= ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " * " : "");
-		}
-	}
-	if (!opt_silent) {
-		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
-		    cmb_transform_precision, total);
-	}
-	return (0);
-}
-
-static int
-cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
-    char *items[])
+cmb_transform_bn(struct cmb_config *config,
+    BIGNUM *seq, uint32_t nitems, char *items[],
+    long double (*op)(long double a, long double b), const char *opstr)
 {
 	uint8_t show_numbers = FALSE;
 	uint32_t n;
 	char *seq_str;
 	long double ld;
 	long double total = 0;
+	const char *delimiter = " ";
+	const char *prefix = NULL;
+	const char *suffix = NULL;
 
-	if (config != NULL)
+	if (config != NULL) {
+		if (config->delimiter != NULL)
+			delimiter = config->delimiter;
+		prefix = config->prefix;
+		suffix = config->suffix;
 		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent) {
-		seq_str = BN_bn2dec(seq);
-		printf("%s ", seq_str);
+	}
+	if (!opt_silent) {
+		if (show_numbers) {
+			seq_str = BN_bn2dec(seq);
+			printf("%s ", seq_str);
 #ifdef HAVE_OPENSSL_CRYPTO_H
-		OPENSSL_free(seq_str);
+			OPENSSL_free(seq_str);
 #endif
+		}
+		if (prefix != NULL && !opt_quiet)
+			printf("%s", prefix);
 	}
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
 		total = ld;
 		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    nitems > 1 ? " / " : "");
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (nitems > 1)
+				printf("%s%s%s", delimiter, opstr, delimiter);
 		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
-		total /= ld;
+		total = op(total, ld);
 		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " / " : "");
+			printf("%.*Lf", cmb_transform_precision, ld);
+			if (n < nitems - 1)
+				printf("%s%s%s", delimiter, opstr, delimiter);
 		}
 	}
 	if (!opt_silent) {
+		if (suffix != NULL && !opt_quiet)
+			printf("%s", suffix);
 		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
 		    cmb_transform_precision, total);
 	}
 	return (0);
 }
 
-static int
-cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
-    char *items[])
-{
-	uint8_t show_numbers = FALSE;
-	uint32_t n;
-	char *seq_str;
-	long double ld;
-	long double total = 0;
+#define CMB_TRANSFORM_BN_FUNC(x, op) \
+    static int \
+    cmb_bn_##x (struct cmb_config *config, BIGNUM *seq, uint32_t nitems, \
+        char *items[]) \
+    { \
+    	return (cmb_transform_bn(config, seq, nitems, items, cmb_op_##x, \
+    	    #op)); \
+    }
 
-	if (config != NULL)
-		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent) {
-		seq_str = BN_bn2dec(seq);
-		printf("%s ", seq_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
-		OPENSSL_free(seq_str);
-#endif
-	}
-	for (n = 0; n < nitems; n++) {
-		memcpy(&ld, items[n], sizeof(long double));
-		total += ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " + " : "");
-		}
-	}
-	if (!opt_silent) {
-		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
-		    cmb_transform_precision, total);
-	}
-	return (0);
-}
-
-static int
-cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
-    char *items[])
-{
-	uint8_t show_numbers = FALSE;
-	uint32_t n;
-	char *seq_str;
-	long double ld;
-	long double total = 0;
-
-	if (config != NULL)
-		show_numbers = config->show_numbers;
-	if (show_numbers && !opt_silent) {
-		seq_str = BN_bn2dec(seq);
-		printf("%s ", seq_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
-		OPENSSL_free(seq_str);
-#endif
-	}
-	if (nitems > 0) {
-		memcpy(&ld, items[0], sizeof(long double));
-		total = ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    nitems > 1 ? " - " : "");
-		}
-	}
-	for (n = 1; n < nitems; n++) {
-		memcpy(&ld, items[n], sizeof(long double));
-		total -= ld;
-		if (!opt_silent && !opt_quiet) {
-			printf("%.*Lf%s", cmb_transform_precision, ld,
-			    n < nitems - 1 ? " - " : "");
-		}
-	}
-	if (!opt_silent) {
-		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
-		    cmb_transform_precision, total);
-	}
-	return (0);
-}
+CMB_TRANSFORM_BN_FUNC(add, +);
+CMB_TRANSFORM_BN_FUNC(div, /);
+CMB_TRANSFORM_BN_FUNC(mul, *);
+CMB_TRANSFORM_BN_FUNC(sub, -);
 #endif /* defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H) */
