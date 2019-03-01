@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-01 14:11:41 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-01 14:16:36 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,7 +67,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-beta-6 $";
+static char version[] = "$Version: 3.0-beta-7 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -676,6 +676,8 @@ cmb_usage(void)
 	fprintf(stderr, OPTFMT, "-o",
 	    "Disable OpenSSL (limits calculations to 64-bits).");
 	fprintf(stderr, OPTFMT, "-p text", "Prefix text for each line.");
+	fprintf(stderr, OPTFMT, "-q",
+	    "Quiet. Do not print items from set when given `-X op'.");
 	fprintf(stderr, OPTFMT_1U, "-r range",
 	    "Specify range of up-to ", UINT_MAX, " items.");
 	fprintf(stderr, OPTFMT, "-S", "Silent (for performance benchmarks).");
