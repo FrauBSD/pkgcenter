@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-28 13:55:28 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-02-28 22:56:51 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -67,12 +67,13 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0-beta-3 $";
+static char version[] = "$Version: 3.0-beta-4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
 
 /* Globals */
+static uint8_t opt_quiet = FALSE;
 static uint8_t opt_silent = FALSE;
 static int cmb_transform_precision = 0;
 
@@ -158,7 +159,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:r:Ss:tvX:"
+#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:qr:Ss:tvX:"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -308,6 +309,9 @@ main(int argc, char *argv[])
 			break;
 		case 'p': /* prefix */
 			config->prefix = optarg;
+			break;
+		case 'q': /* quiet */
+			opt_quiet = 1;
 			break;
 		case 'r': /* range */
 			if (*optarg < 48 || *optarg > 57) {
@@ -745,16 +749,15 @@ cmb_mul(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total *= ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" * ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " * " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -774,26 +777,23 @@ cmb_div(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
 		total = ld;
-		if (!opt_silent)
-		{
-			printf("%.*Lf", cmb_transform_precision, ld);
-			if (nitems > 1)
-				printf(" / ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    nitems > 1 ? " / " : "");
 		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total /= ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" / ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " / " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -813,16 +813,15 @@ cmb_add(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total += ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" + ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " + " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -842,25 +841,23 @@ cmb_sub(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
 		total = ld;
-		if (!opt_silent) {
-			printf("%.*Lf", cmb_transform_precision, ld);
-			if (nitems > 1)
-				printf(" - ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    nitems > 1 ? " - " : "");
 		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total -= ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" - ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " - " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -891,16 +888,15 @@ cmb_mul_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total *= ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" * ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " * " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -926,25 +922,23 @@ cmb_div_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
 		total = ld;
-		if (!opt_silent) {
-			printf("%.*Lf", cmb_transform_precision, ld);
-			if (nitems > 1)
-				printf(" / ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    nitems > 1 ? " / " : "");
 		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total /= ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" / ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " / " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -970,16 +964,15 @@ cmb_add_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	for (n = 0; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total += ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" + ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " + " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 
@@ -1005,25 +998,23 @@ cmb_sub_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
 	if (nitems > 0) {
 		memcpy(&ld, items[0], sizeof(long double));
 		total = ld;
-		if (!opt_silent) {
-			printf("%.*Lf", cmb_transform_precision, ld);
-			if (nitems > 1)
-				printf(" - ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    nitems > 1 ? " - " : "");
 		}
 	}
 	for (n = 1; n < nitems; n++) {
 		memcpy(&ld, items[n], sizeof(long double));
 		total -= ld;
-		if (opt_silent)
-			continue;
-		printf("%.*Lf", cmb_transform_precision, ld);
-		if (n < nitems - 1)
-			printf(" + ");
+		if (!opt_silent && !opt_quiet) {
+			printf("%.*Lf%s", cmb_transform_precision, ld,
+			    n < nitems - 1 ? " - " : "");
+		}
 	}
-	if (opt_silent)
-		return (0);
-	printf(" = %.*Lf", cmb_transform_precision, total);
-	printf("\n");
+	if (!opt_silent) {
+		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",
+		    cmb_transform_precision, total);
+	}
 	return (0);
 }
 #endif /* defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H) */
