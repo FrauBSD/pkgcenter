@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.1 2019-02-23 16:00:41 -0800 freebsdfrau $
+.\" $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.1 2019-03-01 14:24:04 -0800 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd February 23, 2019
+.Dd March 1, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -218,6 +218,10 @@ options.
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .
+.It Fl q
+Quiet.
+Do not print items from set when given
+.Ql Fl X Ar op .
 .It Fl r Ar range
 If a single number,
 use numbers 1 to num as combination items instead of command-line arguments.
@@ -249,6 +253,23 @@ library version and
 .Pq if-enabled
 .Xr SSL 3
 library version.
+.It Fl X Ar op
+Perform math on items where
+.Ar op
+is 
+.Li add ,
+.Li subtract ,
+.Li divide ,
+or
+.Li multiply
+.Pq case-sensitive .
+Argument
+.Ar op
+can be shortened to its minimally distinct representation;
+such as
+.Dq Li a
+for
+.Dq Li add .
 .El
 .Sh EXAMPLES
 Print all two-word combinations
