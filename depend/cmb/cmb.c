@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-02 10:08:23 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-02 12:28:55 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0.1 $";
+static char version[] = "$Version: 3.0.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -74,6 +74,7 @@ static char *pgm; /* set to argv[0] by main() */
 static uint8_t opt_quiet = FALSE;
 static uint8_t opt_silent = FALSE;
 static int cmb_transform_precision = 0;
+static const char decdc[11] = "0123456789";
 
 /* Function prototypes */
 static void	_Noreturn cmb_usage(void);
@@ -200,15 +201,14 @@ main(int argc, char *argv[])
 			opt_file = optarg;
 			break;
 		case 'i': /* start */
-#define NUM "0123456789"
 			if ((optlen = strlen(optarg)) > 0 &&
 			    strncmp("random", optarg, optlen) == 0) {
 				opt_randi = TRUE;
 			} else if (*optarg < 48 || *optarg > 57) {
 				if ((*optarg == '-' &&
-				    strspn(&optarg[1], NUM) != optlen - 1) ||
+				    strspn(&optarg[1], decdc) != optlen - 1) ||
 				    (*optarg != '-' &&
-				    (strspn(optarg, NUM) != optlen ||
+				    (strspn(optarg, decdc) != optlen ||
 				    optarg[1] < 48 || optarg[1] > 57))) {
 					errno = EINVAL;
 					err(EXIT_FAILURE, "-i");
