@@ -1,7 +1,7 @@
 <HTML>
 <BODY>
 <PRE>
-<!-- $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.3.html 2019-03-01 21:49:50 -0800 freebsdfrau $ -->
+<!-- $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.3.html 2019-03-01 21:57:22 -0800 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 
 
@@ -112,6 +112,29 @@
      combination before	starting.
 
      <I>action</I><B>_</B><I>bn</I>,	<I>count</I><B>_</B><I>bn</I>, and <I>start</I><B>_</B><I>bn</I> are only	available on platforms with
+     OpenSSL <B>bn(3)</B> and are used	by
+
+     <B>cmb_bn</B>();
+     and
+
+     <B>cmb_count_bn</B>();
+     to	overcome limitations by	64-bit integers.
+
+     <B>cmb_version</B>();
+     takes CMB_VERSION or CMB_VERSION_LONG as <I>type</I> and returns string version.
+     For unknown <I>type</I>, the text	``not available'' is returned.
+
+
+</PRE>
+<H2>HISTORY</H2><PRE>
+     The <B>cmb</B> library first appeared in FreeBSD 13.0.
+
+
+</PRE>
+<H2>AUTHORS</H2><PRE>
+     Devin Teske &lt;<I>dteske@FreeBSD.org</I>&gt;
+
+FreeBSD	9.2		       January 10, 2019			   FreeBSD 9.2
 </PRE>
 <HR>
 <ADDRESS>
