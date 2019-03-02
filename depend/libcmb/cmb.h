@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-03-01 21:23:17 -0800 freebsdfrau $
+ * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-03-02 12:26:53 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -71,9 +71,9 @@
 /*
  * Header version info
  */
-#define CMB_H_VERSION_MAJOR	2
-#define CMB_H_VERSION_MINOR	3
-#define CMB_H_VERSION_PATCH	2
+#define CMB_H_VERSION_MAJOR	3
+#define CMB_H_VERSION_MINOR	0
+#define CMB_H_VERSION_PATCH	1
 
 /*
  * Anatomy of config option to pass as cmb*() config argument
