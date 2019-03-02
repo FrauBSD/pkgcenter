@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-02-27 22:36:58 -0800 freebsdfrau $
+ * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-03-01 21:23:17 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -32,6 +32,8 @@
 #include <sys/param.h>
 #include <sys/types.h>
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -127,13 +129,108 @@ char **		cmb_parse_file(struct cmb_config *_config, char *_path,
 int		cmb_print(struct cmb_config *_config, uint64_t _seq,
 		    uint32_t _nitems, char *_items[]);
 const char *	cmb_version(int _type);
+
+static inline void
+cmb_print_seq(uint64_t seq)
+{
+	printf("%"PRIu64" ", seq);
+}
+
 #ifdef HAVE_OPENSSL_BN_H
 int		cmb_bn(struct cmb_config *_config, uint32_t _nitems,
 		    char *_items[]);
 BIGNUM *	cmb_count_bn(struct cmb_config *_config, uint32_t _nitems);
 int		cmb_print_bn(struct cmb_config *_config, BIGNUM *_seq,
 		    uint32_t _nitems, char *_items[]);
+
+static inline void
+cmb_print_seq_bn(BIGNUM *seq)
+{
+	char *seq_str;
+
+	seq_str = BN_bn2dec(seq);
+	printf("%s ", seq_str);
+#ifdef HAVE_OPENSSL_CRYPTO_H
+	OPENSSL_free(seq_str);
 #endif
+}
+#endif /* HAVE_OPENSSL_BN_H */
 __END_DECLS
+
+#define CMB_TRANSFORM_EQ(eq, op, x, seqt, seqp) \
+    int                                                                      \
+    x(struct cmb_config *config, seqt, uint32_t nitems, char *items[])       \
+    {                                                                        \
+    	uint8_t show_numbers = FALSE;                                        \
+    	uint32_t n;                                                          \
+    	long double ld;                                                      \
+    	long double total = 0;                                               \
+    	const char *delimiter = " ";                                         \
+    	const char *prefix = NULL;                                           \
+    	const char *suffix = NULL;                                           \
+                                                                             \
+    	if (config != NULL) {                                                \
+    		if (config->delimiter != NULL)                               \
+    			delimiter = config->delimiter;                       \
+    		show_numbers = config->show_numbers;                         \
+    		prefix = config->prefix;                                     \
+    		suffix = config->suffix;                                     \
+    	}                                                                    \
+    	if (!opt_silent) {                                                   \
+    		if (show_numbers)                                            \
+    			seqp(seq);                                           \
+    		if (prefix != NULL && !opt_quiet)                            \
+    			printf("%s", prefix);                                \
+    	}                                                                    \
+    	if (nitems > 0) {                                                    \
+    		memcpy(&ld, items[0], sizeof(long double));                  \
+    		total = ld;                                                  \
+    		if (!opt_silent && !opt_quiet) {                             \
+    			printf("%.*Lf", cmb_transform_precision, ld);        \
+    			if (nitems > 1)                                      \
+    				printf("%s" #op "%s", delimiter, delimiter); \
+    		}                                                            \
+    	}                                                                    \
+    	for (n = 1; n < nitems; n++) {                                       \
+    		memcpy(&ld, items[n], sizeof(long double));                  \
+    		total = eq;                                                  \
+    		if (!opt_silent && !opt_quiet) {                             \
+    			printf("%.*Lf", cmb_transform_precision, ld);        \
+    			if (n < nitems - 1)                                  \
+    				printf("%s" #op "%s", delimiter, delimiter); \
+    		}                                                            \
+    	}                                                                    \
+    	if (!opt_silent) {                                                   \
+    		if (suffix != NULL && !opt_quiet)                            \
+    			printf("%s", suffix);                                \
+    		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",                  \
+    			cmb_transform_precision, total);                     \
+    	}                                                                    \
+    	return (0);                                                          \
+    }
+
+#define CMB_TRANSFORM_OP(op, x) \
+	CMB_TRANSFORM_EQ(total op ld, op, x, uint64_t seq, cmb_print_seq)
+#define CMB_TRANSFORM_FN(op, fn, x) \
+	CMB_TRANSFORM_EQ(fn(total, ld), op, x, uint64_t seq, cmb_print_seq)
+
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+#define CMB_TRANSFORM_OP_BN(op, x) \
+	CMB_TRANSFORM_EQ(total op ld, op, x, BIGNUM *seq, cmb_print_seq_bn)
+#define CMB_TRANSFORM_FN_BN(op, fn, x) \
+	CMB_TRANSFORM_EQ(fn(total, ld), op, x, BIGNUM *seq, cmb_print_seq_bn)
+#endif
+
+/*
+ * Example transformations
+ */
+#if 0
+CMB_TRANSFORM_OP(+, cmb_add);			/* creates cmb_add() */
+CMB_TRANSFORM_FN(/, div, cmb_div);		/* creates cmb_div() */
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+CMB_TRANSFORM_OP_BN(+, cmb_add_bn);		/* creates cmb_add_bn() */
+CMB_TRANSFORM_FN_BN(/, div, cmb_div_bn);	/* creates cmb_div_bn() */
+#endif
+#endif
 
 #endif /* !_CMB_H_ */
