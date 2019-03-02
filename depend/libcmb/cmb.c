@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.c 2019-03-02 12:26:53 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.c 2019-03-02 13:34:57 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 3.0.1";
-static const char version_long[] = "$Version: libcmb 3.0.1 $";
+static const char version[] = "libcmb 3.0.2";
+static const char version_long[] = "$Version: libcmb 3.0.2 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -120,7 +120,8 @@ cmb_version(int type)
  * allocated array of char * items read from file.
  */
 char **
-cmb_parse_file(struct cmb_config *config, char *path, uint32_t *nitems, uint32_t max)
+cmb_parse_file(struct cmb_config *config, char *path, uint32_t *nitems,
+    uint32_t max)
 {
 #if CMB_DEBUG
 	uint8_t debug = FALSE;
@@ -734,9 +735,7 @@ cmb_return:
 	return (retval);
 }
 
-int
-cmb_print(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-    char *items[])
+CMB_ACTION(cmb_print)
 {
 	uint8_t nul = FALSE;
 	uint8_t show_numbers = FALSE;
@@ -1304,9 +1303,7 @@ cmb_bn_return:
 	return (retval);
 }
 
-int
-cmb_print_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
-    char *items[])
+CMB_ACTION_BN(cmb_print_bn)
 {
 	uint8_t nul = FALSE;
 	uint8_t show_numbers = FALSE;
