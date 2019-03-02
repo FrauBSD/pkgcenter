@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-03-02 13:34:57 -0800 freebsdfrau $
+ * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-03-02 13:55:48 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -73,7 +73,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	0
-#define CMB_H_VERSION_PATCH	2
+#define CMB_H_VERSION_PATCH	3
 
 /*
  * Anatomy of config option to pass as cmb*() config argument
@@ -129,31 +129,21 @@ char **		cmb_parse_file(struct cmb_config *_config, char *_path,
 int		cmb_print(struct cmb_config *_config, uint64_t _seq,
 		    uint32_t _nitems, char *_items[]);
 const char *	cmb_version(int _type);
-
-/* Inline functions */
-static inline void
-cmb_print_seq(uint64_t seq)
-{
-	printf("%"PRIu64" ", seq);
-}
-
 #ifdef HAVE_OPENSSL_BN_H
 int		cmb_bn(struct cmb_config *_config, uint32_t _nitems,
 		    char *_items[]);
 BIGNUM *	cmb_count_bn(struct cmb_config *_config, uint32_t _nitems);
 int		cmb_print_bn(struct cmb_config *_config, BIGNUM *_seq,
 		    uint32_t _nitems, char *_items[]);
+#endif
 
 /* Inline functions */
-static inline void
-cmb_print_seq_bn(BIGNUM *seq)
-{
-	char *seq_str;
-
-	seq_str = BN_bn2dec(seq);
-	printf("%s ", seq_str);
+static inline void cmb_print_seq(uint64_t seq) { printf("%"PRIu64" ", seq); }
+#ifdef HAVE_OPENSSL_BN_H
+static inline void cmb_print_seq_bn(BIGNUM *seq) { char *seq_str;
+    printf("%s ", seq_str = BN_bn2dec(seq));
 #ifdef HAVE_OPENSSL_CRYPTO_H
-	OPENSSL_free(seq_str);
+    OPENSSL_free(seq_str);
 #endif
 }
 #endif /* HAVE_OPENSSL_BN_H */
