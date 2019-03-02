@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-02 12:54:15 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-02 13:39:10 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0.3 $";
+static char version[] = "$Version: 3.0.4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -79,27 +79,17 @@ static const char digit[11] = "0123456789";
 /* Function prototypes */
 static void	_Noreturn cmb_usage(void);
 static uint64_t	cmb_rand_range(uint64_t range);
-static int	cmb_add(struct cmb_config *config, uint64_t seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_div(struct cmb_config *config, uint64_t seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_mul(struct cmb_config *config, uint64_t seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_nop(struct cmb_config *config, uint64_t seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_sub(struct cmb_config *config, uint64_t seq,
-		    uint32_t nitems, char *items[]);
+static		CMB_ACTION(cmb_add);
+static		CMB_ACTION(cmb_div);
+static		CMB_ACTION(cmb_mul);
+static		CMB_ACTION(cmb_nop);
+static		CMB_ACTION(cmb_sub);
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-static int	cmb_add_bn(struct cmb_config *config, BIGNUM *seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_div_bn(struct cmb_config *config, BIGNUM *seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_mul_bn(struct cmb_config *config, BIGNUM *seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_nop_bn(struct cmb_config *config, BIGNUM *seq,
-		    uint32_t nitems, char *items[]);
-static int	cmb_sub_bn(struct cmb_config *config, BIGNUM *seq,
-		    uint32_t nitems, char *items[]);
+static		CMB_ACTION_BN(cmb_add_bn);
+static		CMB_ACTION_BN(cmb_div_bn);
+static		CMB_ACTION_BN(cmb_mul_bn);
+static		CMB_ACTION_BN(cmb_nop_bn);
+static		CMB_ACTION_BN(cmb_sub_bn);
 #endif
 
 /* Inline functions */
