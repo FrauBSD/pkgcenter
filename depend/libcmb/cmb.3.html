@@ -1,0 +1,190 @@
+<HTML>
+<BODY>
+<PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.3.html 2019-03-01 21:27:06 -0800 freebsdfrau $
+.\" $FreeBSD$
+.\"
+.Dd January 10, 2019
+.Dt CMB 3
+.Os
+.Sh NAME
+.Nm cmb
+.Nd combinatorics library
+.Sh LIBRARY
+.Lb libcmb
+.Sh SYNOPSIS
+.In cmb.h
+.Ft int
+.Fn cmb "struct cmb_config *config" "uint32_t nitems" "char *items[]"
+.Ft uint64_t
+.Fn cmb_count "struct cmb_config *config" "uint32_t nitems"
+.Ft char **
+.Fn cmb_parse "struct cmb_config *config" "int fd" "uint32_t *nitems" "uint32_t max"
+.Ft char **
+.Fn cmb_parse_file "struct cmb_config *config" "char *path" "uint32_t *nitems" "uint32_t max"
+.Ft int
+.Fn cmb_print "struct cmb_config *config" "uint64_t seq" "uint32_t nitems" "char *items[]"
+.Ft const char *
+.Fn cmb_version "int type"
+.Pp
+/* OpenSSL
+.Xr bn 3
+support */
+.Pp
+.Ft int
+.Fn cmb_bn "struct cmb_config *config" "uint32_t nitems" "char *items[]"
+.Ft "BIGNUM *"
+.Fn cmb_count_bn "struct cmb_config *config" "uint32_t nitems"
+.Ft int
+.Fn cmb_print_bn "struct cmb_config *config" "BIGNUM *seq" "uint32_t nitems" "char *items[]"
+    uint8_t show_numbers;  /* Show combination sequence numbers */
+    char    *delimiter;    /* Item separator (default is " ") */
+    char    *prefix;       /* Prefix for each combination */
+    char    *suffix;       /* Suffix for each combination */
+    uint32_t size_min;     /* Minimum elements in combination */
+    uint32_t size_max;     /* Maximum elements in combination */
+
+    uint64_t count;        /* Number of combinations */
+    uint64_t start;        /* Starting combination */
+
+    void *data;            /* Reserved for action callback */
+
+    /*
+     * <B>cmb(3)</B> function callback; called for each combination
+     * (default is cmb_print()). If the return from action() is non-
+     * zero, cmb() will stop calculation. The cmb() return value is
+     * the first non-zero result from action(), zero otherwise.
+     */
+    int (*action)(struct cmb_config *config, uint32_t nitems,
+        char *items[]);
+
+    /* OpenSSL <B>bn(3)</B> support */
+
+    BIGNUM  *count_bn;     /* Number of combinations */
+    BIGNUM  *start_bn;     /* Starting combination */
+
+    /*
+     * <B>cmb_bn(3)</B> function callback; called for each combination
+     * (default is cmb_print_bn()). If the return from action_bn()
+     * is non-zero, cmb_bn() will stop calculation. The cmb_bn()
+     * return value is the first non-zero result from action_bn(),
+     * zero otherwise.
+     */
+    int (*action_bn)(struct cmb_config *config, BIGNUM *seq,
+        uint32_t nitems, char *items[]);
+};
+.Ed
+.Pp
+If
+.Ar debug
+is non-zero and
+.Xr cmb 3
+was compiled with
+.Ql CMB_DEBUG ,
+enable debugging information on stderr.
+.Pp
+If
+.Ar nul_terminate
+is non-zero,
+.Fn cmb_print
+will print combination items separated by ASCII NUL character
+.Pq character code 0 .
+is enumerated by
+.Fn cmb
+/
+.Fn cmb_bn
+and counted by
+.Fn cmb_count
+/
+.Fn cmb_count_bn .
+.Pp
+If
+.Ar show_numbers
+is non-zero,
+print combination sequence number before calling
+.Fn action .
+Combinations are calculated in arithmetic progression,
+providing predictable order.
+The sequence number can be used as
+.Ar start
+or
+.Ar start_bn
+value to begin at that combination.
+The sequence number precedes the prefix and is followed by a single space,
+regardless of
+.Ar delimiter .
+.Pp
+For each combination,
+if
+.Ar prefix
+is non-NULL it is printed before the first item in each combination and
+.Ar suffix ,
+if non-NULL,
+is printed after the last item.
+.Pp
+To operate on only a subset or range of subsets,
+use
+.Ar size_min
+and
+.Ar size_max .
+Only combinations containing at minimum
+.Ar size_min
+items and at most
+.Ar size_max
+items will be calculated.
+.Pp
+To limit the number of combinations that are calculated,
+set
+.Ar count
+to a non-zero value.
+.Pp
+If
+.Ar start
+is greater than one,
+to overcome limitations by 64-bit integers.
+.Pp
+.Fn cmb_version
+takes
+.Li CMB_VERSION
+or
+.Li CMB_VERSION_LONG
+as
+.Ar type
+and returns string version.
+For unknown
+.Ar type ,
+the text
+.Dq not available
+is returned.
+.Sh HISTORY
+The
+.Nm
+library first appeared in
+.Fx 13.0 .
+.Sh AUTHORS
+.An Devin Teske Aq Mt dteske@FreeBSD.org
+</PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
+</BODY>
+</HTML>

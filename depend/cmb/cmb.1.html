@@ -1,0 +1,324 @@
+<HTML>
+<BODY>
+<PRE>
+<!-- Manpage converted by man2html 3.0.1 -->
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.1.html 2019-03-01 21:27:06 -0800 freebsdfrau $
+.\" $FreeBSD$
+.\"
+.Dd March 1, 2019
+.Dt CMB 1
+.Os
+.Sh NAME
+.Nm cmb
+.Nd combinatorics utility
+.Sh SYNOPSIS
+.Nm
+.Op Fl 0DeNoS
+.Op Fl c Ar num
+.Op Fl d Ar str
+.Op Fl i Ar num
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Op Fl p Ar str
+.Op Fl s Ar str
+.Ar item1
+.Op Ar item2 ...
+.Nm
+.Fl f Ar file
+.Op Fl 0DeNoS
+.Op Fl c Ar num
+.Op Fl d Ar str
+.Op Fl i Ar num
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Op Fl p Ar str
+.Op Fl s Ar str
+.Nm
+.Fl r Ar range
+.Op Fl 0DeNoS
+.Op Fl c Ar num
+.Op Fl d Ar str
+.Fl f Ar file
+.Op Fl 0Deo
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Nm
+.Fl t
+.Fl r Ar range
+.Op Fl Deo
+.Op Fl k Ar size
+.Op Fl n Ar num
+.Nm
+.Fl v
+.Sh DESCRIPTION
+The
+.Nm
+utility prints combinations,
+one per line
+.Pq default ,
+with items in each combination separated by space
+.Pq default .
+Given N items on the command-line,
+there are N sets where each set consists of an increasing number of items.
+By default,
+all sets are produced
+.Pq Ql Li -k 0 .
+Combination order within a set of N-items is always consistent and repeatable
+given the order of items on the command-line.
+The order of combinations within a single set of N-items
+.Pq where every combination in the set has the same number of items
+is dependent upon the order of items on the command-line.
+.Pp
+Available options:
+.Bl -tag -width ".Fl r Ar range"
+.It Fl 0
+Terminate combinations with ASCII NUL
+.Pq character code 0
+instead of newline.
+Use in conjunction with
+.Dq Li xargs -0
+for example.
+.It Fl c Ar num
+Produce
+.Ar num
+combinations.
+If
+.Ql 0
+.Pq default
+all combinations produced.
+.It Fl D
+Enable debugging information on stderr.
+See
+.Xr cmb 3 .
+With
+.Ql Fl 0 ,
+use NUL separator instead of newline.
+If
+.Ar file
+is
+.Ql Li - ,
+read from stdin.
+File cannot contain more than 4294967295 items.
+.It Fl i Ar num
+Skip the first
+.Va num-1
+combinations.
+If
+.Va num
+is negative,
+skip to
+.Va |num|
+combinations before the end.
+If
+.Va num
+matches
+.Ql Li random
+.Pq case-sensitive
+a random number between 1 and the total number of combinations is chosen.
+.It Fl k Ar size
+Number or range
+.Pq Qo min..max Qc or Qo min-max Qc
+of how many items must appear in each combination.
+A value of
+.Ql 0
+.Pq default
+calculates all sets starting with 1-item combinations.
+If
+.Va size
+is negative one
+.Pq Li -1 ,
+calculate sets in descending order,
+starting with the maximum number of items.
+A range of
+.Ql Li -1..N
+will do the same but stop at N-item combinations.
+A range of
+.Ql Li N..-1
+will start with N-item combinations and end with the maximum number of items.
+The order of combinations in each set is unaffected by negative
+.Va size
+values.
+A range of
+.Ql Li -1..-1
+calculates the ending set consisting of only the maximum number of items.
+.It Fl N
+support
+.Pq limits calculations to 64-bits .
+No effect if unsupported.
+Use
+.Ql Fl v
+to check OpenSSL support.
+The default is to use OpenSSL when supported.
+Must appear before
+.Ql Fl c Ar num
+and
+.Ql Fl i Ar num
+options.
+.It Fl p Ar text
+Prefix each combination with
+.Ar text .
+.It Fl q
+Quiet.
+Do not print items from set when given
+.Ql Fl X Ar op .
+.It Fl r Ar range
+If a single number,
+use numbers 1 to num as combination items instead of command-line arguments.
+If a range
+.Pq Qo min..max Qc or Qo min-max Qc ,
+use numbers min to max.
+Numbers must be whole positive integers between 0 and 4294967295.
+Ignored if
+.Ql Fl f Ar file
+is given.
+.It Fl S
+Silent.
+Do not print combinations to stdout.
+Used with
+.Xr time 1
+to determine
+.Xr stdio 3
+overhead.
+.It Fl s Ar text
+Suffix each combination with
+.Ar text .
+.It Fl t
+Print total number of combinations and exit.
+.It Fl v
+Print version information to stdout and exit.
+Includes
+.Xr cmb 3
+library version and
+.Pq if-enabled
+.Xr SSL 3
+library version.
+.It Fl X Ar op
+Perform math on items where
+.Dq Li add .
+.El
+.Sh EXAMPLES
+Print all two-word combinations
+.Pq Qo bird dog Qc , Qo bird house Qc , and Qo dog house Qc
+given
+.Qq bird ,
+.Qq dog ,
+and
+.Qq house :
+.Bd -literal -offset indent
+cmb -k 2 bird dog house
+.Ed
+.Pp
+Print number of combinations
+.Pq 7
+given
+.Qq a ,
+.Qq b ,
+and
+.Qq c :
+.Bd -literal -offset indent
+cmb -t a b c
+.Ed
+.Pp
+Print first 5 combinations
+.Pq Qo x Qc , Qo y Qc , Qo z Qc , Qo x y Qc , and Qo x z Qc
+given
+.Qq x ,
+.Qq y ,
+and
+.Qq z :
+.Bd -literal -offset indent
+cmb -c 5 x y z
+.Ed
+.Pp
+Skip first 3 combinations
+.Pq Qo x Qc , Qo y Qc , and Qo z Qc
+given
+.Qq x ,
+.Qq y ,
+and
+.Qq z :
+.Bd -literal -offset indent
+cmb -i 4 x y z
+.Ed
+.Pp
+Print last 5 combinations
+.Pq Qo z Qc , Qo x y Qc , Qo x z Qc , Qo y z Qc , and Qo x y z Qc
+given
+.Qq x ,
+.Qq y ,
+.Ed
+.Pp
+Print strings as JSON:
+.Bd -literal -offset indent
+cmb -p '{"values":[' -s ']}' -d , '"a"' '"b"' '"c"'
+.Ed
+.Pp
+Print all 2- and 3-word combinations
+.Po
+.Qq big blue ,
+.Qq big red ,
+.Qq big couch ,
+.Qq blue red ,
+.Qq blue couch ,
+.Qq red couch ,
+.Qq big blue red ,
+.Qq big blue couch ,
+.Qq big red couch ,
+and
+.Qq blue red couch
+.Pc
+given
+.Qq big ,
+.Qq blue ,
+.Qq red ,
+and
+.Qq couch :
+.Bd -literal -offset indent
+cmb -k 2..3 big blue red couch
+.Ed
+.Pp
+Print combinations starting with the maximum number of items
+.Pq 3 ,
+ending with 2-item combinations:
+.Bd -literal -offset indent
+cmb -k -1..2 1 2 3
+.Ed
+.Pp
+Print combinations starting with 2-items ending with maximum items
+.Pq 3 :
+.Bd -literal -offset indent
+cmb -k 2..-1 x y z
+.Ed
+.Pp
+Roll a set of 2 six-sided dice,
+producing a single random combination of two numbers:
+.Bd -literal -offset indent
+cmb -c 1 -k 2 -i rand 1 2 3 4 5 6 1 2 3 4 5 6
+.Ed
+.Sh HISTORY
+The
+.Nm
+</PRE>
+<HR>
+<ADDRESS>
+Man(1) output converted with
+<a href="http://www.oac.uci.edu/indiv/ehood/man2html.html">man2html</a>
+</ADDRESS>
+</BODY>
+</HTML>
