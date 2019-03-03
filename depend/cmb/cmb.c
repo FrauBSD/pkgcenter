@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-02 13:39:10 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-03 12:10:35 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.0.4 $";
+static char version[] = "$Version: 3.0.5 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -698,9 +698,8 @@ cmb_rand_range(uint64_t range)
 /*
  * For performance benchmarking
  */
-static int
-cmb_nop(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-    char *items[])
+static
+CMB_ACTION(cmb_nop)
 {
 	(void)config;
 	(void)seq;
@@ -709,9 +708,8 @@ cmb_nop(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	return (0);
 }
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-static int
-cmb_nop_bn(struct cmb_config *config, BIGNUM *seq, uint32_t nitems,
-    char *items[])
+static
+CMB_ACTION_BN(cmb_nop_bn)
 {
 	(void)config;
 	(void)seq;
