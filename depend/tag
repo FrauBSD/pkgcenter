@@ -5,12 +5,13 @@
 #
 # $Title: Script for tagging pkgcenter depend files in git $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/tag 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/tag 2019-03-08 19:37:38 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
 # Usage: tag [OPTIONS] TAG
 # OPTIONS:
+# 	-d   Delete given tag for the given sub-directory you are in.
 # 	-f   Force. Allow tagging of files already tagged at a lower revision
 # 	     with the same tag.
 # 	-l   List tags for the given sub-directory you are in.
@@ -50,6 +51,7 @@ TAG=
 #
 # Command-line options
 #
+DELETE=		# -d
 FORCE=		# -f
 LIST=		# -l
 
@@ -92,6 +94,8 @@ usage()
 	exec >&2
 	printf "Usage: %s [OPTIONS] TAG\n" "$pgm"
 	printf "OPTIONS:\n"
+	printf "$optfmt" -d \
+	    "Delete given tag for the given sub-directory you are in."
 	printf "$optfmt" -f \
 	    "Force. Allow tagging files already tagged at a lower revision"
 	printf "$optfmt" "" \
@@ -173,8 +177,9 @@ replaceall()
 #
 # Process command-line options
 #
-while getopts fl flag; do
+while getopts dfl flag; do
 	case "$flag" in
+	d) DELETE=1 ;;
 	f) FORCE=1 ;;
 	l) LIST=1 ;;
 	*) usage # NOTREACHED
@@ -227,7 +232,11 @@ replaceall "$TAG" "[ $TAB$NL]" _ TAG
 # Tag everything
 #
 set -- "$TAGPREFIX-$TAG"
-eval2 $GIT tag -a ${FORCE:+-f} -m "\"Create tag $1\"" "$@"
+if [ "$DELETE" ]; then
+	eval2 $GIT tag -d ${FORCE:+-f} "$@"
+else
+	eval2 $GIT tag -a ${FORCE:+-f} -m "\"Create tag $1\"" "$@"
+fi
 
 ################################################################################
 # END
