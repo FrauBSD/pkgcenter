@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-08 19:42:57 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 13:41:56 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.1.2 $";
+static char version[] = "$Version: 3.1.3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -93,6 +93,7 @@ static		CMB_ACTION_BN(cmb_sub_bn);
 #endif
 static size_t	numlen(const char *s);
 static size_t	rangelen(const char *s, size_t nlen, size_t slen);
+static uint8_t	parse_range(const char *s, uint32_t *min, uint32_t *max);
 
 /* Inline functions */
 static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
@@ -128,7 +129,6 @@ main(int argc, char *argv[])
 	uint32_t range_min = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
-	size_t nlen;
 	struct cmb_config *config = NULL;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 	BIGNUM *count_bn;
@@ -225,68 +225,8 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'k': /* size */
-			optlen = strlen(optarg);
-			if ((nlen = numlen(optarg)) != optlen &&
-			    rangelen(optarg, nlen, optlen) != optlen) {
-				errno = EINVAL;
-				err(EXIT_FAILURE, "-k");
-				/* NOTREACHED */
-			}
-			errno = 0;
-			if (*optarg == '-') {
-				ull = strtoull(&optarg[1], (char **)NULL, 10);
-				config->size_min = UINT_MAX - (uint32_t)ull;
-			} else {
-				ull = strtoull(optarg, (char **)NULL, 10);
-				config->size_min = (uint32_t)ull;
-			}
-			if (errno != 0) {
-				err(EXIT_FAILURE, "-k");
-				/* NOTREACHED */
-			} else if (ull > UINT_MAX) {
-				errx(EXIT_FAILURE, "-k: Result too large");
-				/* NOTREACHED */
-			}
-			cp = &optarg[nlen];
-			if (*cp == '\0') {
-				if (*optarg == '-')
-					config->size_max = (uint32_t)ull;
-				else
-					config->size_max = config->size_min;
-			} else if ((strncmp(cp, "..", 2)) == 0) {
-				cp += 2;
-				errno = 0;
-				if (*cp == '-') {
-					ull = strtoull(&cp[1],
-					    (char **)NULL, 10);
-					config->size_max = UINT_MAX
-					    - (uint32_t)ull;
-				} else {
-					ull = strtoull(cp, (char **)NULL, 10);
-					config->size_max = (uint32_t)ull;
-				}
-				if (errno != 0) {
-					err(EXIT_FAILURE, "-k");
-					/* NOTREACHED */
-				} else if (ull > UINT_MAX) {
-					errx(EXIT_FAILURE,
-					    "-k: Result too large");
-					/* NOTREACHED */
-				}
-			} else if (*cp == '-') {
-				errno = 0;
-				ull = strtoull(&cp[1], (char **)NULL, 10);
-				if (errno != 0) {
-					err(EXIT_FAILURE, "-k");
-					/* NOTREACHED */
-				} else if (ull > UINT_MAX) {
-					errx(EXIT_FAILURE,
-					    "-k: Result too large");
-					/* NOTREACHED */
-				}
-				config->size_max = (uint32_t)ull;
-			} else {
-				errno = EINVAL;
+			if (!parse_range(optarg, &(config->size_min),
+			    &(config->size_max))) {
 				err(EXIT_FAILURE, "-k");
 				/* NOTREACHED */
 			}
@@ -749,6 +689,71 @@ rangelen(const char *s, size_t nlen, size_t slen)
 		return (nlen + rlen + 2);
 	} else
 		return (0);
+}
+
+static uint8_t
+parse_range(const char *s, uint32_t *min, uint32_t *max)
+{
+	const char *cp;
+	size_t nlen;
+	size_t optlen;
+	uint64_t ull;
+
+	errno = 0;
+
+	if (s == NULL || ((nlen = numlen(s)) != (optlen = strlen(s)) &&
+	    rangelen(s, nlen, optlen) != optlen)) {
+		errno = EINVAL;
+		return (FALSE);
+	}
+
+	if (*s == '-') {
+		ull = strtoull(&s[1], (char **)NULL, 10);
+		*min = UINT_MAX - (uint32_t)ull;
+	} else {
+		ull = strtoull(s, (char **)NULL, 10);
+		*min = (uint32_t)ull;
+	}
+	if (errno != 0)
+		return (FALSE);
+	else if (ull > UINT_MAX) {
+		errno = ERANGE;
+		return (FALSE);
+	}
+
+	cp = &s[nlen];
+	if (*cp == '\0')
+		*max = *s == '-' ? (uint32_t)ull : *min;
+	else if ((strncmp(cp, "..", 2)) == 0) {
+		cp += 2;
+		if (*cp == '-') {
+			ull = strtoull(&cp[1], (char **)NULL, 10);
+			*max = UINT_MAX - (uint32_t)ull;
+		} else {
+			ull = strtoull(cp, (char **)NULL, 10);
+			*max = (uint32_t)ull;
+		}
+		if (errno != 0)
+			return (FALSE);
+		else if (ull > UINT_MAX) {
+			errno = ERANGE;
+			return (FALSE);
+		}
+	} else if (*cp == '-') {
+		ull = strtoull(&cp[1], (char **)NULL, 10);
+		if (errno != 0)
+			return (FALSE);
+		else if (ull > UINT_MAX) {
+			errno = ERANGE;
+			return (FALSE);
+		}
+		*max = (uint32_t)ull;
+	} else {
+		errno = EINVAL;
+		return (FALSE);
+	}
+
+	return (TRUE);
 }
 
 /*
