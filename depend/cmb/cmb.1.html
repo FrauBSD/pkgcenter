@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.1.html 2019-03-09 14:06:56 -0800 freebsdfrau $ -->
+<!-- $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.1.html 2019-03-09 15:38:05 -0800 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>cmb</B> [<B>-0DeNoS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-p</B> <I>str</I>]
@@ -70,7 +70,8 @@
 
      <B>-r</B>	<I>range</I>  If a single number, use numbers 1 to num	as combination items
 	       instead of command-line arguments.  If a	range ("min..max" or
-	       "min-max"), use numbers min to max.  Ignored if `<B>-f</B>	<I>file</I>'
+	       "min-max"), use numbers min to max.  Numbers must be whole pos-
+	       itive integers between 0 and 4294967295.  Ignored if `<B>-f</B>  <I>file</I>'
 	       is given.
 
      <B>-S</B>	       Silent.	Do not print combinations to stdout.  Used with

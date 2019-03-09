@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 14:06:56 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 15:38:05 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2 $";
+static char version[] = "$Version: 3.2.1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -93,7 +93,10 @@ static		CMB_ACTION_BN(cmb_sub_bn);
 #endif
 static size_t	numlen(const char *s);
 static size_t	rangelen(const char *s, size_t nlen, size_t slen);
+static size_t	unumlen(const char *s);
+static size_t	urangelen(const char *s, size_t nlen, size_t slen);
 static uint8_t	parse_range(const char *s, uint32_t *min, uint32_t *max);
+static uint8_t	parse_urange(const char *s, uint32_t *min, uint32_t *max);
 
 /* Inline functions */
 static inline uint8_t	p2(uint64_t x) { return (x == (x & -x)); }
@@ -263,11 +266,11 @@ main(int argc, char *argv[])
 			opt_quiet = 1;
 			break;
 		case 'r': /* range */
-			if (!parse_range(optarg, &range_min, &range_max)) {
+			if (!parse_urange(optarg, &range_min, &range_max)) {
 				err(EXIT_FAILURE, "-r");
 				/* NOTREACHED */
 			}
-			if (numlen(optarg) == strlen(optarg)) {
+			if (unumlen(optarg) == strlen(optarg)) {
 				range_max = range_min;
 				range_min = 1;
 			}
@@ -700,6 +703,96 @@ parse_range(const char *s, uint32_t *min, uint32_t *max)
 			ull = strtoull(cp, (char **)NULL, 10);
 			*max = (uint32_t)ull;
 		}
+		if (errno != 0)
+			return (FALSE);
+		else if (ull > UINT_MAX) {
+			errno = ERANGE;
+			return (FALSE);
+		}
+	} else if (*cp == '-') {
+		ull = strtoull(&cp[1], (char **)NULL, 10);
+		if (errno != 0)
+			return (FALSE);
+		else if (ull > UINT_MAX) {
+			errno = ERANGE;
+			return (FALSE);
+		}
+		*max = (uint32_t)ull;
+	} else {
+		errno = EINVAL;
+		return (FALSE);
+	}
+
+	return (TRUE);
+}
+
+static size_t
+unumlen(const char *s)
+{
+	if (s == NULL || *s == '\0')
+		return (0);
+	else
+		return (strspn(s, digit));
+}
+
+static size_t
+urangelen(const char *s, size_t nlen, size_t slen)
+{
+	size_t rlen;
+	const char *cp = s;
+
+	if (nlen == 0)
+		return (0);
+	else if (nlen == slen)
+		return (nlen);
+
+	cp += nlen;
+	if (*cp == '-') {
+		cp += 1;
+		if (*cp == '\0')
+			return (0);
+		return (nlen + strspn(cp, digit) + 1);
+	} else if (strncmp(cp, "..", 2) == 0) {
+		cp += 2;
+		if ((rlen = unumlen(cp)) == 0)
+			return (0);
+		return (nlen + rlen + 2);
+	} else
+		return (0);
+}
+
+static uint8_t
+parse_urange(const char *s, uint32_t *min, uint32_t *max)
+{
+	const char *cp;
+	size_t nlen;
+	size_t optlen;
+	uint64_t ull;
+
+	errno = 0;
+
+	if (s == NULL || ((nlen = unumlen(s)) != (optlen = strlen(s)) &&
+	    urangelen(s, nlen, optlen) != optlen) || *s == '-') {
+		errno = EINVAL;
+		return (FALSE);
+	}
+
+	ull = strtoull(s, (char **)NULL, 10);
+	*min = *max = (uint32_t)ull;
+	if (errno != 0)
+		return (FALSE);
+	else if (ull > UINT_MAX) {
+		errno = ERANGE;
+		return (FALSE);
+	}
+
+	cp = &s[nlen];
+	if (*cp == '\0')
+		*max = *min;
+	else if ((strncmp(cp, "..", 2)) == 0) {
+		cp += 2;
+		ull = strtoull(cp, (char **)NULL, 10);
+		*max = (uint32_t)ull;
 		if (errno != 0)
 			return (FALSE);
 		else if (ull > UINT_MAX) {
