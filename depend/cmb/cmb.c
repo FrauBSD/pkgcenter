@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 13:41:56 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 14:06:56 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.1.3 $";
+static char version[] = "$Version: 3.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -263,44 +263,11 @@ main(int argc, char *argv[])
 			opt_quiet = 1;
 			break;
 		case 'r': /* range */
-			if (*optarg < 48 || *optarg > 57) {
-				errno = EINVAL;
+			if (!parse_range(optarg, &range_min, &range_max)) {
 				err(EXIT_FAILURE, "-r");
 				/* NOTREACHED */
 			}
-			errno = 0;
-			ull = strtoull(optarg, (char **)NULL, 10);
-			if (errno != 0) {
-				err(EXIT_FAILURE, "-r");
-				/* NOTREACHED */
-			} else if (ull > UINT_MAX) {
-				errx(EXIT_FAILURE, "-r: Result too large");
-				/* NOTREACHED */
-			}
-			range_min = (uint32_t)ull;
-			if ((cp = strstr(optarg, "..")) != NULL) {
-				errno = 0;
-				ull = strtoull(cp + 2, (char **)NULL, 10);
-				if (errno != 0) {
-					err(EXIT_FAILURE, "-r");
-					/* NOTREACHED */
-				} else if (ull > UINT_MAX) {
-					errx(EXIT_FAILURE,
-					    "-r: Result too large");
-				}
-				range_max = (uint32_t)ull;
-			} else if ((cp = strstr(optarg, "-")) != NULL) {
-				errno = 0;
-				ull = strtoull(cp + 1, (char **)NULL, 10);
-				if (errno != 0) {
-					err(EXIT_FAILURE, "-r");
-					/* NOTREACHED */
-				} else if (ull > UINT_MAX) {
-					errx(EXIT_FAILURE,
-					    "-r: Result too large");
-				}
-				range_max = (uint32_t)ull;
-			} else {
+			if (numlen(optarg) == strlen(optarg)) {
 				range_max = range_min;
 				range_min = 1;
 			}
