@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 16:00:54 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 16:07:14 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.2 $";
+static char version[] = "$Version: 3.2.3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -315,7 +315,7 @@ main(int argc, char *argv[])
 #else
 		printf("%s: %s (%s)\n", pgm, cmdver, libver);
 #endif
-		exit(EXIT_FAILURE);
+		exit(EXIT_SUCCESS);
 	}
 
 	/* Print total for num items if given `-t -r range' */
