@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 18:33:49 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 18:47:46 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.7 $";
+static char version[] = "$Version: 3.2.8 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -142,7 +142,8 @@ main(int argc, char *argv[])
 			config->nul_terminate = TRUE;
 			break;
 		case 'c': /* count */
-			if (*optarg < 48 || *optarg > 57) {
+			if ((optlen = strlen(optarg)) == 0 ||
+			    unumlen(optarg) != optlen) {
 				errx(EXIT_FAILURE, "-c: %s `%s'",
 				    strerror(EINVAL), optarg);
 				/* NOTREACHED */
