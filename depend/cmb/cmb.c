@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 18:13:34 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 18:33:49 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.6 $";
+static char version[] = "$Version: 3.2.7 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -77,6 +77,7 @@ static size_t	rangelen(const char *s, size_t nlen, size_t slen);
 static size_t	unumlen(const char *s);
 static size_t	urangelen(const char *s, size_t nlen, size_t slen);
 static uint8_t	parse_range(const char *s, uint32_t *min, uint32_t *max);
+static uint8_t	parse_unum(const char *s, uint32_t *n);
 static uint8_t	parse_urange(const char *s, uint32_t *min, uint32_t *max);
 
 /* Inline functions */
@@ -119,7 +120,6 @@ main(int argc, char *argv[])
 #endif
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
-	uint64_t ull;
 	unsigned long ul;
 	long double ld;
 	struct timeval tv;
@@ -221,25 +221,12 @@ main(int argc, char *argv[])
 		case 'N': /* numbers */
 			config->show_numbers = TRUE;
 			break;
-		case 'n': /* args */
-			if ((optlen = strlen(optarg)) == 0 ||
-			    unumlen(optarg) != optlen) {
-				errx(EXIT_FAILURE, "-n: %s `%s'",
-				    strerror(EINVAL), optarg);
-				/* NOTREACHED */
-			}
-			errno = 0;
-			ull = strtoull(optarg, (char **)NULL, 10);
-			if (errno != 0) {
+		case 'n': /* n-args */
+			if (!parse_unum(optarg, &nitems)) {
 				errx(EXIT_FAILURE, "-n: %s `%s'",
 				    strerror(errno), optarg);
 				/* NOTREACHED */
-			} else if (ull > UINT_MAX) {
-				errx(EXIT_FAILURE, "-n: %s `%s'",
-				    strerror(ERANGE), optarg);
-				/* NOTREACHED */
 			}
-			nitems = (uint32_t)ull;
 			break;
 		case 'o': /* disable openssl */
 #ifdef HAVE_LIBCRYPTO
@@ -744,6 +731,31 @@ urangelen(const char *s, size_t nlen, size_t slen)
 		return (nlen + rlen + 2);
 	} else
 		return (0);
+}
+
+static uint8_t
+parse_unum(const char *s, uint32_t *n)
+{
+	uint64_t ull;
+
+	errno = 0;
+
+	if (s == NULL || unumlen(s) != strlen(s)) {
+		errno = EINVAL;
+		return (FALSE);
+	}
+
+	ull = strtoull(optarg, (char **)NULL, 10);
+	if (errno != 0)
+		return (FALSE);
+	else if (ull > UINT_MAX) {
+		errno = ERANGE;
+		return (FALSE);
+	}
+
+	*n = (uint32_t)ull;
+
+	return (TRUE);
 }
 
 static uint8_t
