@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 17:47:43 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 18:13:34 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.5 $";
+static char version[] = "$Version: 3.2.6 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -222,7 +222,8 @@ main(int argc, char *argv[])
 			config->show_numbers = TRUE;
 			break;
 		case 'n': /* args */
-			if (*optarg < 48 || *optarg > 57) {
+			if ((optlen = strlen(optarg)) == 0 ||
+			    unumlen(optarg) != optlen) {
 				errx(EXIT_FAILURE, "-n: %s `%s'",
 				    strerror(EINVAL), optarg);
 				/* NOTREACHED */
@@ -299,7 +300,9 @@ main(int argc, char *argv[])
 		exit(EXIT_SUCCESS);
 	}
 
-	/* Print total for num items if given `-t -r range' */
+	/*
+	 * Print total for num items if given `-t'
+	 */
 	if (opt_total && opt_range) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		if (range_min < range_max)
