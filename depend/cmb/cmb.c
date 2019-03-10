@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 15:38:05 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/cmb.c 2019-03-09 16:00:54 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -65,7 +65,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.1 $";
+static char version[] = "$Version: 3.2.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -162,8 +162,8 @@ main(int argc, char *argv[])
 			break;
 		case 'c': /* count */
 			if (*optarg < 48 || *optarg > 57) {
-				errno = EINVAL;
-				err(EXIT_FAILURE, "-c");
+				errx(EXIT_FAILURE, "-c: %s `%s'",
+				    strerror(EINVAL), optarg);
 				/* NOTREACHED */
 			}
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
@@ -176,7 +176,8 @@ main(int argc, char *argv[])
 				config->count = strtoull(optarg,
 				    (char **)NULL, 10);
 				if (errno != 0) {
-					err(EXIT_FAILURE, "-c");
+					errx(EXIT_FAILURE, "-c: %s `%s'",
+					    strerror(errno), optarg);
 					/* NOTREACHED */
 				}
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
@@ -201,8 +202,8 @@ main(int argc, char *argv[])
 			    strncmp("random", optarg, optlen) == 0) {
 				opt_randi = TRUE;
 			} else if (optlen == 0 || numlen(optarg) != optlen) {
-				errno = EINVAL;
-				err(EXIT_FAILURE, "-i");
+				errx(EXIT_FAILURE, "-i: %s `%s'",
+				    strerror(EINVAL), optarg);
 				/* NOTREACHED */
 			}
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
@@ -222,7 +223,8 @@ main(int argc, char *argv[])
 					    (char **)NULL, 10);
 				}
 				if (errno != 0) {
-					err(EXIT_FAILURE, "-i");
+					errx(EXIT_FAILURE, "-i: %s `%s'",
+					    strerror(errno), optarg);
 					/* NOTREACHED */
 				}
 			}
@@ -230,7 +232,8 @@ main(int argc, char *argv[])
 		case 'k': /* size */
 			if (!parse_range(optarg, &(config->size_min),
 			    &(config->size_max))) {
-				err(EXIT_FAILURE, "-k");
+				errx(EXIT_FAILURE, "-k: %s `%s'",
+				    strerror(errno), optarg);
 				/* NOTREACHED */
 			}
 			break;
@@ -239,17 +242,19 @@ main(int argc, char *argv[])
 			break;
 		case 'n': /* args */
 			if (*optarg < 48 || *optarg > 57) {
-				errno = EINVAL;
-				err(EXIT_FAILURE, "-n");
+				errx(EXIT_FAILURE, "-n: %s `%s'",
+				    strerror(EINVAL), optarg);
 				/* NOTREACHED */
 			}
 			errno = 0;
 			ull = strtoull(optarg, (char **)NULL, 10);
 			if (errno != 0) {
-				err(EXIT_FAILURE, "-n");
+				errx(EXIT_FAILURE, "-n: %s `%s'",
+				    strerror(errno), optarg);
 				/* NOTREACHED */
 			} else if (ull > UINT_MAX) {
-				errx(EXIT_FAILURE, "-n: Result too large");
+				errx(EXIT_FAILURE, "-n: %s `%s'",
+				    strerror(ERANGE), optarg);
 				/* NOTREACHED */
 			}
 			nitems = (uint32_t)ull;
@@ -267,7 +272,8 @@ main(int argc, char *argv[])
 			break;
 		case 'r': /* range */
 			if (!parse_urange(optarg, &range_min, &range_max)) {
-				err(EXIT_FAILURE, "-r");
+				errx(EXIT_FAILURE, "-r: %s `%s'",
+				    strerror(errno), optarg);
 				/* NOTREACHED */
 			}
 			if (unumlen(optarg) == strlen(optarg)) {
@@ -401,8 +407,7 @@ main(int argc, char *argv[])
 		config->show_numbers = FALSE;
 	} else if (opt_transform != NULL) {
 		if ((optlen = strlen(opt_transform)) == 0) {
-			errno = EINVAL;
-			err(EXIT_FAILURE, "-X");
+			errx(EXIT_FAILURE, "-X: %s `'", strerror(EINVAL));
 			/* NOTREACHED */
 		}
 		if (strncmp("multiply", opt_transform, optlen) == 0) {
@@ -442,8 +447,8 @@ main(int argc, char *argv[])
 				config->action_bn = cmb_sub_bn;
 #endif
 		} else {
-			errno = EINVAL;
-			err(EXIT_FAILURE, "-X");
+			errx(EXIT_FAILURE, "-X: %s `%s'", strerror(EINVAL),
+			    opt_transform);
 			/* NOTREACHED */
 		}
 
