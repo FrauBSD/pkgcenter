@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-02 13:55:48 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-09 17:45:15 -0800 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -42,13 +42,21 @@
 #elif defined(__FreeBSD_version)
 #ifdef HAVE_LIBCRYPTO
 #define HAVE_OPENSSL_BN_H 1
+#define HAVE_OPENSSL_CRYPTO_H 1
 #else
 #undef HAVE_OPENSSL_BN_H
+#undef HAVE_OPENSSL_CRYPTO_H
 #endif
 #endif
 
+#ifdef HAVE_OPENSSL_CRYPTO_H
+#include <openssl/crypto.h>
+#endif
 #ifdef HAVE_OPENSSL_BN_H
 #include <openssl/bn.h>
+#ifndef OPENSSL_free
+#define OPENSSL_free(x) (void)(x)
+#endif
 #endif
 
 #ifndef TRUE
@@ -73,7 +81,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	0
-#define CMB_H_VERSION_PATCH	3
+#define CMB_H_VERSION_PATCH	4
 
 /*
  * Anatomy of config option to pass as cmb*() config argument
@@ -142,9 +150,7 @@ static inline void cmb_print_seq(uint64_t seq) { printf("%"PRIu64" ", seq); }
 #ifdef HAVE_OPENSSL_BN_H
 static inline void cmb_print_seq_bn(BIGNUM *seq) { char *seq_str;
     printf("%s ", seq_str = BN_bn2dec(seq));
-#ifdef HAVE_OPENSSL_CRYPTO_H
     OPENSSL_free(seq_str);
-#endif
 }
 #endif /* HAVE_OPENSSL_BN_H */
 __END_DECLS

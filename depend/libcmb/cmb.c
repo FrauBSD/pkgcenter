@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-02 13:55:48 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-09 17:45:15 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 3.0.3";
-static const char version_long[] = "$Version: libcmb 3.0.3 $";
+static const char version[] = "libcmb 3.0.4";
+static const char version_long[] = "$Version: libcmb 3.0.4 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -1121,9 +1121,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 		if (debug) {
 			seq_str = BN_bn2dec(seq);
 			fprintf(stderr, "] seq=%s\n", seq_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
 			OPENSSL_free(seq_str);
-#endif
 		}
 #endif
 
@@ -1234,10 +1232,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 				}
 				seq_str = BN_bn2dec(seq);
 				fprintf(stderr, "] seq=%s\n", seq_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
 				OPENSSL_free(seq_str);
-				
-#endif
 			}
 #endif
 
@@ -1326,9 +1321,7 @@ CMB_ACTION_BN(cmb_print_bn)
 	if (show_numbers) {
 		seq_str = BN_bn2dec(seq);
 		printf("%s ", seq_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
 		OPENSSL_free(seq_str);
-#endif
 	}
 	if (prefix != NULL)
 		printf("%s", prefix);
