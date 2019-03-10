@@ -24,7 +24,7 @@ KEYWORDS="
 _Author='$NAME'
 _Branch='$BRANCH'
 _Date='$DATE'
-_FrauBSD='${REPO#FrauBSD/}/$gitfile $DATE $NAME'
+_FrauBSD='${REPO#*FrauBSD/}/$gitfile $DATE $NAME'
 _Header='$gitfile $DATE $NAME'
 _Origin='$ORIGIN'
 _Project='$PROJECT'
@@ -198,6 +198,6 @@ done
 ################################################################################
 #
 # $Copyright: 2015-2018 The FrauBSD Project. All rights reserved. $
-# $FrauBSD: pkgcenter/.git-filters/keywords 2018-09-20 12:28:19 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/.git-filters/keywords 2019-03-09 16:15:01 -0800 freebsdfrau $
 #
 ################################################################################
