@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.h 2019-03-02 13:55:48 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-02 13:55:48 -0800 freebsdfrau $
  * $FreeBSD$
  */
 

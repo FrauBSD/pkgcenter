@@ -2,7 +2,7 @@
 #
 # $Title: Makefile for cputools $
 # $Copyright: 2006-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/GNUmakefile.in 2019-02-19 11:43:31 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cputools/GNUmakefile.in 2019-02-19 11:43:31 -0800 freebsdfrau $
 #
 ############################################### CONFIGURATION
 

@@ -5,7 +5,7 @@
 #
 # $Title: Script for tagging pkgcenter depend files in git $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/tag 2019-03-08 19:37:38 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/tag 2019-03-08 19:37:38 -0800 freebsdfrau $
 #
 ############################################################ INFORMATION
 #

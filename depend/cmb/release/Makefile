@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to produce release tarballs $
 # $Copyright: 2018-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cmb/release/Makefile 2019-02-23 16:21:08 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/release/Makefile 2019-02-23 16:21:08 -0800 freebsdfrau $
 #
 ############################################################ OBJECTS
 

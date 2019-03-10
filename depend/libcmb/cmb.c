@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/libcmb/cmb.c 2019-03-02 13:55:48 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-02 13:55:48 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 

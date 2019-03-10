@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/ept.c 2019-02-19 11:43:31 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cputools/ept.c 2019-02-19 11:43:31 -0800 freebsdfrau $");
 #endif
 
 #include <sys/types.h>

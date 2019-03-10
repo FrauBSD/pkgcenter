@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: //github.com/FrauBSD/pkgcenter/depend/cputools/cputools.h 2019-02-18 19:21:12 -0800 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/cputools/cputools.h 2019-02-18 19:21:12 -0800 freebsdfrau $
  */
 
 #ifndef _CPUTOOLS_H_
