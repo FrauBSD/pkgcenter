@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 17:28:53 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 17:47:05 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -41,27 +41,6 @@ __FBSDID("$FreeBSD$");
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#elif defined(__FreeBSD_version)
-#ifdef HAVE_LIBCRYPTO
-#define HAVE_OPENSSL_BN_H 1
-#define HAVE_OPENSSL_CRYPTO_H 1
-#else
-#undef HAVE_OPENSSL_BN_H
-#undef HAVE_OPENSSL_CRYPTO_H
-#endif
-#endif
-
-#ifdef HAVE_OPENSSL_BN_H
-#include <openssl/bn.h>
-#endif
-#ifdef HAVE_OPENSSL_CRYPTO_H
-#include <openssl/crypto.h>
-#elif !defined(OPENSSL_free)
-#define OPENSSL_free(x) (void)(x)
-#endif
 
 #ifndef UINT_MAX
 #define UINT_MAX 0xFFFFFFFF
