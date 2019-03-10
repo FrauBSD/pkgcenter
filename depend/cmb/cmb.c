@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 16:07:14 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 17:28:53 -0800 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -59,13 +59,15 @@ __FBSDID("$FreeBSD$");
 #endif
 #ifdef HAVE_OPENSSL_CRYPTO_H
 #include <openssl/crypto.h>
+#elif !defined(OPENSSL_free)
+#define OPENSSL_free(x) (void)(x)
 #endif
 
 #ifndef UINT_MAX
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.3 $";
+static char version[] = "$Version: 3.2.4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -332,9 +334,7 @@ main(int argc, char *argv[])
 			    cmb_count_bn(config, nitems)) != NULL) {
 				count_str = BN_bn2dec(count_bn);
 				printf("%s\n", count_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
 				OPENSSL_free(count_str);
-#endif
 				BN_free(count_bn);
 			} else
 				printf("0\n");
@@ -489,9 +489,7 @@ main(int argc, char *argv[])
 			    cmb_count_bn(config, nitems)) != NULL) {
 				count_str = BN_bn2dec(count_bn);
 				printf("%s\n", count_str);
-#ifdef HAVE_OPENSSL_CRYPTO_H
 				OPENSSL_free(count_str);
-#endif
 				BN_free(count_bn);
 			} else
 				printf("0\n");
