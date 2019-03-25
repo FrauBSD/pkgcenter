@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-09 16:27:37 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-24 19:39:09 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd March 9, 2019
+.Dd March 24, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0DeNoS
+.Op Fl 0DeNorS
 .Op Fl c Ar num
 .Op Fl d Ar str
 .Op Fl i Ar num
@@ -53,18 +53,8 @@
 .Op Fl p Ar str
 .Op Fl s Ar str
 .Nm
-.Fl r Ar range
-.Op Fl 0DeNoS
-.Op Fl c Ar num
-.Op Fl d Ar str
-.Op Fl i Ar num
-.Op Fl k Ar size
-.Op Fl n Ar num
-.Op Fl p Ar str
-.Op Fl s Ar str
-.Nm
 .Fl t
-.Op Fl Deo
+.Op Fl Deor
 .Op Fl k Ar size
 .Op Fl n Ar num
 .Ar item1
@@ -73,12 +63,6 @@
 .Fl t
 .Fl f Ar file
 .Op Fl 0Deo
-.Op Fl k Ar size
-.Op Fl n Ar num
-.Nm
-.Fl t
-.Fl r Ar range
-.Op Fl Deo
 .Op Fl k Ar size
 .Op Fl n Ar num
 .Nm
@@ -223,13 +207,14 @@ Prefix each combination with
 Quiet.
 Do not print items from set when given
 .Ql Fl X Ar op .
-.It Fl r Ar range
+.It Fl r
+Treat each command-line argument as a number or range to be expanded.
 If a single number,
-use numbers 1 to num as combination items instead of command-line arguments.
-Numbers must be whole positive integers between 0 and 4294967295.
+expand to numbers 1 to num.
 If a range
 .Pq Qo min..max Qc or Qo min-max Qc ,
-use numbers min to max.
+expand to numbers min to max.
+Numbers must be whole positive integers between 0 and 4294967295.
 Ignored if
 .Ql Fl f Ar file
 is given.

@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-09 18:47:46 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-24 19:39:09 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.2.8 $";
+static char version[] = "$Version: 3.3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -86,6 +86,38 @@ static inline uint64_t	urand64(void) { return (((uint64_t)lrand48() << 42)
     + ((uint64_t)lrand48() << 21) + (uint64_t)lrand48());
 }
 
+/*
+ * Transformations (-X op)
+ */
+struct cmb_xfdef
+{
+	char *opname;
+	CMB_ACTION((*action));
+};
+static struct cmb_xfdef cmb_xforms[] = {
+	/* opname    action */
+	{"multiply", cmb_mul},
+	{"divide",   cmb_div},
+	{"add",      cmb_add},
+	{"subtract", cmb_sub},
+	{NULL,       NULL},
+};
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+struct cmb_xfdef_bn
+{
+	char *opname;
+	CMB_ACTION_BN((*action_bn));
+};
+static struct cmb_xfdef_bn cmb_xforms_bn[] = {
+	/* opname    action_bn */
+	{"multiply", cmb_mul_bn},
+	{"divide",   cmb_div_bn},
+	{"add",      cmb_add_bn},
+	{"subtract", cmb_sub_bn},
+	{NULL,       NULL},
+};
+#endif
+
 int
 main(int argc, char *argv[])
 {
@@ -107,11 +139,12 @@ main(int argc, char *argv[])
 	int ch;
 	int len;
 	int retval = EXIT_SUCCESS;
+	uint32_t i;
 	uint32_t n;
 	uint32_t nitems = 0;
 	uint32_t r;
-	uint32_t range_max = 0;
-	uint32_t range_min = 0;
+	uint32_t rstart = 0;
+	uint32_t rstop = 0;
 	size_t config_size = sizeof(struct cmb_config);
 	size_t optlen;
 	struct cmb_config *config = NULL;
@@ -120,6 +153,8 @@ main(int argc, char *argv[])
 #endif
 	uint64_t count;
 	uint64_t nstart = 0; /* negative start */
+	uint64_t ritems = 0;
+	uint64_t ull;
 	unsigned long ul;
 	long double ld;
 	struct timeval tv;
@@ -135,7 +170,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:qr:Ss:tvX:"
+#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:qrSs:tvX:"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -241,15 +276,6 @@ main(int argc, char *argv[])
 			opt_quiet = 1;
 			break;
 		case 'r': /* range */
-			if (!parse_urange(optarg, &range_min, &range_max)) {
-				errx(EXIT_FAILURE, "-r: %s `%s'",
-				    strerror(errno), optarg);
-				/* NOTREACHED */
-			}
-			if (unumlen(optarg) == strlen(optarg)) {
-				range_max = range_min;
-				range_min = 1;
-			}
 			opt_range = TRUE;
 			break;
 		case 'S': /* silent */
@@ -276,6 +302,12 @@ main(int argc, char *argv[])
 	argv += optind;
 	items = argv;
 
+	/* At least one non-option argument is required */
+	if (argc == 0 && !opt_version && !opt_empty && opt_file == NULL) {
+		cmb_usage();
+		/* NOTREACHED */
+	}
+
 	if (opt_version) {
 		cmdver += 10; /* Seek past "$Version: " */
 		cmdver[strlen(cmdver)-2] = '\0'; /* Place NUL before "$" */
@@ -289,19 +321,43 @@ main(int argc, char *argv[])
 	}
 
 	/*
-	 * Print total for num items if given `-t'
+	 * Calculate number of items
+	 */
+	if (nitems == 0 || nitems > (uint32_t)argc)
+		nitems = (uint32_t)argc;
+	if (opt_range) {
+		for (n = 0; n < nitems; n++) {
+			if (!parse_urange(argv[n], &rstart, &rstop)) {
+				errx(EXIT_FAILURE, "-r: %s `%s'",
+				    strerror(errno), argv[n]);
+				/* NOTREACHED */
+			}
+			if (unumlen(argv[n]) == strlen(argv[n])) {
+				rstop = rstart;
+				rstart = 1;
+			}
+			if (rstart < rstop)
+				ull = rstop - rstart + 1;
+			else
+				ull = rstart - rstop + 1;
+			if (ritems + ull > UINT_MAX) {
+				errx(EXIT_FAILURE, "-r: Too many items");
+				/* NOTREACHED */
+			}
+			ritems += ull;
+		}
+	}
+
+	/*
+	 * Print total for num items and exit if given `-t -r'
 	 */
 	if (opt_total && opt_range) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-		if (range_min < range_max)
-			nitems = range_max - range_min + 1;
-		else
-			nitems = range_min - range_max + 1;
 		if (!opt_nossl) {
 			char *count_str;
 
 			if ((count_bn =
-			    cmb_count_bn(config, nitems)) != NULL) {
+			    cmb_count_bn(config, (uint32_t)ritems)) != NULL) {
 				count_str = BN_bn2dec(count_bn);
 				printf("%s\n", count_str);
 				OPENSSL_free(count_str);
@@ -310,7 +366,7 @@ main(int argc, char *argv[])
 				printf("0\n");
 		} else {
 #endif
-			count = cmb_count(config, nitems);
+			count = cmb_count(config, (uint32_t)ritems);
 			if (errno) {
 				err(EXIT_FAILURE, NULL);
 				/* NOTREACHED */
@@ -322,15 +378,9 @@ main(int argc, char *argv[])
 		exit(EXIT_SUCCESS);
 	}
 
-	/* At least one non-option argument is required */
-	if (argc == 0 && !opt_empty && opt_file == NULL && !opt_range) {
-		cmb_usage();
-		/* NOTREACHED */
-	}
-
 	/* Read arguments ... */
 	if (opt_file != NULL) {
-		/* ... from file if give `-f file' */
+		/* ... from file if given `-f file' */
 		if (argc > 0)
 			warnx("arguments ignored when `-f file' given");
 		if ((items = malloc(sizeof(char *) * 0xffffffff)) == NULL)
@@ -341,22 +391,37 @@ main(int argc, char *argv[])
 			/* NOTREACHED */
 		}
 	} else if (opt_range) {
-		/* ... generated from `-r range' */
-		nitems = range_max - range_min + 1;
-		items = calloc(nitems, sizeof(char *));
-		r = range_min;
+		/* ... as a series of ranges if given `-r' */
+		items = calloc(ritems, sizeof(char *));
+		i = 0;
 		for (n = 0; n < nitems; n++) {
-			len = snprintf(range_tmp, sizeof(range_tmp), "%u", r);
-			items[n] = (char *)malloc((unsigned long)len + 1);
-			memcpy(items[n], range_tmp, len + 1);
-			if (range_min > range_max)
-				r--;
-			else
-				r++;
+			parse_urange(argv[n], &rstart, &rstop);
+			if (unumlen(argv[n]) == strlen(argv[n])) {
+				rstop = rstart;
+				rstart = 1;
+			}
+			if (rstart <= rstop) {
+				for (r = rstart; r <= rstop; r++) {
+					len = snprintf(range_tmp,
+					    sizeof(range_tmp), "%u", r);
+					items[i] = (char *)malloc(
+					    (unsigned long)len + 1);
+					memcpy(items[i], range_tmp, len + 1);
+					i++;
+				}
+			} else {
+				for (r = rstart; r >= rstop; r--) {
+					len = snprintf(range_tmp,
+					    sizeof(range_tmp), "%u", r);
+					items[i] = (char *)malloc(
+					    (unsigned long)len + 1);
+					memcpy(items[i], range_tmp, len + 1);
+					i++;
+				}
+			}
 		}
-	} else if (nitems == 0 || nitems > (uint32_t)argc)
-		/* ... from command-line */
-		nitems = (uint32_t)argc;
+		nitems = (uint32_t)ritems;
+	}
 
 	/*
 	 * Time-based benchmarking (-S for silent) and transforms (-X func).
@@ -368,11 +433,11 @@ main(int argc, char *argv[])
 	if (opt_silent && opt_transform == NULL) {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		if (opt_nossl)
-#endif
 			config->action = cmb_nop;
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		else
 			config->action_bn = cmb_nop_bn;
+#else
+		config->action = cmb_nop;
 #endif
 		config->show_numbers = FALSE;
 	} else if (opt_transform != NULL) {
@@ -380,47 +445,42 @@ main(int argc, char *argv[])
 			errx(EXIT_FAILURE, "-X: %s `'", strerror(EINVAL));
 			/* NOTREACHED */
 		}
-		if (strncmp("multiply", opt_transform, optlen) == 0) {
+		ch = -1;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			if (opt_nossl)
-#endif
-				config->action = cmb_mul;
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			else
-				config->action_bn = cmb_mul_bn;
-#endif
-		} else if (strncmp("divide", opt_transform, optlen) == 0) {
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			if (opt_nossl)
-#endif
-				config->action = cmb_div;
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			else
-				config->action_bn = cmb_div_bn;
-#endif
-		} else if (strncmp("add", opt_transform, optlen) == 0) {
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			if (opt_nossl)
-#endif
-				config->action = cmb_add;
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			else
-				config->action_bn = cmb_add_bn;
-#endif
-		} else if (strncmp("subtract", opt_transform, optlen) == 0) {
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			if (opt_nossl)
-#endif
-				config->action = cmb_sub;
-#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-			else
-				config->action_bn = cmb_sub_bn;
-#endif
+		if (opt_nossl) {
+			while ((cp = cmb_xforms[++ch].opname) != NULL) {
+				if (strncmp(cp, opt_transform, optlen) != 0)
+					continue;
+				config->action = cmb_xforms[ch].action;
+				break;
+			}
 		} else {
+			while ((cp = cmb_xforms_bn[++ch].opname) != NULL) {
+				if (strncmp(cp, opt_transform, optlen) != 0)
+					continue;
+				config->action_bn =
+				    cmb_xforms_bn[ch].action_bn;
+				break;
+			}
+		}
+		if (config->action == NULL && config->action_bn == NULL) {
 			errx(EXIT_FAILURE, "-X: %s `%s'", strerror(EINVAL),
 			    opt_transform);
 			/* NOTREACHED */
 		}
+#else
+		while ((cp = cmb_xforms[++ch].opname) != NULL) {
+			if (strncmp(cp, opt_transform, optlen) != 0)
+				continue;
+			action = cmb_xforms[ch].action;
+			break;
+		}
+		if (config->action == NULL) {
+			errx(EXIT_FAILURE, "-X: %s `%s'", strerror(EINVAL),
+			    opt_transform);
+			/* NOTREACHED */
+		}
+#endif
 
 		/*
 		 * Convert items into array of pointers to long double
