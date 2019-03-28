@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:03:04 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:03:43 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -953,7 +953,7 @@ CMB_ACTION_BN(cmb_nop_bn)
 #endif
 
 /*
- * Set transformations
+ * Transformation functions
  */
 static CMB_TRANSFORM_OP(*, cmb_mul);
 static CMB_TRANSFORM_OP(/, cmb_div);
