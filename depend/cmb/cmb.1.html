@@ -1,17 +1,14 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-09 15:38:05 -0800 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-27 20:13:01 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
-     <B>cmb</B> [<B>-0DeNoS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-p</B> <I>str</I>]
+     <B>cmb</B> [<B>-0DeNorS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-p</B> <I>str</I>]
 	 [<B>-s</B> <I>str</I>] <I>item1</I>	[<I>item2</I> <I>...</I>]
      <B>cmb</B> <B>-f</B> <I>file</I> [<B>-0DeNoS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B>	<I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>]	[<B>-n</B> <I>num</I>]
 	 [<B>-p</B> <I>str</I>] [<B>-s</B> <I>str</I>]
-     <B>cmb</B> <B>-r</B> <I>range</I> [<B>-0DeNoS</B>] [<B>-c</B>	<I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>]
-	 [<B>-p</B> <I>str</I>] [<B>-s</B> <I>str</I>]
-     <B>cmb</B> <B>-t</B> [<B>-Deo</B>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
+     <B>cmb</B> <B>-t</B> [<B>-Deor</B>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
      <B>cmb</B> <B>-t</B> <B>-f</B> <I>file</I> [<B>-0Deo</B>] [<B>-k</B>	<I>size</I>] [<B>-n</B> <I>num</I>]
-     <B>cmb</B> <B>-t</B> <B>-r</B> <I>range</I> [<B>-Deo</B>] [<B>-k</B>	<I>size</I>] [<B>-n</B> <I>num</I>]
      <B>cmb</B> <B>-v</B>
 
 
@@ -68,11 +65,11 @@
 
      <B>-q</B>	       Quiet.  Do not print items from set when	given `<B>-X</B> <I>op</I>'.
 
-     <B>-r</B>	<I>range</I>  If a single number, use numbers 1 to num	as combination items
-	       instead of command-line arguments.  If a	range ("min..max" or
-	       "min-max"), use numbers min to max.  Numbers must be whole pos-
-	       itive integers between 0 and 4294967295.  Ignored if `<B>-f</B>  <I>file</I>'
-	       is given.
+     <B>-r</B>	Treat each command-line argument as a number or range to be
+	       expanded.  If a single number, expand to numbers 1 to num.  If
+	       a range ("min..max" or "min-max"), expand to numbers min to
+	       max.  Numbers must be whole positive integers between 0 and
+	       4294967295.  Ignored if `<B>-f</B>  <I>file</I>' is given.
 
      <B>-S</B>	       Silent.	Do not print combinations to stdout.  Used with
 	       <B>time(1)</B> to determine <B>stdio(3)</B> overhead.
@@ -143,7 +140,7 @@
 <H2>AUTHORS</H2><PRE>
      Devin Teske &lt;<I>dteske@FreeBSD.org</I>&gt;
 
-FreeBSD	9.2			 March 1, 2019			   FreeBSD 9.2
+FreeBSD	9.2			 March 24, 2019			   FreeBSD 9.2
 </PRE>
 <HR>
 <ADDRESS>
