@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-24 19:39:09 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-27 20:18:08 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd March 24, 2019
+.Dd March 27, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -368,7 +368,7 @@ cmb -k 2..-1 x y z
 Roll a set of 2 six-sided dice,
 producing a single random combination of two numbers:
 .Bd -literal -offset indent
-cmb -c 1 -k 2 -i rand 1 2 3 4 5 6 1 2 3 4 5 6
+cmb -c 1 -k 2 -i rand -r 6 6
 .Ed
 .Sh HISTORY
 The
