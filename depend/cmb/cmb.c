@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:01:17 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:02:11 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -385,8 +385,6 @@ main(int argc, char *argv[])
 		/* ... from file if given `-f file' */
 		if (argc > 0)
 			warnx("arguments ignored when `-f file' given");
-		if ((items = malloc(sizeof(char *) * 0xffffffff)) == NULL)
-			errx(EXIT_FAILURE, "Out of memory?!");
 		items = cmb_parse_file(config, opt_file, &nitems, nitems);
 		if (items == NULL && errno != 0) {
 			err(EXIT_FAILURE, NULL);
