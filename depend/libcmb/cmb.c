@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-09 17:45:15 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-27 20:23:22 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 3.0.4";
-static const char version_long[] = "$Version: libcmb 3.0.4 $";
+static const char version[] = "libcmb 3.0.5";
+static const char version_long[] = "$Version: libcmb 3.0.5 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -440,8 +440,7 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 	char **curitems;
 	uint32_t *setnums;
 	uint32_t *setnums_backend;
-	int (*action)(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-	    char *items[]) = cmb_print;
+	CMB_ACTION((*action)) = cmb_print;
 
 	errno = 0;
 
@@ -933,8 +932,7 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 	BIGNUM *ncombos = NULL;
 	BIGNUM *seek = NULL;
 	BIGNUM *seq = NULL;
-	int (*action_bn)(struct cmb_config *config, BIGNUM *seq,
-	    uint32_t nitems, char *items[]) = cmb_print_bn;
+	CMB_ACTION_BN((*action_bn)) = cmb_print_bn;
 
 	/* Process config options */
 	if (config != NULL) {
