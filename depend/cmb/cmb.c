@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:02:11 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:03:04 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -392,7 +392,10 @@ main(int argc, char *argv[])
 		}
 	} else if (opt_range) {
 		/* ... as a series of ranges if given `-r' */
-		items = calloc(ritems, sizeof(char *));
+		if ((items = calloc(ritems, sizeof(char *))) == NULL) {
+			errx(EXIT_FAILURE, "Out of memory?!");
+			/* NOTREACHED */
+		}
 		i = 0;
 		for (n = 0; n < nitems; n++) {
 			parse_urange(argv[n], &rstart, &rstop);
