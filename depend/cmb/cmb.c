@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-27 22:03:43 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-28 20:21:47 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.3.3 $";
+static char version[] = "$Version: 3.4-beta-1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -126,6 +126,7 @@ int
 main(int argc, char *argv[])
 {
 	uint8_t opt_empty = FALSE;
+	uint8_t opt_file = FALSE;
 #ifdef HAVE_LIBCRYPTO
 	uint8_t opt_nossl = FALSE;
 #endif
@@ -138,7 +139,6 @@ main(int argc, char *argv[])
 	char **items = argv;
 	char **items_tmp = NULL;
 	const char *libver = cmb_version(CMB_VERSION);
-	char *opt_file = NULL;
 	char *opt_transform = NULL;
 	int ch;
 	int len;
@@ -149,12 +149,14 @@ main(int argc, char *argv[])
 	uint32_t rstart = 0;
 	uint32_t rstop = 0;
 	size_t config_size = sizeof(struct cmb_config);
+	size_t cp_size = sizeof(char *);
 	size_t optlen;
 	struct cmb_config *config = NULL;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 	BIGNUM *count_bn;
 #endif
 	uint64_t count;
+	uint64_t fitems = 0;
 	uint64_t nstart = 0; /* negative start */
 	uint64_t ritems = 0;
 	uint64_t ull;
@@ -172,7 +174,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:ef:i:k:Nn:op:qrSs:tvX:"
+#define OPTSTRING "0c:Dd:efi:k:Nn:op:qrSs:tvX:"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -214,7 +216,7 @@ main(int argc, char *argv[])
 			config->show_empty = opt_empty;
 			break;
 		case 'f': /* file */
-			opt_file = optarg;
+			opt_file = TRUE;
 			break;
 		case 'i': /* start */
 			if ((optlen = strlen(optarg)) > 0 &&
@@ -305,7 +307,7 @@ main(int argc, char *argv[])
 	items = argv;
 
 	/* At least one non-option argument is required */
-	if (argc == 0 && !opt_version && !opt_empty && opt_file == NULL) {
+	if (argc == 0 && !opt_version && !opt_empty) {
 		cmb_usage();
 		/* NOTREACHED */
 	}
@@ -381,15 +383,28 @@ main(int argc, char *argv[])
 	}
 
 	/* Read arguments ... */
-	if (opt_file != NULL) {
-		/* ... from file if given `-f file' */
-		if (argc > 0)
-			warnx("arguments ignored when `-f file' given");
-		items = cmb_parse_file(config, opt_file, &nitems, nitems);
-		if (items == NULL && errno != 0) {
-			err(EXIT_FAILURE, NULL);
-			/* NOTREACHED */
+	if (opt_file) {
+		/* ... as a series of files if given `-f' */
+		items = NULL;
+		for (n = 0; n < nitems; n++) {
+			items_tmp = cmb_parse_file(config, argv[n], &i, 0);
+			if (items_tmp == NULL && errno != 0) {
+				err(EXIT_FAILURE, NULL);
+				/* NOTREACHED */
+			}
+			if (fitems + i > UINT_MAX) {
+				errx(EXIT_FAILURE, "-f: Too many items");
+				/* NOTREACHED */
+			}
+			fitems += (uint64_t)i;
+			items = realloc(items, (size_t)(fitems * cp_size));
+			if (items == NULL) {
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			}
+			(void)memcpy(&items[fitems-i], items_tmp, i * cp_size);
 		}
+		nitems = (uint32_t)fitems;
 	} else if (opt_range) {
 		/* ... as a series of ranges if given `-r' */
 		if ((items = calloc(ritems, sizeof(char *))) == NULL) {
