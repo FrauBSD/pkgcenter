@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-27 20:18:08 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-29 11:27:29 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd March 27, 2019
+.Dd March 29, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0DeNorS
+.Op Fl 0DefNorS
 .Op Fl c Ar num
 .Op Fl d Ar str
 .Op Fl i Ar num
@@ -43,28 +43,12 @@
 .Ar item1
 .Op Ar item2 ...
 .Nm
-.Fl f Ar file
-.Op Fl 0DeNoS
-.Op Fl c Ar num
-.Op Fl d Ar str
-.Op Fl i Ar num
-.Op Fl k Ar size
-.Op Fl n Ar num
-.Op Fl p Ar str
-.Op Fl s Ar str
-.Nm
 .Fl t
-.Op Fl Deor
+.Op Fl 0Defor
 .Op Fl k Ar size
 .Op Fl n Ar num
 .Ar item1
 .Op Ar item2 ...
-.Nm
-.Fl t
-.Fl f Ar file
-.Op Fl 0Deo
-.Op Fl k Ar size
-.Op Fl n Ar num
 .Nm
 .Fl v
 .Sh DESCRIPTION
@@ -115,22 +99,17 @@ Default is space
 .It Fl e
 Show empty set.
 A single combination containing no-items.
-.It Fl f Ar file
-Read items from
-.Ar file ,
-one item per line.
-Command-line arguments and
-.Ql Fl r Ar range
-ignored when used.
+.It Fl f
+Treat each command-line argument as a file containing items,
+one item per line
+.Pq default .
 With
 .Ql Fl 0 ,
-use NUL separator instead of newline.
-If
-.Ar file
-is
+read items separated by NUL character.
+If an argument is
 .Ql Li - ,
 read from stdin.
-File cannot contain more than 4294967295 items.
+The sum of items read from all files cannot exceed 4294967295.
 .It Fl i Ar num
 Skip the first
 .Va num-1
@@ -215,9 +194,6 @@ If a range
 .Pq Qo min..max Qc or Qo min-max Qc ,
 expand to numbers min to max.
 Numbers must be whole positive integers between 0 and 4294967295.
-Ignored if
-.Ql Fl f Ar file
-is given.
 .It Fl S
 Silent.
 Do not print combinations to stdout.

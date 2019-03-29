@@ -1,13 +1,11 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-27 20:18:08 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-29 11:27:29 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
-     <B>cmb</B> [<B>-0DeNorS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-p</B> <I>str</I>]
+     <B>cmb</B> [<B>-0DefNorS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-p</B> <I>str</I>]
 	 [<B>-s</B> <I>str</I>] <I>item1</I>	[<I>item2</I> <I>...</I>]
-     <B>cmb</B> <B>-f</B> <I>file</I> [<B>-0DeNoS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B>	<I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>]	[<B>-n</B> <I>num</I>]
-	 [<B>-p</B> <I>str</I>] [<B>-s</B> <I>str</I>]
-     <B>cmb</B> <B>-t</B> [<B>-Deor</B>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
+     <B>cmb</B> <B>-t</B> [<B>-0Defor</B>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
      <B>cmb</B> <B>-t</B> <B>-f</B> <I>file</I> [<B>-0Deo</B>] [<B>-k</B>	<I>size</I>] [<B>-n</B> <I>num</I>]
      <B>cmb</B> <B>-v</B>
 
@@ -39,10 +37,10 @@
 
      <B>-e</B>	       Show empty set.	A single combination containing	no-items.
 
-     <B>-f</B>	<I>file</I>   Read items from <I>file</I>, one item per line.	 Command-line argu-
-	       ments and `<B>-r</B> <I>range</I>' ignored when used.	With `<B>-0</B>', use NUL
-	       separator instead of newline.  If <I>file</I> is `-', read from	stdin.
-	       File cannot contain more	than 4294967295	items.
+     <B>-f</B>	       Treat each command-line argument as a file containing items,
+	       one item per line (default).	With `<B>-0</B>', read items separated
+	       by NUL character.  If an argument is `-', read from stdin.  The
+	       sum of items read from all files cannot exceed 4294967295.
 
      <B>-i</B>	<I>num</I>    Skip the	first <I>num-1</I> combinations.  If <I>num</I> is negative, skip to
 	       <I>|num|</I> combinations before the end.  If <I>num</I> matches `random'
@@ -69,7 +67,7 @@
 	       expanded.  If a single number, expand to numbers 1 to num.  If
 	       a range ("min..max" or "min-max"), expand to numbers min to
 	       max.  Numbers must be whole positive integers between 0 and
-	       4294967295.  Ignored if `<B>-f</B>  <I>file</I>' is given.
+	       4294967295.
 
      <B>-S</B>	       Silent.	Do not print combinations to stdout.  Used with
 	       <B>time(1)</B> to determine <B>stdio(3)</B> overhead.
@@ -140,7 +138,7 @@
 <H2>AUTHORS</H2><PRE>
      Devin Teske &lt;<I>dteske@FreeBSD.org</I>&gt;
 
-FreeBSD	9.2			 March 27, 2019			   FreeBSD 9.2
+FreeBSD	9.2			 March 29, 2019			   FreeBSD 9.2
 </PRE>
 <HR>
 <ADDRESS>
