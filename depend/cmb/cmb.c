@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-29 11:29:15 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-29 11:32:48 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.4-beta-3 $";
+static char version[] = "$Version: 3.4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -626,8 +626,8 @@ cmb_usage(void)
 	);
 	fprintf(stderr, OPTFMT, "-d text", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
-	fprintf(stderr, OPTFMT, "-f file",
-	    "Read items from file; `-' for stdin.");
+	fprintf(stderr, OPTFMT, "-f",
+	    "Treat arguments as files to read items from; `-' for stdin.");
 	fprintf(stderr, OPTFMT, "-i num",
 	    "Skip the first num-1 combinations.");
 	fprintf(stderr, OPTFMT, "-k size",
@@ -640,8 +640,8 @@ cmb_usage(void)
 	fprintf(stderr, OPTFMT, "-p text", "Prefix text for each line.");
 	fprintf(stderr, OPTFMT, "-q",
 	    "Quiet. Do not print items from set when given `-X op'.");
-	fprintf(stderr, OPTFMT_1U, "-r range",
-	    "Specify range of up-to ", UINT_MAX, " items.");
+	fprintf(stderr, OPTFMT_1U, "-r",
+	    "Treat arguments as ranges of up-to ", UINT_MAX, " items.");
 	fprintf(stderr, OPTFMT, "-S", "Silent (for performance benchmarks).");
 	fprintf(stderr, OPTFMT, "-s text", "Suffix text for each line.");
 	fprintf(stderr, OPTFMT, "-t",
