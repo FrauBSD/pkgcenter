@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 13:02:08 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 13:11:06 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>cmb</B> [<B>-0DefNorSz</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-P</B> <I>num</I>]
@@ -114,6 +114,20 @@
      "x", "y", and "z":
 
 	   cmb -i -5 x y z
+
+     Print items separated by comma instead of space:
+
+	   cmb -d , a b c
+
+     Print numbers as JSON:
+
+	   cmb -p '{"values":[' -s ']}' -d , 1 2 3
+
+     Print strings as JSON:
+
+	   cmb -p '{"values":[' -s ']}' -d , '"a"' '"b"' '"c"'
+
+     Print all 2- and 3-word combinations ("big blue", "big red", "big couch",
      "blue red", "blue couch", "red couch", "big blue red", "big blue couch",
      "big red couch", and "blue	red couch") given "big", "blue", "red",	and
      "couch":
