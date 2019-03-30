@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-29 22:30:51 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 10:49:59 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.5.3 $";
+static char version[] = "$Version: 3.6 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -54,7 +54,6 @@ static char *pgm; /* set to argv[0] by main() */
 /* Globals */
 static uint8_t opt_quiet = FALSE;
 static uint8_t opt_silent = FALSE;
-static int cmb_transform_precision = 0;
 static const char digit[11] = "0123456789";
 
 /* Function prototypes */
