@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-29 18:19:15 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-29 21:37:59 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -81,7 +81,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	1
-#define CMB_H_VERSION_PATCH	0
+#define CMB_H_VERSION_PATCH	1
 
 /*
  * Macros for cmb_config options bitmask
@@ -189,7 +189,8 @@ __END_DECLS
     	if (config != NULL) {                                                \
     		if (config->delimiter != NULL)                               \
     			delimiter = config->delimiter;                       \
-    		show_numbers = config->show_numbers;                         \
+    		if ((config->options & CMB_OPT_NUMBERS) != 0)                \
+    			show_numbers = TRUE;                                 \
     		prefix = config->prefix;                                     \
     		suffix = config->suffix;                                     \
     	}                                                                    \
