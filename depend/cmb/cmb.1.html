@@ -1,11 +1,11 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 14:10:44 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 14:25:00 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>cmb</B> [<B>-0DefNorSz</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-P</B> <I>num</I>]
 	 [<B>-p</B> <I>str</I>] [<B>-s</B> <I>str</I>] [<B>-X</B> <I>op</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
-     <B>cmb</B> <B>-t</B> [<B>-0Deforz</B>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
+     <B>cmb</B> <B>-t</B> [<B>-0DeforSz</B>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] <I>item1</I> [<I>item2</I> <I>...</I>]
      <B>cmb</B> <B>-v</B>
 
 
@@ -85,7 +85,8 @@
 	       4294967295.
 
      <B>-S</B>	       Silent.	Do not print combinations to stdout.  Used with
-	       <B>time(1)</B> to determine <B>stdio(3)</B> overhead.
+	       <B>time(1)</B> to determine <B>stdio(3)</B> overhead.  With `<B>-t</B>', do not
+	       print result.
 
      <B>-s</B>	<I>text</I>   Suffix each combination with <I>text</I>.  Ignored when given `<B>-t</B>'.
 

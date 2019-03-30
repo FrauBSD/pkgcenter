@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 14:10:44 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 14:25:00 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.8.2 $";
+static char version[] = "$Version: 3.8.3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -376,8 +376,10 @@ main(int argc, char *argv[])
 		if (!opt_nossl) {
 			char *count_str;
 
-			if ((count_bn =
-			    cmb_count_bn(config, (uint32_t)ritems)) != NULL) {
+			count_bn = cmb_count_bn(config, (uint32_t)ritems);
+			if (opt_silent)
+				exit(EXIT_SUCCESS);
+			if (count_bn != NULL) {
 				count_str = BN_bn2dec(count_bn);
 				printf("%s%s", count_str,
 				    opt_nulprint ? "" : "\n");
@@ -388,6 +390,8 @@ main(int argc, char *argv[])
 		} else {
 #endif
 			count = cmb_count(config, (uint32_t)ritems);
+			if (opt_silent)
+				exit(EXIT_SUCCESS);
 			if (errno) {
 				err(EXIT_FAILURE, NULL);
 				/* NOTREACHED */
@@ -542,8 +546,10 @@ main(int argc, char *argv[])
 		if (!opt_nossl) {
 			char *count_str;
 
-			if ((count_bn =
-			    cmb_count_bn(config, nitems)) != NULL) {
+			count_bn = cmb_count_bn(config, nitems);
+			if (opt_silent)
+				exit(EXIT_SUCCESS);
+			if (count_bn != NULL) {
 				count_str = BN_bn2dec(count_bn);
 				printf("%s%s", count_str,
 				    opt_nulprint ? "" : "\n");
@@ -554,6 +560,8 @@ main(int argc, char *argv[])
 		} else {
 #endif
 			count = cmb_count(config, nitems);
+			if (opt_silent)
+				exit(EXIT_SUCCESS);
 			if (errno) {
 				err(EXIT_FAILURE, NULL);
 				/* NOTREACHED */
