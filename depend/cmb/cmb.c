@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 13:00:24 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 13:02:08 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.6.2 $";
+static char version[] = "$Version: 3.7 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -129,6 +129,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_LIBCRYPTO
 	uint8_t opt_nossl = FALSE;
 #endif
+	uint8_t opt_precision = FALSE;
 	uint8_t opt_randi = FALSE;
 	uint8_t opt_range = FALSE;
 	uint8_t opt_total = FALSE;
@@ -173,7 +174,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:efi:k:Nn:op:qrSs:tvX:z"
+#define OPTSTRING "0c:Dd:efi:k:Nn:oP:p:qrSs:tvX:z"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -272,6 +273,15 @@ main(int argc, char *argv[])
 #ifdef HAVE_LIBCRYPTO
 			opt_nossl = TRUE;
 #endif
+			break;
+		case 'P': /* precision */
+			if (!parse_unum(optarg,
+			    (uint32_t *)&cmb_transform_precision)) {
+				errx(EXIT_FAILURE, "-P: %s `%s'",
+				    strerror(errno), optarg);
+				/* NOTREACHED */
+			}
+			opt_precision = TRUE;
 			break;
 		case 'p': /* prefix */
 			config->prefix = optarg;
@@ -508,6 +518,8 @@ main(int argc, char *argv[])
 				}
 				ld = strtold(items[n], NULL);
 				memcpy(items_tmp[n], &ld, ul);
+				if (opt_precision)
+					continue;
 				if ((cp = strstr(items[n], ".")) != NULL) {
 					len = (int)strlen(items[n]);
 					len -= cp - items[n] + 1;
@@ -639,6 +651,8 @@ cmb_usage(void)
 	    "Limit arguments taken from the command-line.");
 	fprintf(stderr, OPTFMT, "-o",
 	    "Disable OpenSSL (limits calculations to 64-bits).");
+	fprintf(stderr, OPTFMT, "-P num",
+	    "Set floating point precision when given `-X op'.");
 	fprintf(stderr, OPTFMT, "-p text", "Prefix text for each line.");
 	fprintf(stderr, OPTFMT, "-q",
 	    "Quiet. Do not print items from set when given `-X op'.");
