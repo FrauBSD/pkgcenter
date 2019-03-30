@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 12:59:09 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 13:00:24 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.6.1 $";
+static char version[] = "$Version: 3.6.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -652,6 +652,8 @@ cmb_usage(void)
 	    "Print version info to stdout and exit.");
 	fprintf(stderr, OPTFMT, "-X op",
 	    "Perform math on items where `op' is add, sub, div, or mul.");
+	fprintf(stderr, OPTFMT, "-z",
+	    "Print combinations NUL terminated (use with `xargs -0').");
 	exit(EXIT_FAILURE);
 }
 
