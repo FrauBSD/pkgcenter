@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 13:14:24 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 13:22:03 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>cmb</B> [<B>-0DefNorSz</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-P</B> <I>num</I>]
@@ -51,6 +51,19 @@
 	       negative	one (-1), calculate sets in descending order, starting
 	       with the	maximum	number of items.  A range of `-1..N' will do
 	       the same	but stop at N-item combinations.  A range of `N..-1'
+	       will start with N-item combinations and end with the maximum
+	       number of items.  The order of combinations in each set is
+	       unaffected by negative <I>size</I> values.  A range of `-1..-1' calcu-
+	       lates the ending set consisting of only the maximum number of
+	       items.
+
+     <B>-N</B>	       Show combination sequence numbers.  Combinations are calculated
+	       in arithmetic progression, providing predictable order.  The
+	       sequence number can be used as a value to `<B>-i</B> <I>num</I>' to start at
+	       that combination.
+
+     <B>-n</B>	<I>num</I>    Limit the number of arguments taken from the command-line.  No
+	       effect if <I>num</I> is greater than the number of arguments.
 
      <B>-o</B>	       Disable OpenSSL <B>bn(3)</B> support (limits calculations to 64-bits).
 	       No effect if unsupported.  Use `<B>-v</B>' to check OpenSSL support.
