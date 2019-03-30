@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-29 22:16:09 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-29 22:30:51 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd March 29, 2019
@@ -32,7 +32,7 @@
 .Nd combinatorics utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl 0DefNorS
+.Op Fl 0DefNorSz
 .Op Fl c Ar num
 .Op Fl d Ar str
 .Op Fl i Ar num
@@ -232,6 +232,11 @@ such as
 .Ql Li a
 for
 .Ql Li add .
+.It Fl z
+Print combinations followed by ASCII NUL character
+.Pq character code 0
+instead of newline
+.Pq character code 10 .
 .El
 .Sh EXAMPLES
 Print all two-word combinations
