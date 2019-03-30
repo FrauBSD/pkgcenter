@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-30 13:56:04 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-30 14:07:05 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd March 30, 2019
@@ -89,6 +89,8 @@ If
 .Ql 0
 .Pq default
 all combinations produced.
+Ignored when given
+.Ql Fl t .
 .It Fl D
 Enable debugging information on stderr.
 See
@@ -97,6 +99,8 @@ See
 Delimiter for separating items.
 Default is space
 .Pq Dq " " .
+Ignored when given
+.Ql Fl t .
 .It Fl e
 Show empty set.
 A single combination containing no-items.
@@ -127,6 +131,8 @@ matches
 .Ql Li random
 .Pq case-sensitive
 a random number between 1 and the total number of combinations is chosen.
+Ignored when given
+.Ql Fl t .
 .It Fl k Ar size
 Number or range
 .Pq Qo min..max Qc or Qo min-max Qc
@@ -186,9 +192,13 @@ Change the behavior of
 to use
 .Ar num
 units of precision when printing floating point values.
+Ignored when given
+.Ql Fl t .
 .It Fl p Ar text
 Prefix each combination with
 .Ar text .
+Ignored when given
+.Ql Fl t .
 .It Fl q
 Quiet.
 Do not print items from set when given
@@ -212,6 +222,8 @@ overhead.
 .It Fl s Ar text
 Suffix each combination with
 .Ar text .
+Ignored when given
+.Ql Fl t .
 .It Fl t
 Print total number of combinations and exit.
 .It Fl v
@@ -239,6 +251,8 @@ such as
 .Ql Li a
 for
 .Ql Li add .
+Ignored when given
+.Ql Fl t .
 .It Fl z
 Print combinations followed by ASCII NUL character
 .Pq character code 0

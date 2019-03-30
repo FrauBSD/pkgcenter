@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 13:56:04 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-30 14:07:05 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>cmb</B> [<B>-0DefNorSz</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-P</B> <I>num</I>]
@@ -27,11 +27,12 @@
 	       character (character code 0) instead of newline.
 
      <B>-c</B>	<I>num</I>    Produce at-most <I>num</I> combinations.  If `0' (default) all combi-
-	       nations produced.
+	       nations produced.  Ignored when given `<B>-t</B>'.
 
      <B>-D</B>	       Enable debugging	information on stderr.	See <B>cmb(3)</B>.
 
      <B>-d</B>	<I>text</I>   Delimiter for separating	items.	Default	is space (`` '').
+	       Ignored when given `<B>-t</B>'.
 
      <B>-e</B>	       Show empty set.	A single combination containing	no-items.
 
@@ -43,7 +44,7 @@
      <B>-i</B>	<I>num</I>    Skip the	first <I>num-1</I> combinations.  If <I>num</I> is negative, skip to
 	       <I>|num|</I> combinations before the end.  If <I>num</I> matches `random'
 	       (case-sensitive)	a random number	between	1 and the total	number
-	       of combinations is chosen.
+	       of combinations is chosen.  Ignored when given `<B>-t</B>'.
 
      <B>-k</B>	<I>size</I>   Number or range ("min..max" or "min-max") of how	many items
 	       must appear in each combination.	 A value of `0'	(default) cal-
@@ -71,9 +72,9 @@
 	       before `<B>-c</B> <I>num</I>' and `<B>-i</B> <I>num</I>' options.
 
      <B>-P</B>	<I>num</I>    Change the behavior of `<B>-X</B> <I>op</I>' to use <I>num</I> units of precision
-	       when printing floating point values.
+	       when printing floating point values.  Ignored when given `<B>-t</B>'.
 
-     <B>-p</B>	<I>text</I>   Prefix each combination with <I>text</I>.
+     <B>-p</B>	<I>text</I>   Prefix each combination with <I>text</I>.  Ignored when given `<B>-t</B>'.
 
      <B>-q</B>	       Quiet.  Do not print items from set when	given `<B>-X</B> <I>op</I>'.
 
@@ -86,7 +87,7 @@
      <B>-S</B>	       Silent.	Do not print combinations to stdout.  Used with
 	       <B>time(1)</B> to determine <B>stdio(3)</B> overhead.
 
-     <B>-s</B>	<I>text</I>   Suffix each combination with <I>text</I>.
+     <B>-s</B>	<I>text</I>   Suffix each combination with <I>text</I>.  Ignored when given `<B>-t</B>'.
 
      <B>-t</B>	       Print total number of combinations and exit.
 
@@ -96,7 +97,7 @@
      <B>-X</B>	<I>op</I>     Perform math on items where <I>op</I> is `add', `subtract', `divide',
 	       or `multiply' (case-sensitive).  Argument <I>op</I> can be shortened
 	       to its minimally distinct representation; such as `a' for
-	       `add'.
+	       `add'.  Ignored when given `<B>-t</B>'.
 
      <B>-z</B>	       Print combinations followed by ASCII NUL character (character
 	       code 0) instead of newline (character code 10).  With `<B>-t</B>', do
