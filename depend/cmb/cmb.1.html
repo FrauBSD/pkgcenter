@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-29 11:39:23 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-03-29 22:16:09 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>cmb</B> [<B>-0DefNorS</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>] [<B>-p</B> <I>str</I>]
@@ -23,9 +23,8 @@
 
      Available options:
 
-     <B>-0</B>	       Terminate combinations with ASCII NUL (character	code 0)
-	       instead of newline.  Use	in conjunction with ``xargs -0'' for
-	       example.
+     <B>-0</B>	       Change the behavior of `<B>-f</B>' to read items separated by NUL
+	       character (character code 0) instead of newline.
 
      <B>-c</B>	<I>num</I>    Produce at-most <I>num</I> combinations.  If `0' (default) all combi-
 	       nations produced.
@@ -78,9 +77,10 @@
      <B>-v</B>	       Print version information to stdout and exit.  Includes <B>cmb(3)</B>
 	       library version and (if-enabled)	<B>SSL(3)</B> library version.
 
-     <B>-X</B>	<I>op</I>     Perform math on items where <I>op</I> is add, subtract,	divide,	or
-	       multiply	(case-sensitive).  Argument <I>op</I> can be shortened	to its
-	       minimally distinct representation; such as ``a''	for ``add''.
+     <B>-X</B>	<I>op</I>     Perform math on items where <I>op</I> is `add', `subtract', `divide',
+	       or `multiply' (case-sensitive).  Argument <I>op</I> can be shortened
+	       to its minimally distinct representation; such as `a' for
+	       `add'.
 
 
 </PRE>

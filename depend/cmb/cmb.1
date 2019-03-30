@@ -21,7 +21,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-29 11:37:45 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-29 22:16:09 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
 .Dd March 29, 2019
@@ -75,12 +75,11 @@ is dependent upon the order of items on the command-line.
 Available options:
 .Bl -tag -width ".Fl r Ar range"
 .It Fl 0
-Terminate combinations with ASCII NUL
+Change the behavior of
+.Ql Fl f
+to read items separated by NUL character
 .Pq character code 0
 instead of newline.
-Use in conjunction with
-.Dq Li xargs -0
-for example.
 .It Fl c Ar num
 Produce at-most
 .Ar num
@@ -220,19 +219,19 @@ library version.
 Perform math on items where
 .Ar op
 is 
-.Li add ,
-.Li subtract ,
-.Li divide ,
+.Ql Li add ,
+.Ql Li subtract ,
+.Ql Li divide ,
 or
-.Li multiply
+.Ql Li multiply
 .Pq case-sensitive .
 Argument
 .Ar op
 can be shortened to its minimally distinct representation;
 such as
-.Dq Li a
+.Ql Li a
 for
-.Dq Li add .
+.Ql Li add .
 .El
 .Sh EXAMPLES
 Print all two-word combinations
