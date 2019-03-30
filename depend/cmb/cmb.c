@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-29 11:39:23 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-29 21:41:02 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.4.3 $";
+static char version[] = "$Version: 3.5 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -174,11 +174,11 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:efi:k:Nn:op:qrSs:tvX:"
+#define OPTSTRING "0c:Dd:efi:k:Nn:op:qrSs:tvX:z"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
-			config->nul_terminate = TRUE;
+			config->options ^= CMB_OPT_NULPARSE;
 			break;
 		case 'c': /* count */
 			if ((optlen = strlen(optarg)) == 0 ||
@@ -206,14 +206,14 @@ main(int argc, char *argv[])
 #endif
 			break;
 		case 'D': /* debug */
-			config->debug = TRUE;
+			config->options ^= CMB_OPT_DEBUG;
 			break;
 		case 'd': /* delimiter */
 			config->delimiter = optarg;
 			break;
 		case 'e': /* empty */
 			opt_empty = TRUE;
-			config->show_empty = opt_empty;
+			config->options ^= CMB_OPT_EMPTY;
 			break;
 		case 'f': /* file */
 			opt_file = TRUE;
@@ -260,7 +260,7 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'N': /* numbers */
-			config->show_numbers = TRUE;
+			config->options ^= CMB_OPT_NUMBERS;
 			break;
 		case 'n': /* n-args */
 			if (!parse_unum(optarg, &nitems)) {
@@ -444,7 +444,7 @@ main(int argc, char *argv[])
 #else
 		config->action = cmb_nop;
 #endif
-		config->show_numbers = FALSE;
+		config->options &= ~CMB_OPT_NUMBERS;
 	} else if (opt_transform != NULL) {
 		if ((optlen = strlen(opt_transform)) == 0) {
 			errx(EXIT_FAILURE, "-X: %s `'", strerror(EINVAL));
