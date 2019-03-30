@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 13:53:31 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 13:56:04 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.7.4 $";
+static char version[] = "$Version: 3.8 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -129,6 +129,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_LIBCRYPTO
 	uint8_t opt_nossl = FALSE;
 #endif
+	uint8_t opt_nulprint = FALSE;
 	uint8_t opt_precision = FALSE;
 	uint8_t opt_randi = FALSE;
 	uint8_t opt_range = FALSE;
@@ -309,6 +310,7 @@ main(int argc, char *argv[])
 			opt_transform = optarg;
 			break;
 		case 'z': /* zero */
+			opt_nulprint = TRUE;
 			config->options ^= CMB_OPT_NULPRINT;
 			break;
 		default: /* unhandled argument (based on switch) */
@@ -377,11 +379,12 @@ main(int argc, char *argv[])
 			if ((count_bn =
 			    cmb_count_bn(config, (uint32_t)ritems)) != NULL) {
 				count_str = BN_bn2dec(count_bn);
-				printf("%s\n", count_str);
+				printf("%s%s", count_str,
+				    opt_nulprint ? "" : "\n");
 				OPENSSL_free(count_str);
 				BN_free(count_bn);
 			} else
-				printf("0\n");
+				printf("0%s", opt_nulprint ? "" : "\n");
 		} else {
 #endif
 			count = cmb_count(config, (uint32_t)ritems);
@@ -389,7 +392,7 @@ main(int argc, char *argv[])
 				err(EXIT_FAILURE, NULL);
 				/* NOTREACHED */
 			}
-			printf("%"PRIu64"\n", count);
+			printf("%"PRIu64"%s", count, opt_nulprint ? "" : "\n");
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		}
 #endif
@@ -542,11 +545,12 @@ main(int argc, char *argv[])
 			if ((count_bn =
 			    cmb_count_bn(config, nitems)) != NULL) {
 				count_str = BN_bn2dec(count_bn);
-				printf("%s\n", count_str);
+				printf("%s%s", count_str,
+				    opt_nulprint ? "" : "\n");
 				OPENSSL_free(count_str);
 				BN_free(count_bn);
 			} else
-				printf("0\n");
+				printf("0%s", opt_nulprint ? "" : "\n");
 		} else {
 #endif
 			count = cmb_count(config, nitems);
@@ -554,7 +558,7 @@ main(int argc, char *argv[])
 				err(EXIT_FAILURE, NULL);
 				/* NOTREACHED */
 			}
-			printf("%"PRIu64"\n", count);
+			printf("%"PRIu64"%s", count, opt_nulprint ? "" : "\n");
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 		}
 	} else if (!opt_nossl) {
