@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 10:49:59 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 12:59:09 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.6 $";
+static char version[] = "$Version: 3.6.1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -620,7 +620,7 @@ cmb_usage(void)
 #define OPTFMT_1U	"\t%-10s %s%u%s\n"
 	fprintf(stderr, "OPTIONS:\n");
 	fprintf(stderr, OPTFMT, "-0",
-	    "NUL terminate combinations (use with `xargs -0').");
+	    "Read items terminated by NUL when given `-f'.");
 	fprintf(stderr, OPTFMT, "-c num",
 	    "Produce num combinations (default `0' for all).");
 	fprintf(stderr, OPTFMT, "-D",
