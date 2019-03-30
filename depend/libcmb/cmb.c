@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-27 20:23:22 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/cmb.c 2019-03-29 18:19:15 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -69,8 +69,8 @@ __FBSDID("$FreeBSD$");
 #define CMB_PARSE_FRAGSIZE 512
 #endif
 
-static const char version[] = "libcmb 3.0.5";
-static const char version_long[] = "$Version: libcmb 3.0.5 $";
+static const char version[] = "libcmb 3.1";
+static const char version_long[] = "$Version: libcmb 3.1 $";
 
 #if CMB_DEBUG
 __attribute__((__format__ (__printf__, 1, 0)))
@@ -131,7 +131,8 @@ cmb_parse_file(struct cmb_config *config, char *path, uint32_t *nitems,
 
 #if CMB_DEBUG
 	if (config != NULL) {
-		debug = config->debug;
+		if ((config->options & CMB_OPT_DEBUG) != 0)
+			debug = TRUE;
 	}
 #endif
 
@@ -181,13 +182,14 @@ cmb_parse(struct cmb_config *config, int fd, uint32_t *nitems, uint32_t max)
 
 	/* Process config options */
 	if (config != NULL) {
-		if (config->nul_terminate)
+		if ((config->options & CMB_OPT_NULPARSE) != 0)
 			d = '\0';
 		else if (config->delimiter != NULL)
 			if (*(config->delimiter) != '\0')
 				d = *(config->delimiter);
 #if CMB_DEBUG
-		debug = config->debug;
+		if ((config->options & CMB_OPT_DEBUG) != 0)
+			debug = TRUE;
 #endif
 	}
 
@@ -319,7 +321,8 @@ cmb_count(struct cmb_config *config, uint32_t nitems)
 
 	/* Process config options */
 	if (config != NULL) {
-		show_empty = config->show_empty;
+		if ((config->options & CMB_OPT_EMPTY) != 0)
+			show_empty = TRUE;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -452,14 +455,17 @@ cmb(struct cmb_config *config, uint32_t nitems, char *items[])
 			docount = TRUE;
 			count = config->count;
 		}
+		if ((config->options & CMB_OPT_DEBUG) != 0) {
 #if CMB_DEBUG
-		debug = config->debug;
+			debug = TRUE;
 #else
-		if (config->debug != FALSE)
 			warnx("libcmb not compiled with debug support!");
 #endif
-		show_empty = config->show_empty;
-		show_numbers = config->show_numbers;
+		}
+		if ((config->options & CMB_OPT_EMPTY) != 0)
+			show_empty = TRUE;
+		if ((config->options & CMB_OPT_NUMBERS) != 0)
+			show_numbers = TRUE;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -747,8 +753,10 @@ CMB_ACTION(cmb_print)
 	if (config != NULL) {
 		if (config->delimiter != NULL)
 			delimiter = config->delimiter;
-		nul = config->nul_terminate;
-		show_numbers = config->show_numbers;
+		if ((config->options & CMB_OPT_NULPRINT) != 0)
+			nul = TRUE;
+		if ((config->options & CMB_OPT_NUMBERS) != 0)
+			show_numbers = TRUE;
 		prefix = config->prefix;
 		suffix = config->suffix;
 	}
@@ -797,7 +805,8 @@ cmb_count_bn(struct cmb_config *config, uint32_t nitems)
 
 	/* Process config options */
 	if (config != NULL) {
-		show_empty = config->show_empty;
+		if ((config->options & CMB_OPT_EMPTY) != 0)
+			show_empty = TRUE;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -946,14 +955,17 @@ cmb_bn(struct cmb_config *config, uint32_t nitems, char *items[])
 			if ((count = BN_dup(config->count_bn)) == NULL)
 				goto cmb_bn_return;
 		}
+		if ((config->options & CMB_OPT_DEBUG) != 0) {
 #if CMB_DEBUG
-		debug = config->debug;
+			debug = TRUE;
 #else
-		if (config->debug != FALSE)
 			warnx("libcmb not compiled with debug support!");
 #endif
-		show_empty = config->show_empty;
-		show_numbers = config->show_numbers;
+		}
+		if ((config->options & CMB_OPT_EMPTY) != 0)
+			show_empty = TRUE;
+		if ((config->options & CMB_OPT_NUMBERS) != 0)
+			show_numbers = TRUE;
 		if (config->size_min != 0 || config->size_max != 0) {
 			setinit = config->size_min;
 			setdone = config->size_max;
@@ -1310,8 +1322,10 @@ CMB_ACTION_BN(cmb_print_bn)
 	if (config != NULL) {
 		if (config->delimiter != NULL)
 			delimiter = config->delimiter;
-		nul = config->nul_terminate;
-		show_numbers = config->show_numbers;
+		if ((config->options & CMB_OPT_NULPRINT) != 0)
+			nul = TRUE;
+		if ((config->options & CMB_OPT_NUMBERS) != 0)
+			show_numbers = TRUE;
 		prefix = config->prefix;
 		suffix = config->suffix;
 	}

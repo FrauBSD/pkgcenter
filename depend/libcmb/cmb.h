@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-27 20:23:22 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-03-29 18:19:15 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -80,17 +80,38 @@
  * Header version info
  */
 #define CMB_H_VERSION_MAJOR	3
-#define CMB_H_VERSION_MINOR	0
-#define CMB_H_VERSION_PATCH	5
+#define CMB_H_VERSION_MINOR	1
+#define CMB_H_VERSION_PATCH	0
+
+/*
+ * Macros for cmb_config options bitmask
+ */
+#define CMB_OPT_DEBUG		0x01	/* Enable debugging */
+#define CMB_OPT_NULPARSE	0x02	/* NUL delimit cmb_parse*() */
+#define CMB_OPT_NULPRINT	0x04	/* NUL delimit cmb_print*() */
+#define CMB_OPT_EMPTY		0x08	/* Show empty set with no items */
+#define CMB_OPT_NUMBERS		0x10	/* Show combination sequence numbers */
+#define CMB_OPT_RESERVED	0x20	/* Reserved for future use by cmb(3) */
+#define CMB_OPT_OPTION1		0x40	/* Available (unused by cmb(3)) */
+#define CMB_OPT_OPTION2		0x80	/* Available (unused by cmb(3)) */
+
+/*
+ * Macros for defining call-back functions/pointers
+ */
+#define CMB_ACTION(x) \
+    int x(struct cmb_config *config, uint64_t seq, uint32_t nitems, \
+        char *items[])
+#ifdef HAVE_OPENSSL_BN_H
+#define CMB_ACTION_BN(x) \
+    int x(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, \
+        char *items[])
+#endif
 
 /*
  * Anatomy of config option to pass as cmb*() config argument
  */
 struct cmb_config {
-	uint8_t debug;		/* Enable debugging if non-zero */
-	uint8_t	nul_terminate;	/* Terminate combinations with ASCII NUL */
-	uint8_t show_empty;	/* Show empty set with no items */
-	uint8_t show_numbers;	/* Show combination sequence numbers */
+	uint8_t options;	/* CMB_OPT_* bitmask. Default 0 */
 	char	*delimiter;	/* Item separator (default is " ") */
 	char	*prefix;	/* Prefix for each combination */
 	char	*suffix;	/* Suffix for each combination */
@@ -108,8 +129,7 @@ struct cmb_config {
 	 * stop calculation. The cmb() return value is the first non-zero
 	 * result from action(), zero otherwise.
 	 */
-	int (*action)(struct cmb_config *config, uint64_t seq, uint32_t nitems,
-	    char *items[]);
+	CMB_ACTION((*action));
 
 #ifdef HAVE_OPENSSL_BN_H
 	BIGNUM	*count_bn;	/* bn(3) number of combinations */
@@ -121,8 +141,7 @@ struct cmb_config {
 	 * cmb_bn() will stop calculation. The cmb_bn() return value is the
 	 * first non-zero result from action_bn(), zero otherwise.
 	 */
-	int (*action_bn)(struct cmb_config *config, BIGNUM *seq,
-	    uint32_t nitems, char *items[]);
+	CMB_ACTION_BN((*action_bn));
 #endif
 };
 
@@ -154,14 +173,6 @@ static inline void cmb_print_seq_bn(BIGNUM *seq) { char *seq_str;
 }
 #endif /* HAVE_OPENSSL_BN_H */
 __END_DECLS
-
-#define CMB_ACTION(x) \
-    int x(struct cmb_config *config, uint64_t seq, uint32_t nitems, \
-        char *items[])
-
-#define CMB_ACTION_BN(x) \
-    int x(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, \
-        char *items[])
 
 #define CMB_TRANSFORM_EQ(eq, op, x, seqt, seqp) \
     int                                                                      \

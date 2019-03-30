@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2019-01-10 12:54:37 -0800 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/libcmb/cmb.3 2019-03-29 18:19:15 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd January 10, 2019
+.Dd March 29, 2019
 .Dt CMB 3
 .Os
 .Sh NAME
@@ -68,10 +68,7 @@ Anatomy of config argument to
 .Fn cmb* :
 .Bd -literal -offset indent
 struct cmb_config {
-    uint8_t debug;         /* Enable debugging if non-zero */
-    uint8_t nul_terminate; /* Terminate combinations with NUL */
-    uint8_t show_empty;    /* Show empty set with no items */
-    uint8_t show_numbers;  /* Show combination sequence numbers */
+    uint8_t options;       /* CMB_OPT_* bitmask. Default 0 */
     char    *delimiter;    /* Item separator (default is " ") */
     char    *prefix;       /* Prefix for each combination */
     char    *suffix;       /* Suffix for each combination */
@@ -109,32 +106,55 @@ struct cmb_config {
 };
 .Ed
 .Pp
+Macros for cmb_config options bitmask:
+.Bd -literal -offset indent
+CMB_OPT_DEBUG           /* Enable debugging */
+CMB_OPT_NULPARSE        /* NUL delimit cmb_parse*() */
+CMB_OPT_NULPRINT        /* NUL delimit cmb_print*() */
+CMB_OPT_EMPTY           /* Show empty set with no items */
+CMB_OPT_NUMBERS         /* Show combination sequence numbers */
+CMB_OPT_RESERVED        /* Reserved for future use by cmb(3) */
+CMB_OPT_OPTION1         /* Available (unused by cmb(3)) */
+CMB_OPT_OPTION2         /* Available (unused by cmb(3)) */
+.Ed
+.Pp
 If
-.Ar debug
-is non-zero and
+.Ar CMB_OPT_DEBUG
+is set and
 .Xr cmb 3
 was compiled with
 .Ql CMB_DEBUG ,
 enable debugging information on stderr.
 .Pp
 If
-.Ar nul_terminate
-is non-zero,
+.Ar CMB_OPT_NULPARSE
+is set,
+.Fn cmb_parse
+and
+.Fn cmb_parse_file
+will read items separated by ASCII NUL character
+.Pq character code 0 .
+Otherwise,
+newline
+.Pq character code 10
+is used.
+.Pp
+If
+.Ar CMB_OPT_NULPRINT
+is set,
 .Fn cmb_print
+and
+.Fn cmb_print_bn
 will print combination items separated by ASCII NUL character
 .Pq character code 0 .
 Otherwise,
-if
-.Ar nul_terminate
-is zero
-.Pq default ,
 .Ar delimiter
 is used and if unset,
 combinations are separated by a single space.
 .Pp
 If
-.Ar show_empty
-is non-zero,
+.Ar CMB_OPT_EMPTY
+is set,
 the empty set
 .Pq consisting of a single combination with no items
 is enumerated by
@@ -147,8 +167,8 @@ and counted by
 .Fn cmb_count_bn .
 .Pp
 If
-.Ar show_numbers
-is non-zero,
+.Ar CMB_OPT_NUMBERS
+is set,
 print combination sequence number before calling
 .Fn action .
 Combinations are calculated in arithmetic progression,
@@ -184,10 +204,14 @@ items will be calculated.
 To limit the number of combinations that are calculated,
 set
 .Ar count
+or
+.Ar count_bn
 to a non-zero value.
 .Pp
 If
 .Ar start
+or
+.Ar start_bn
 is greater than one,
 the
 .Nm
@@ -197,7 +221,7 @@ library will seek to that number combination before starting.
 .Ar count_bn ,
 and
 .Ar start_bn
-are only available on platforms with OpenSSL
+are only available on platforms with OpenSSL/LibreSSL
 .Xr bn 3
 and are used by
 .Fn cmb_bn

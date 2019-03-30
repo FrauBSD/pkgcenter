@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/libcmb/cmb.3.html 2019-03-09 14:01:32 -0800 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/libcmb/cmb.3.html 2019-03-29 18:19:15 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>#include</B> <B>&lt;cmb.h&gt;</B>
@@ -47,10 +47,7 @@
      Anatomy of	config argument	to <B>cmb*</B>():
 
 	   struct cmb_config {
-	       uint8_t debug;	      /* Enable	debugging if non-zero */
-	       uint8_t nul_terminate; /* Terminate combinations	with NUL */
-	       uint8_t show_empty;    /* Show empty set	with no	items */
-	       uint8_t show_numbers;  /* Show combination sequence numbers */
+	       uint8_t options;       /* CMB_OPT_* bitmask. Default 0 */
 	       char    *delimiter;    /* Item separator	(default is " ") */
 	       char    *prefix;	      /* Prefix	for each combination */
 	       char    *suffix;	      /* Suffix	for each combination */
@@ -74,19 +71,34 @@
 		   uint32_t nitems, char *items[]);
 	   };
 
-     If	<I>debug</I> is non-zero and <B>cmb(3)</B> was compiled with `CMB_DEBUG', enable
+     Macros for cmb_config options bitmask:
+
+	   CMB_OPT_DEBUG           /* Enable debugging */
+	   CMB_OPT_NULPARSE        /* NUL delimit cmb_parse*() */
+	   CMB_OPT_NULPRINT        /* NUL delimit cmb_print*() */
+	   CMB_OPT_EMPTY           /* Show empty set with no items */
+	   CMB_OPT_NUMBERS         /* Show combination sequence numbers */
+	   CMB_OPT_RESERVED        /* Reserved for future use by cmb(3) */
+	   CMB_OPT_OPTION1         /* Available (unused by cmb(3)) */
+	   CMB_OPT_OPTION2         /* Available (unused by cmb(3)) */
+
+     If	<I>CMB</I><B>_</B><I>OPT</I><B>_</B><I>DEBUG</I> is set and <B>cmb(3)</B> was compiled with `CMB_DEBUG', enable
      debugging information on stderr.
 
-     If	<I>nul</I><B>_</B><I>terminate</I> is non-zero, <B>cmb_print</B>() will print combination items
-     separated by ASCII	NUL character (character code 0).  Otherwise, if
-     <I>nul</I><B>_</B><I>terminate</I> is zero (default), <I>delimiter</I>	is used	and if unset, combina-
-     tions are separated by a single space.
+     If	<I>CMB</I><B>_</B><I>OPT</I><B>_</B><I>NULPARSE</I> is set, <B>cmb_parse</B>() and <B>cmb_parse_file</B>() will read
+     items separated by ASCII NUL character (character code 0).  Otherwise,
+     newline (character code 10) is used.
 
-     If	<I>show</I><B>_</B><I>empty</I> is non-zero,	the empty set (consisting of a single
+     If	<I>CMB</I><B>_</B><I>OPT</I><B>_</B><I>NULPRINT</I> is set, <B>cmb_print</B>() and <B>cmb_print_bn</B>() will print
+     combination items separated by ASCII NUL character (character code 0).
+     Otherwise, <I>delimiter</I> is used and if unset, combinations are separated by
+     a single space.
+
+     If	<I>CMB</I><B>_</B><I>OPT</I><B>_</B><I>EMPTY</I> is set,	the empty set (consisting of a single
      combination with no items)	is enumerated by <B>cmb</B>() / <B>cmb_bn</B>() and counted
      by	<B>cmb_count</B>() / <B>cmb_count_bn</B>().
 
-     If	<I>show</I><B>_</B><I>numbers</I> is	non-zero, print	combination sequence number before
+     If	<I>CMB</I><B>_</B><I>OPT</I><B>_</B><I>NUMBERS</I> is	set, print	combination sequence number before
      calling <B>action</B>().	Combinations are calculated in arithmetic progression,
      providing predictable order.  The sequence	number can be used as <I>start</I> or
      <I>start</I><B>_</B><I>bn</I> value to begin at	that combination.  The sequence	number pre-
@@ -101,14 +113,14 @@
      <I>size</I><B>_</B><I>max</I>.	Only combinations containing at	minimum	<I>size</I><B>_</B><I>min</I> items and at
      most <I>size</I><B>_</B><I>max</I> items will be calculated.
 
-     To	limit the number of combinations that are calculated, set <I>count</I>	to a
+     To	limit the number of combinations that are calculated, set <I>count</I> or <I>count</I><B>_</B><I>bn</I>	to a
      non-zero value.
 
-     If	<I>start</I> is greater than one, the <B>cmb</B> library will	seek to	that number
+     If	<I>start</I> or <I>start</I><B>_</B><I>bn</I> is greater than one, the <B>cmb</B> library will	seek to	that number
      combination before	starting.
 
      <I>action</I><B>_</B><I>bn</I>,	<I>count</I><B>_</B><I>bn</I>, and <I>start</I><B>_</B><I>bn</I> are only	available on platforms with
-     OpenSSL <B>bn(3)</B> and are used by <B>cmb_bn</B>() and <B>cmb_count_bn</B>() to
+     OpenSSL/LibreSSL <B>bn(3)</B> and are used by <B>cmb_bn</B>() and <B>cmb_count_bn</B>() to
      overcome limitations by 64-bit integers.
 
      <B>cmb_version</B>() takes CMB_VERSION or CMB_VERSION_LONG as <I>type</I> and returns
@@ -125,7 +137,7 @@
 <H2>AUTHORS</H2><PRE>
      Devin Teske &lt;<I>dteske@FreeBSD.org</I>&gt;
 
-FreeBSD	9.2		       January 10, 2019			   FreeBSD 9.2
+FreeBSD	13.0		       March 29, 2019			   FreeBSD 13.0
 </PRE>
 <HR>
 <ADDRESS>
