@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/libcmb/cmb.3.html 2019-03-29 18:19:15 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/libcmb/cmb.3.html 2019-03-29 22:01:11 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <H2>SYNOPSIS</H2><PRE>
      <B>#include</B> <B>&lt;cmb.h&gt;</B>
@@ -53,7 +53,13 @@
 	       char    *suffix;	      /* Suffix	for each combination */
 	       uint32_t	size_min;     /* Minimum elements in combination */
 
-		   char	*items[]);
+	       /*
+		* <B>cmb(3)</B> function callback; called for each combination
+		* (default is cmb_print()). If the return from action() is non-
+		* zero, cmb()	will stop calculation. The cmb() return value is
+		* the first non-zero result from action(), zero otherwise.
+		*/
+	       CMB_ACTION((*action));
 
 	       /* OpenSSL <B>bn(3)</B>	support	*/
 
@@ -67,9 +73,19 @@
 		* return value is the first non-zero result from action_bn(),
 		* zero otherwise.
 		*/
-	       int (*action_bn)(struct cmb_config *config, BIGNUM *seq,
-		   uint32_t nitems, char *items[]);
+	       CMB_ACTION_BN((*action_bn));
 	   };
+
+     The macro CMB_ACTION(x) is defined as:
+
+	   int x(struct cmb_config *config, uint64_t seq, uint32_t nitems,
+	       char *items[]);
+
+     When compiled with OpenSSL/LibreSSL support (default), the macro
+     CMB_ACTION_BN(x) is defined as:
+
+	   int x(struct cmb_config *config, BIGNUM *seq,
+	       uint32_t nitems, char *items[]);
 
      Macros for cmb_config options bitmask:
 
