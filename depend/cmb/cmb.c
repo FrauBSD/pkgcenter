@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-30 14:58:38 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-31 23:24:27 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.8.8 $";
+static char version[] = "$Version: 3.8.9 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -137,7 +137,7 @@ main(int argc, char *argv[])
 	uint8_t opt_version = FALSE;
 	char *cp;
 	char *cmdver = version;
-	char **items = argv;
+	char **items = NULL;
 	char **items_tmp = NULL;
 	const char *libver = cmb_version(CMB_VERSION);
 	char *opt_transform = NULL;
@@ -320,14 +320,10 @@ main(int argc, char *argv[])
 	}
 	argc -= optind;
 	argv += optind;
-	items = argv;
 
-	/* At least one non-option argument is required */
-	if (argc == 0 && !opt_version && !opt_empty) {
-		cmb_usage();
-		/* NOTREACHED */
-	}
-
+	/*
+	 * Process `-v' command-line option
+	 */
 	if (opt_version) {
 		cmdver += 10; /* Seek past "$Version: " */
 		cmdver[strlen(cmdver)-2] = '\0'; /* Place NUL before "$" */
@@ -338,6 +334,15 @@ main(int argc, char *argv[])
 		printf("%s: %s (%s)\n", pgm, cmdver, libver);
 #endif
 		exit(EXIT_SUCCESS);
+	}
+
+	/*
+	 * At least one non-option argument is required unless `-e' is given
+	 */
+	if (argc == 0 && !opt_empty) {
+		warnx("argument required unless `-e'");
+		cmb_usage();
+		/* NOTREACHED */
 	}
 
 	/*
@@ -403,10 +408,11 @@ main(int argc, char *argv[])
 		exit(EXIT_SUCCESS);
 	}
 
-	/* Read arguments ... */
+	/*
+	 * Read arguments ...
+	 */
 	if (opt_file) {
 		/* ... as a series of files if given `-f' */
-		items = NULL;
 		for (n = 0; n < nitems; n++) {
 			items_tmp = cmb_parse_file(config, argv[n], &i, 0);
 			if (items_tmp == NULL && errno != 0) {
@@ -445,10 +451,13 @@ main(int argc, char *argv[])
 				i = range_char(rstart, rstop, i, items);
 		}
 		nitems = (uint32_t)ritems;
+	} else {
+		/* ... as a series of strings or numbers if given `-X op' */
+		items = argv;
 	}
 
 	/*
-	 * Time-based benchmarking (-S for silent) and transforms (-X func).
+	 * Time-based benchmarking (-S for silent) and transforms (-X op).
 	 *
 	 * NB: For benchmarking, the call-stack is still incremented into the
 	 *     action, while using a nop function allows us to benchmark
@@ -639,7 +648,7 @@ main(int argc, char *argv[])
 static void
 cmb_usage(void)
 {
-	fprintf(stderr, "usage: %s [options] item1 [item2 ...]\n", pgm);
+	fprintf(stderr, "usage: %s [options] [item ...]\n", pgm);
 #define OPTFMT		"\t%-10s %s\n"
 #define OPTFMT_1U	"\t%-10s %s%u%s\n"
 	fprintf(stderr, "OPTIONS:\n");
