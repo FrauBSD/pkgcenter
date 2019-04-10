@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/configure.in 2019-01-27 17:02:00 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/configure.in 2019-04-10 14:53:38 -0700 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -14,7 +14,7 @@ AC_PREREQ(2.69)
 # 	Place static version identifier information into autoconf-generated
 # 	`configure' for source-code tracking purposes.
 #
-AC_REVISION($Revision: 1.4 $)
+AC_REVISION($Revision: 1.5 $)
 
 #
 # AC_CONFIG_HEADERS (HEADER ..., [CMDS], [INIT-CMDS])
@@ -115,6 +115,7 @@ AS_IF(test "$CC" = clang, [
 		-Wno-padded \
 		-Wno-reserved-id-macro \
 		-Wno-unused-macros \
+		-Wno-unknown-warning-option \
 	)"
 ])
 

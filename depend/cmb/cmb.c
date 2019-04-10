@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-03-31 23:24:27 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-04-10 14:53:38 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.8.9 $";
+static char version[] = "$Version: 3.9.0 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -936,14 +936,14 @@ range_char(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 		for (num = start; num <= stop; num++) {
 			len = snprintf(range_tmp, size, "%u", num);
 			dst[idx] = (char *)malloc((unsigned long)len + 1);
-			memcpy(dst[idx], range_tmp, len + 1);
+			memcpy(dst[idx], range_tmp, (unsigned long)len + 1);
 			idx++;
 		}
 	} else {
 		for (num = start; num >= stop; num--) {
 			len = snprintf(range_tmp, size, "%u", num);
 			dst[idx] = (char *)malloc((unsigned long)len + 1);
-			memcpy(dst[idx], range_tmp, len + 1);
+			memcpy(dst[idx], range_tmp, (unsigned long)len + 1);
 			idx++;
 		}
 	}
