@@ -12,6 +12,7 @@ WriteMakefile(
     #Value must be from legacy list of licenses here
     #http://search.cpan.org/perldoc?Module%3A%3ABuild%3A%3AAPI
     LIBS              => [], # e.g., '-lm'
+    CCFLAGS           => "-I/usr/local/include",
     dynamic_lib => {
         OTHERLDFLAGS  => "-L/usr/local/lib -lcmb -fstack-protector",
     },

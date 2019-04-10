@@ -1,5 +1,8 @@
 Revision history for Perl extension Cmb.
 
+3.4.1  Wed Apr 10 15:00:30 2019
+	- Fix compile on FreeBSD by adding -I/usr/local/include to CCFLAGS
+
 3.4  Sun Apr  7 14:59:00 2019
 	- Update to support config->options introduced in libcmb 3.1
 
