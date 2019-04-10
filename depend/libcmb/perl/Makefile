@@ -2,33 +2,38 @@
 #
 # $Title: Makefile to compile Perl XS bindings to cmb(3) $
 # $Copyright: 2018 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/perl/Makefile 2019-01-05 18:26:55 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/perl/Makefile 2019-04-10 14:13:36 -0700 freebsdfrau $
 #
 ############################################################ OBJECTS
 
 XS=	Cmb.xs
 PM=	Cmb/lib/Cmb.pm
-SO=	Cmb/blib/arch/auto/Cmb/Cmb.so
+
+SLIB=	libcmb.so.0
+XLIB=	/usr/local/lib/libcmb.so.0
+BLIB=	Cmb/blib/arch/auto/Cmb
 
 ############################################################ TARGETS
 
 .PHONY: all
 
-all: $(PM) $(SO)
+all: $(PM) $(BLIB)
 
-.PHONY: install
+.PHONY: install test
 
-install:
-	cd Cmb && $(MAKE) install
+install test: all
+	cd Cmb && $(MAKE) $(@)
 
-$(PM) $(SO): Cmb/$(XS) Cmb/Makefile
+$(PM) $(BLIB): Cmb/$(XS) Cmb/Makefile
 	cd Cmb && $(MAKE)
+	[ "$$( uname -s )" != Darwin ] || \
+		install_name_tool -change $(SLIB) $(XLIB) $(BLIB)/Cmb.bundle
 
 Cmb/$(XS): Cmb/.h2xs_done $(XS)
 	cp $(XS) $(@)
 
 Cmb/.h2xs_done:
-	h2xs -b 5.8.5 cmb.h -lcmb
+	h2xs -b 5.8.5 ../cmb.h -lcmb
 	rm -f Cmb/$(XS)
 	touch $(@)
 

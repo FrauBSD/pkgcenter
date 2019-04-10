@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-01-10 13:04:20 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/perl/Cmb.xs 2019-04-10 14:13:36 -0700 freebsdfrau $");
 #endif
 
 #include <cmb.h>
@@ -64,7 +64,7 @@ g_callback(struct cmb_config *config, uint64_t seq, uint32_t nitems,
 	PUSH_MULTICALL(cv);
 
 	av_clear(perlargs);
-	if (config->show_numbers)
+	if ((config->options & CMB_OPT_NUMBERS) != 0)
 		av_push(perlargs, (SV *)newSViv(seq));
 	for (i = 1; i <= nitems; i++) {
 		av_push(perlargs, (SV *)items[i-1]);
@@ -101,15 +101,31 @@ _config(struct cmb_config *c, SV *hash)
 		} else if (strEQ(k, "data")) {
 			c->data = v;
 		} else if (strEQ(k, "debug")) {
-			c->debug = SvIV(v);
+			if (SvIV(v) == 0) {
+				c->options &= ~CMB_OPT_DEBUG;
+			} else {
+				c->options |= CMB_OPT_DEBUG;
+			}
 		} else if (strEQ(k, "delimiter")) {
 			c->delimiter = SvPV(v, PL_na);
 		} else if (strEQ(k, "nul_terminate")) {
-			c->nul_terminate = SvIV(v);
+			if (SvIV(v) == 0) {
+				c->options &= ~CMB_OPT_NULPRINT;
+			} else {
+				c->options |= CMB_OPT_NULPRINT;
+			}
 		} else if (strEQ(k, "show_empty")) {
-			c->show_empty = SvIV(v);
+			if (SvIV(v) == 0) {
+				c->options &= ~CMB_OPT_EMPTY;
+			} else {
+				c->options |= CMB_OPT_EMPTY;
+			}
 		} else if (strEQ(k, "show_numbers")) {
-			c->show_numbers = SvIV(v);
+			if (SvIV(v) == 0) {
+				c->options &= ~CMB_OPT_NUMBERS;
+			} else {
+				c->options |= CMB_OPT_NUMBERS;
+			}
 		} else if (strEQ(k, "prefix")) {
 			c->prefix = SvPV(v, PL_na);
 		} else if (strEQ(k, "size_max")) {
@@ -257,8 +273,7 @@ PREINIT:
 	int i;
 	SV **item;
 	void *_data;
-	int (*_action)(struct cmb_config *c, uint64_t seq, uint32_t nitems,
-	    char *array[]);
+	CMB_ACTION((*_action));
 INPUT:
 	Cmb c;
 	uint32_t nitems;
