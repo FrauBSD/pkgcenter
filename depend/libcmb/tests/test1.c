@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test1.c 2019-01-19 16:48:37 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/tests/test1.c 2019-04-10 15:27:36 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -51,10 +51,7 @@ main(void)
 	char *items[] = {"a", "b", "c", "d"};
 	char itemstr[] = "a, b, c, d";
 	static struct cmb_config config = {
-		.debug = 0,
-		.nul_terminate = 0,
-		.show_empty = 0,
-		.show_numbers = 1,
+		.options = CMB_OPT_NUMBERS,
 		.delimiter = ",",
 		.prefix = "\t[",
 		.suffix = "]",
@@ -65,10 +62,7 @@ main(void)
 	};
 
 	printf("config = {\n");
-	printf("\t.debug = %u,\n", config.debug);
-	printf("\t.nul_terminate = %u,\n", config.nul_terminate);
-	printf("\t.show_empty = %u,\n", config.show_empty);
-	printf("\t.show_numbers = %u,\n", config.show_numbers);
+	printf("\t.options = 0x%08x,\n", config.options);
 	printf("\t.delimiter = \"%s\",\n", config.delimiter);
 	printf("\t.prefix = \"%s\",\n", config.prefix);
 	printf("\t.suffix = \"%s\",\n", config.suffix);
@@ -97,7 +91,7 @@ main(void)
 	/*
 	 * Callbacks
 	 */
-	config.show_numbers = 0;
+	config.options = 0;
 	config.action = afunc;
 	printf("cmb_callback(config, %u, [%s], afunc):\n", nitems, itemstr);
 	retval = cmb(&config, nitems, items);
