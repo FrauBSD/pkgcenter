@@ -2,7 +2,7 @@
 #
 # $Title: Makefile to compile/install python extension $
 # $Copyright: 2018-2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-01-19 17:34:40 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/Makefile.in 2019-04-10 07:22:17 -0700 freebsdfrau $
 #
 ############################################################ OBJECTS
 
@@ -11,7 +11,7 @@ PACKAGE_NAME=	cmb
 PACKAGE_FILES=	__init__.py \
 		$(LIB)
 
-LIB=		cmb@SO@
+LIB=		cmb@EXT_SUFFIX@
 SRC=		cmb.c
 OBJ=		cmb.o
 
@@ -49,7 +49,8 @@ install: Makefile $(LIB)
 	 esac
 
 uninstall: Makefile
-	( cd $(SITE_PACKAGES)/$(PACKAGE_NAME) && rm -f $(PACKAGE_FILES) )
+	( cd $(SITE_PACKAGES)/$(PACKAGE_NAME) && \
+	  rm -Rf __pycache__ __init__.pyc $(PACKAGE_FILES) )
 	rmdir $(SITE_PACKAGES)/$(PACKAGE_NAME) ||:
 
 .PHONY: distclean clean cleandir

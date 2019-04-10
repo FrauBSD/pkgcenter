@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-01-19 17:33:04 -0800 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-04-10 07:22:17 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -307,19 +307,23 @@ CmbGetO(PyCmbObject *self, PyObject *key)
 	if (KeyEq("count"))
 		return Py_BuildValue("K", config->count);
 	else if (KeyEq("debug"))
-		return Py_BuildValue("b", config->debug);
+		return Py_BuildValue("b", (config->options &
+		    CMB_OPT_DEBUG) == 0 ? FALSE : TRUE);
 	else if (KeyEq("delimiter"))
 		return Py_BuildValue("s", config->delimiter);
 	else if (KeyEq("keys"))
 		return CmbKeys(self);
 	else if (KeyEq("nul_terminate"))
-		return Py_BuildValue("b", config->nul_terminate);
+		return Py_BuildValue("b", (config->options &
+		    CMB_OPT_NULPRINT) == 0 ? FALSE : TRUE);
 	else if (KeyEq("prefix"))
 		return Py_BuildValue("s", config->prefix);
 	else if (KeyEq("show_empty"))
-		return Py_BuildValue("b", config->show_empty);
+		return Py_BuildValue("b", (config->options &
+		    CMB_OPT_EMPTY) == 0 ? FALSE : TRUE);
 	else if (KeyEq("show_numbers"))
-		return Py_BuildValue("b", config->show_numbers);
+		return Py_BuildValue("b", (config->options &
+		    CMB_OPT_NUMBERS) == 0 ? FALSE : TRUE);
 	else if (KeyEq("size_max"))
 		return Py_BuildValue("I", config->size_max);
 	else if (KeyEq("size_min"))
@@ -350,7 +354,7 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 #endif
 {
 	struct cmb_config *config = self->config;
-	char *tmp;
+	const char *tmp;
 	size_t len;
 
 #if PY_MAJOR_VERSION >= 3
@@ -375,18 +379,22 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 			self->config_set |= CONFIG_SET_COUNT;
 		} else {
 			config->count = 0;
-			self->config_set ^= CONFIG_SET_COUNT;
+			self->config_set &= ~CONFIG_SET_COUNT;
 		}
 	} else if (KeyEq("debug")) {
 		if (PyNumber_Check(value)) {
-			config->debug = (uint8_t)PyLong_AsUnsignedLong(value);
+			if (PyLong_AsUnsignedLong(value) == 0) {
+				config->options &= ~CMB_OPT_DEBUG;
+			} else {
+				config->options |= CMB_OPT_DEBUG;
+			}
 			self->config_set |= CONFIG_SET_DEBUG;
 		} else {
-			config->debug = 0;
-			self->config_set ^= CONFIG_SET_DEBUG;
+			config->options &= ~CMB_OPT_DEBUG;
+			self->config_set &= ~CONFIG_SET_DEBUG;
 		}
 	} else if (KeyEq("delimiter")) {
-		self->config_set ^= CONFIG_SET_DELIMITER;
+		self->config_set |= CONFIG_SET_DELIMITER;
 		if (config->delimiter != NULL) {
 			free(config->delimiter);
 			config->delimiter = NULL;
@@ -406,15 +414,18 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 		}
 	} else if (KeyEq("nul_terminate")) {
 		if (PyNumber_Check(value)) {
-			config->nul_terminate =
-			    (uint8_t)PyLong_AsUnsignedLong(value);
+			if (PyLong_AsUnsignedLong(value) == 0) {
+				config->options &= ~CMB_OPT_NULPRINT;
+			} else {
+				config->options |= CMB_OPT_NULPRINT;
+			}
 			self->config_set |= CONFIG_SET_NUL_TERMINATE;
 		} else {
-			config->nul_terminate = 0;
-			self->config_set ^= CONFIG_SET_NUL_TERMINATE;
+			config->options &= ~CMB_OPT_NULPRINT;
+			self->config_set &= ~CONFIG_SET_NUL_TERMINATE;
 		}
 	} else if (KeyEq("prefix")) {
-		self->config_set ^= CONFIG_SET_PREFIX;
+		self->config_set |= CONFIG_SET_PREFIX;
 		if (config->prefix != NULL) {
 			free(config->prefix);
 			config->prefix = NULL;
@@ -434,21 +445,27 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 		}
 	} else if (KeyEq("show_empty")) {
 		if (PyNumber_Check(value)) {
-			config->show_empty =
-			    (uint8_t)PyLong_AsUnsignedLong(value);
+			if (PyLong_AsUnsignedLong(value) == 0) {
+				config->options &= ~CMB_OPT_EMPTY;
+			} else {
+				config->options |= CMB_OPT_EMPTY;
+			}
 			self->config_set |= CONFIG_SET_SHOW_EMPTY;
 		} else {
-			config->show_empty = 0;
-			self->config_set ^= CONFIG_SET_SHOW_EMPTY;
+			config->options &= ~CMB_OPT_EMPTY;
+			self->config_set &= ~CONFIG_SET_SHOW_EMPTY;
 		}
 	} else if (KeyEq("show_numbers")) {
 		if (PyNumber_Check(value)) {
-			config->show_numbers =
-			    (uint8_t)PyLong_AsUnsignedLong(value);
+			if (PyLong_AsUnsignedLong(value) == 0) {
+				config->options &= ~CMB_OPT_NUMBERS;
+			} else {
+				config->options |= CMB_OPT_NUMBERS;
+			}
 			self->config_set |= CONFIG_SET_SHOW_NUMBERS;
 		} else {
-			config->show_numbers = 0;
-			self->config_set ^= CONFIG_SET_SHOW_NUMBERS;
+			config->options &= ~CMB_OPT_NUMBERS;
+			self->config_set &= ~CONFIG_SET_SHOW_NUMBERS;
 		}
 	} else if (KeyEq("size_max")) {
 		if (PyNumber_Check(value)) {
@@ -457,7 +474,7 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 			self->config_set |= CONFIG_SET_SIZE_MAX;
 		} else {
 			config->size_max = 0;
-			self->config_set ^= CONFIG_SET_SIZE_MAX;
+			self->config_set &= ~CONFIG_SET_SIZE_MAX;
 		}
 	} else if (KeyEq("size_min")) {
 		if (PyNumber_Check(value)) {
@@ -466,7 +483,7 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 			self->config_set |= CONFIG_SET_SIZE_MIN;
 		} else {
 			config->size_min = 0;
-			self->config_set ^= CONFIG_SET_SIZE_MIN;
+			self->config_set &= ~CONFIG_SET_SIZE_MIN;
 		}
 	} else if (KeyEq("start")) {
 		if (PyNumber_Check(value)) {
@@ -474,10 +491,10 @@ CmbSetO(PyCmbObject *self, PyObject *key, PyObject *value)
 			self->config_set |= CONFIG_SET_START;
 		} else {
 			config->start = 0;
-			self->config_set ^= CONFIG_SET_START;
+			self->config_set &= ~CONFIG_SET_START;
 		}
 	} else if (KeyEq("suffix")) {
-		self->config_set ^= CONFIG_SET_SUFFIX;
+		self->config_set |= CONFIG_SET_SUFFIX;
 		if (config->suffix != NULL) {
 			free(config->suffix);
 			config->suffix = NULL;
@@ -535,7 +552,7 @@ pycmb(PyObject *obj, PyObject *args)
 	PyObject *pysize;
 	PyObject *pListItem;
 	PyCmbObject *self;
-	char *tmp;
+	const char *tmp;
 	char **v = NULL;
 
 	/* Parse and type-check arguments */
@@ -741,7 +758,8 @@ pycmb_print(PyObject *obj, PyObject *args)
 	uint64_t seq;
 	size_t len;
 	ssize_t size;
-	char **v, *tmp;
+	char **v;
+	const char *tmp;
 
 	if (!PyArg_ParseTuple(args, "OKIO", &self, &seq, &nitems, &list))
 		goto pycmb_print_error;
