@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-04-10 07:22:17 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/cmb.c 2019-04-10 15:16:30 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -39,6 +39,8 @@ __FBSDID("$FreeBSD$");
 /* Helpers */
 #if PY_MAJOR_VERSION == 2
 #define KeyEq(x)	(strcmp(x, key) == 0)
+#elif PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION <= 4
+#define KeyEq(x)	(PyUnicode_CompareWithASCIIString(key, x) == 0)
 #else
 #define KeyEq(x)	(_PyUnicode_EqualToASCIIString(key, x))
 #endif

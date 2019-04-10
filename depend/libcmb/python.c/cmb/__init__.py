@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/__init__.py 2019-04-10 07:22:17 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/python.c/cmb/__init__.py 2019-04-10 15:16:30 -0700 freebsdfrau $
 #-
 # Copyright (c) 2018-2019 Devin Teske. All rights reserved.
 #
@@ -29,4 +29,4 @@ if sys.version_info[0] < 3:
 else:
     from cmb.cmb import *
 
-__version__ = "3.3"
+__version__ = "3.4.1"
