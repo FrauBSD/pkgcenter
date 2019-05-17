@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-04-10 14:57:13 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-05-17 15:47:50 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -82,7 +82,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	4
-#define CMB_H_VERSION_PATCH	1
+#define CMB_H_VERSION_PATCH	2
 
 /*
  * Macros for cmb_config options bitmask
@@ -176,6 +176,7 @@ static inline void cmb_print_seq_bn(BIGNUM *seq) { char *seq_str;
 __END_DECLS
 
 extern int cmb_transform_precision;
+extern int cmb_transform_total_precision;
 #define CMB_TRANSFORM_EQ(eq, op, x, seqt, seqp) \
     int                                                                      \
     x(struct cmb_config *config, seqt, uint32_t nitems, char *items[])       \
@@ -224,7 +225,7 @@ extern int cmb_transform_precision;
     		if (suffix != NULL && !opt_quiet)                            \
     			printf("%s", suffix);                                \
     		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",                  \
-    			cmb_transform_precision, total);                     \
+    			cmb_transform_total_precision, total);               \
     	}                                                                    \
     	return (0);                                                          \
     }
