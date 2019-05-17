@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-03-30 14:36:07 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-05-17 15:50:33 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd March 30, 2019
+.Dd May 17, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -38,7 +38,7 @@
 .Op Fl i Ar num
 .Op Fl k Ar size
 .Op Fl n Ar num
-.Op Fl P Ar num
+.Op Fl P Ar num[.num]
 .Op Fl p Ar str
 .Op Fl s Ar str
 .Op Fl X Ar op
@@ -178,12 +178,23 @@ Must appear before
 and
 .Ql Fl i Ar num
 options.
-.It Fl P Ar num
+.It Fl P Ar num[.num]
 Change the behavior of
 .Ql Fl X Ar op
 to use
 .Ar num
 units of precision when printing floating point values.
+If given two numbers separated by a dot
+.Pq Sq Li \&. ,
+the second
+.Ar num
+after the
+.Ql \&.
+sets the precision for the math results displayed to the right of the equals
+.Pq Ql = .
+Default behavior of
+.Ql Fl X Ar op
+is to use the highest precision of provided arguments.
 Ignored when given
 .Ql Fl t .
 .It Fl p Ar text
