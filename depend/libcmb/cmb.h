@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-05-17 15:47:50 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-05-23 20:16:34 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -82,7 +82,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	4
-#define CMB_H_VERSION_PATCH	2
+#define CMB_H_VERSION_PATCH	3
 
 /*
  * Macros for cmb_config options bitmask
@@ -175,8 +175,18 @@ static inline void cmb_print_seq_bn(BIGNUM *seq) { char *seq_str;
 #endif /* HAVE_OPENSSL_BN_H */
 __END_DECLS
 
+/*
+ * Transformations
+ */
+
 extern int cmb_transform_precision;
-extern int cmb_transform_total_precision;
+struct cmb_xitem {
+	char *cp;			/* original item */
+	union cmb_xitem_type {
+		long double ld;		/* item as long double */
+	} as;
+};
+
 #define CMB_TRANSFORM_EQ(eq, op, x, seqt, seqp) \
     int                                                                      \
     x(struct cmb_config *config, seqt, uint32_t nitems, char *items[])       \
@@ -188,7 +198,8 @@ extern int cmb_transform_total_precision;
     	const char *delimiter = " ";                                         \
     	const char *prefix = NULL;                                           \
     	const char *suffix = NULL;                                           \
-                                                                             \
+    	struct cmb_xitem *xitem = NULL;                                      \
+    	                                                                     \
     	if (config != NULL) {                                                \
     		if (config->delimiter != NULL)                               \
     			delimiter = config->delimiter;                       \
@@ -204,19 +215,20 @@ extern int cmb_transform_total_precision;
     			printf("%s", prefix);                                \
     	}                                                                    \
     	if (nitems > 0) {                                                    \
-    		memcpy(&ld, items[0], sizeof(long double));                  \
-    		total = ld;                                                  \
+    		memcpy(&xitem, &items[0], sizeof(struct cmb_xitem *));       \
+    		total = xitem->as.ld;                                        \
     		if (!opt_silent && !opt_quiet) {                             \
-    			printf("%.*Lf", cmb_transform_precision, ld);        \
+    			printf("%s", xitem->cp);                             \
     			if (nitems > 1)                                      \
     				printf("%s" #op "%s", delimiter, delimiter); \
     		}                                                            \
     	}                                                                    \
     	for (n = 1; n < nitems; n++) {                                       \
-    		memcpy(&ld, items[n], sizeof(long double));                  \
+    		memcpy(&xitem, &items[n], sizeof(struct cmb_xitem *));       \
+    		ld = xitem->as.ld;                                           \
     		total = eq;                                                  \
     		if (!opt_silent && !opt_quiet) {                             \
-    			printf("%.*Lf", cmb_transform_precision, ld);        \
+    			printf("%s", xitem->cp);                             \
     			if (n < nitems - 1)                                  \
     				printf("%s" #op "%s", delimiter, delimiter); \
     		}                                                            \
@@ -225,7 +237,7 @@ extern int cmb_transform_total_precision;
     		if (suffix != NULL && !opt_quiet)                            \
     			printf("%s", suffix);                                \
     		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",                  \
-    			cmb_transform_total_precision, total);               \
+    			cmb_transform_precision, total);                     \
     	}                                                                    \
     	return (0);                                                          \
     }
@@ -245,6 +257,7 @@ extern int cmb_transform_total_precision;
 /*
  * Example transformations
  */
+
 #if 0
 CMB_TRANSFORM_OP(+, cmb_add);			/* creates cmb_add() */
 CMB_TRANSFORM_FN(/, div, cmb_div);		/* creates cmb_div() */

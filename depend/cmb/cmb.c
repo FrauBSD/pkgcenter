@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-05-17 15:50:33 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-05-23 20:16:34 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.1 $";
+static char version[] = "$Version: 3.9.2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -78,8 +78,6 @@ static size_t	urangelen(const char *s, size_t nlen, size_t slen);
 static uint8_t	parse_range(const char *s, uint32_t *min, uint32_t *max);
 static uint8_t	parse_unum(const char *s, uint32_t *n);
 static uint8_t	parse_urange(const char *s, uint32_t *min, uint32_t *max);
-static int	parse_utuple(const char *s, const char delim, uint8_t max,
-    uint32_t *n[]);
 static uint32_t	range_char(uint32_t start, uint32_t stop, uint32_t idx,
     char *dst[]);
 static uint32_t	range_float(uint32_t start, uint32_t stop, uint32_t idx,
@@ -151,11 +149,11 @@ main(int argc, char *argv[])
 	uint32_t nitems = 0;
 	uint32_t rstart = 0;
 	uint32_t rstop = 0;
-	uint32_t *prec[2] = {NULL, NULL};
 	size_t config_size = sizeof(struct cmb_config);
 	size_t cp_size = sizeof(char *);
 	size_t optlen;
 	struct cmb_config *config = NULL;
+	struct cmb_xitem *xitem = NULL;
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 	BIGNUM *count_bn;
 #endif
@@ -165,7 +163,6 @@ main(int argc, char *argv[])
 	uint64_t ritems = 0;
 	uint64_t ull;
 	unsigned long ul;
-	long double ld;
 	struct timeval tv;
 
 	pgm = argv[0]; /* store a copy of invocation name */
@@ -279,21 +276,11 @@ main(int argc, char *argv[])
 #endif
 			break;
 		case 'P': /* precision */
-			switch (parse_utuple(optarg, '.', 2, prec)) {
-			case -1:
-			case 0:
-				if (errno == 0)
-					errno = EINVAL;
-				errx(EXIT_FAILURE, "-P: %s `%s'",
+			if (!parse_unum(optarg,
+			    (uint32_t *)&cmb_transform_precision)) {
+				errx(EXIT_FAILURE, "-n: %s `%s'",
 				    strerror(errno), optarg);
 				/* NOTREACHED */
-			case 1:
-				cmb_transform_precision = (int)*prec[0];
-				cmb_transform_total_precision = (int)*prec[0];
-				break;
-			case 2:
-				cmb_transform_precision = (int)*prec[0];
-				cmb_transform_total_precision = (int)*prec[1];
 			}
 			opt_precision = TRUE;
 			break;
@@ -529,24 +516,24 @@ main(int argc, char *argv[])
 #endif
 
 		/*
-		 * Convert items into array of pointers to long double
+		 * Convert items into array of struct pointers
 		 * NB: Transformation function does not perform conversions
 		 */
 		if (!opt_range) {
-			items_tmp = calloc(nitems, sizeof(long double *));
-			if (items_tmp == NULL) {
+			ul = sizeof(struct cmb_xitem *);
+			if ((items_tmp = calloc(nitems, ul)) == NULL) {
 				errx(EXIT_FAILURE, "Out of memory?!");
 				/* NOTREACHED */
 			}
-			ul = sizeof(long double);
 			for (n = 0; n < nitems; n++) {
-				if ((items_tmp[n] =
-				    (char *)malloc(ul)) == NULL) {
+				if ((xitem = malloc(sizeof(struct cmb_xitem)))
+				    == NULL) {
 					errx(EXIT_FAILURE, "Out of memory?!");
 					/* NOTREACHED */
 				}
-				ld = strtold(items[n], NULL);
-				memcpy(items_tmp[n], &ld, ul);
+				xitem->cp = items[n];
+				xitem->as.ld = strtold(items[n], NULL);
+				items_tmp[n] = (char *)xitem;
 				if (opt_precision)
 					continue;
 				if ((cp = strchr(items[n], '.')) != NULL) {
@@ -554,8 +541,6 @@ main(int argc, char *argv[])
 					len -= cp - items[n] + 1;
 					if (len > cmb_transform_precision)
 						cmb_transform_precision = len;
-					cmb_transform_total_precision =
-					    cmb_transform_precision;
 				}
 			}
 			items = items_tmp;
@@ -652,11 +637,8 @@ main(int argc, char *argv[])
 		for (n = 0; n < nitems; n++)
 			free(items_tmp[n]);
 		free(items_tmp);
-		for (i = 0; i < 2; i++) {
-			if (prec[i] != NULL)
-				free(prec[i]);
-		}
 	}
+	free(config);
 
 	return (retval);
 }
@@ -887,68 +869,6 @@ parse_unum(const char *s, uint32_t *n)
 	return (TRUE);
 }
 
-static int
-parse_utuple(const char *s, const char delim, uint8_t max, uint32_t *n[])
-{
-	uint8_t i = 0;
-	int r = 0;
-	const char *cp = s;
-	const char **cpi = NULL;
-	size_t optlen;
-	size_t len = 0;
-	uint64_t *ull;
-
-	errno = 0;
-	if (cp == NULL || (optlen = strlen(cp)) == 0 || max < 1)
-		return (r);
-
-	if ((cpi = malloc(sizeof(char *) * max)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-	bzero(cpi, sizeof(char *) * max);
-
-	while (i < max && *cp != '\0') {
-		cp = &s[len += unumlen(cpi[i] = cp)];
-		if (len != optlen) {
-			if (*cp != delim) {
-				errno = EINVAL;
-				return (-1);
-			}
-			cp = &s[++len];
-			if (*cp == '\0') {
-				errno = EINVAL;
-				return (-1);
-			}
-		}
-		r = ++i;
-	}
-
-	if (i == max && *cp != '\0') {
-		errno = EINVAL;
-		return (-1);
-	}
-
-	if ((ull = malloc(sizeof(uint64_t) * i)) == NULL)
-		errx(EXIT_FAILURE, "Out of memory?!");
-	bzero(ull, sizeof(uint64_t) * i);
-
-	for (i = 0; i < r; i++) {
-		ull[i] = strtoull(cpi[i], (char **)NULL, 10);
-		if (n[i] == NULL) {
-			if ((n[i] = malloc(sizeof(uint32_t))) == NULL)
-				errx(EXIT_FAILURE, "Out of memory?!");
-		}
-		*n[i] = (uint32_t)ull[i];
-		if (errno != 0)
-			return (-1);
-		else if (ull[i] > UINT_MAX) {
-			errno = ERANGE;
-			return (-1);
-		}
-	}
-
-	return (r);
-}
-
 static uint8_t
 parse_urange(const char *s, uint32_t *min, uint32_t *max)
 {
@@ -1017,14 +937,16 @@ range_char(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 		for (num = start; num <= stop; num++) {
 			len = snprintf(range_tmp, size, "%u", num);
 			dst[idx] = (char *)malloc((unsigned long)len + 1);
-			memcpy(dst[idx], range_tmp, (unsigned long)len + 1);
+			(void)memcpy(dst[idx], range_tmp,
+			    (unsigned long)len + 1);
 			idx++;
 		}
 	} else {
 		for (num = start; num >= stop; num--) {
 			len = snprintf(range_tmp, size, "%u", num);
 			dst[idx] = (char *)malloc((unsigned long)len + 1);
-			memcpy(dst[idx], range_tmp, (unsigned long)len + 1);
+			(void)memcpy(dst[idx], range_tmp,
+			    (unsigned long)len + 1);
 			idx++;
 		}
 	}
@@ -1047,7 +969,7 @@ range_float(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 				/* NOTREACHED */
 			}
 			ld = (long double)num;
-			memcpy(dst[idx], &ld, size);
+			(void)memcpy(dst[idx], &ld, size);
 			idx++;
 		}
 	} else {
@@ -1057,7 +979,7 @@ range_float(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 				/* NOTREACHED */
 			}
 			ld = (long double)num;
-			memcpy(dst[idx], &ld, size);
+			(void)memcpy(dst[idx], &ld, size);
 			idx++;
 		}
 	}
