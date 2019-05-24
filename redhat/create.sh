@@ -5,7 +5,7 @@
 #
 # $Title: Script to create a new RPM $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/redhat/create.sh 2017-11-15 13:22:49 -0800 freebsdfrau $
+# $FrauBSD: //github.com/FrauBSD/pkgcenter/redhat/create.sh 2019-05-23 13:12:58 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -54,7 +54,7 @@ VENDOR="The FrauBSD Project https://www.fraubsd.org/"
 #
 # Default `Changelog' information for new SPECFILE
 #
-CHANGELOGTIME_day=$( date "+%a %b %m %Y" )
+CHANGELOGTIME_day=$( date "+%a %b %e %Y" )
 CHANGELOGNAME="First Last <flast@fraubsd.org> 1.0-1"
 CHANGELOGTEXT="- Package created."
 
