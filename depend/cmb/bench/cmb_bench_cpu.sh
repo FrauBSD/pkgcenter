@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 12:57:30 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:02:27 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -16,6 +16,9 @@
 
 # Solve on all cores (AC=1) or solve once spread over $THREADS
 : ${AC:=}
+
+# Use OpenSSL?
+: ${USE_OPENSSL:=}
 
 # Number translations
 : ${LANG:=en_US.UTF-8}
@@ -51,16 +54,17 @@ usage()
 {
 	local optfmt="\t%-9s %s\n"
 	exec >&2
-	printf "Usage: %s [-a] [-n num] [set-num]\n" "$pgm"
+	printf "Usage: %s [-aO] [-n num] [set-num]\n" "$pgm"
 	printf "Options:\n"
 	printf "$optfmt" "-a" "Solve on all threads instead of spreading."
 	printf "$optfmt" "-n num" "Use num threads instead of nproc threads."
+	printf "$optfmt" "-O" "Enable/use OpenSSL."
 	printf "Notes:\n"
 	printf "\tThe default set-num is 38.\n"
 	die
 }
 
-interrupt() # Ctrl-C handler
+nterrupt() # Ctrl-C handler
 {
 	printf "\nAborted.\n"
 	exec 2> /dev/null
@@ -82,10 +86,11 @@ get_elapsed()
 #
 # Process comnand-line options
 #
-while getopts ahn: flag; do
+while getopts ahn:O flag; do
 	case "$flag" in
 	a) AC=1 ;;
 	n) THREADS="$OPTARG" ;;
+	O) USE_OPENSSL=1 ;;
 	*) usage # NOTREACHED
 	esac
 done
@@ -126,7 +131,11 @@ printf "Spawning %d threads to to solve C(%d,S)... " \
 # Spawn threads
 #
 for n in $( seq 1 $THREADS ); do
-	cmd="cmb -oSr"
+	if [ "$USE_OPENSSL" ]; then
+		cmd="cmb -Sr"
+	else
+		cmd="cmb -oSr"
+	fi
 	if [ "$AC" ]; then # All-core stress test
 		$cmd $SET &
 	else
