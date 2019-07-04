@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:02:27 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:12:11 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -64,7 +64,7 @@ usage()
 	die
 }
 
-nterrupt() # Ctrl-C handler
+interrupt() # Ctrl-C handler
 {
 	printf "\nAborted.\n"
 	exec 2> /dev/null
