@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark for floating-point operations $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu_flops.sh 2019-07-04 13:17:47 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu_flops.sh 2019-07-04 13:27:42 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -155,6 +155,7 @@ trap interrupt SIGINT
 #
 # Inform the user of what is currently taking place
 #
+export LANG
 printf "Total combinations in C(%d,2) is %'d\n" "$SET" "$T"
 if [ "$AC" ]; then # All-core stress test
 	printf "Each thread working on %'d combinations\n" "$T"
@@ -177,7 +178,16 @@ while :; do
 	if [ $(( $n % 20 )) -eq 0 ]; then
 		get_elapsed
 		printf "%s -- load: %'8.2f -- elapsed: %8s\n" "$( date )" \
-			"$( uptime | awk '($0=$(NF-2)) sub(/,$/,"")' )" \
+			"$( uptime | awk '
+				BEGIN {
+					x = sprintf("%'\''.1f", 1.5)
+					gsub(/[[:digit:]]/, "", x)
+				}
+				($0=$(NF-2)) sub(/,$/,"") {
+					gsub(/\./, x)
+					print
+				}
+			' )" \
 			"$elapsed"
 		n=1
 	else

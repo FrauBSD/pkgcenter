@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:14:36 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:27:42 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -177,7 +177,16 @@ while :; do
 	if [ $(( $n % 20 )) -eq 0 ]; then
 		get_elapsed
 		printf "%s -- load: %'8.2f -- elapsed: %8s\n" "$( date )" \
-			"$( uptime | awk '($0=$(NF-2)) sub(/,$/,"")' )" \
+			"$( uptime | awk '
+				BEGIN {
+					x = sprintf("%'\''.1f", 1.5)
+					gsub(/[[:digit:]]/, "", x)
+				}
+				($0=$(NF-2)) sub(/,$/,"") {
+					gsub(/\./, x)
+					print
+				}
+			' )" \
 			"$elapsed"
 		n=1
 	else
