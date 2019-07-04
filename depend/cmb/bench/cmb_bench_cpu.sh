@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 11:33:01 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 12:57:30 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -16,6 +16,9 @@
 
 # Solve on all cores (AC=1) or solve once spread over $THREADS
 : ${AC:=}
+
+# Number translations
+: ${LANG:=en_US.UTF-8}
 
 ############################################################ GLOBALS
 
@@ -116,7 +119,8 @@ fi
 # Inform the user of what we are about to do
 #
 printf "Started: %s\n" "$( date )"
-printf "Spawning $THREADS threads to to solve C(%d,S)... " "$SET"
+printf "Spawning %d threads to to solve C(%d,S)... " \
+	"$THREADS" "$SET"
 
 #
 # Spawn threads
@@ -162,7 +166,7 @@ while :; do
 	pids="${_pids# }"
 	if [ $(( $n % 20 )) -eq 0 ]; then
 		get_elapsed
-		printf "%s -- load: %8.2f -- elapsed: %8s\n" "$( date )" \
+		printf "%s -- load: %'8.2f -- elapsed: %8s\n" "$( date )" \
 			"$( uptime | awk '($0=$(NF-2)) sub(/,$/,"")' )" \
 			"$elapsed"
 		n=1
