@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-04 08:42:52 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-04 08:46:21 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -57,7 +57,7 @@ static uint8_t opt_silent = FALSE;
 static const char digit[11] = "0123456789";
 
 #ifndef _Noreturn
-#define _Noreturn
+#define _Noreturn __attribute__((noreturn))
 #endif
 
 /* Function prototypes */
