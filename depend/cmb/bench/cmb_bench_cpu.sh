@@ -3,15 +3,16 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 10:26:52 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 11:01:03 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
 # How many threads to use (default = all the cores)
-: ${THREADS:=$( getconf _NPROCESSORS_ONLN )}
+: ${THREADS:=$( getconf _NPROCESSORS_ONLN 2> /dev/null ||
+	getconf NPROCESSORS_ONLN 2> /dev/null )}
 
 # Perform n-choose-k with n value of $SET and k range of 1..$SET
-: ${SET:=38}
+: ${SET:=32}
 
 # Solve on all cores (AC=1) or solve once spread over $THREADS
 : ${AC:=}
@@ -33,6 +34,16 @@ ABORTED=
 
 ############################################################ FUNCTIONS
 
+die()
+{
+	local fmt="$1"
+	if [ "$fmt" ]; then
+		shift 1 # fmt
+		printf "%s: $fmt\n" "$pgm" "$@"
+	fi
+	exit $FAILURE
+}
+
 usage()
 {
 	local optfmt="\t%-9s %s\n"
@@ -43,7 +54,7 @@ usage()
 	printf "$optfmt" "-n num" "Use num threads instead of nproc threads."
 	printf "Notes:\n"
 	printf "\tThe default set-num is 38.\n"
-	exit $FAILURE
+	die
 }
 
 interrupt() # Ctrl-C handler
@@ -59,7 +70,7 @@ interrupt() # Ctrl-C handler
 #
 # Process comnand-line options
 #
-while getopts an: flag; do
+while getopts ahn: flag; do
 	case "$flag" in
 	a) AC=1 ;;
 	n) THREADS="$OPTARG" ;;
@@ -72,6 +83,16 @@ shift $(( $OPTIND - 1 ))
 # Process command-line argument
 #
 [ $# -gt 0 ] && SET="$1"
+
+#
+# Check settings
+#
+case "$THREADS" in
+""|*[!0-9]*) die "Please set THREADS to a number or use \`-n num'" ;;
+esac
+case "$SET" in
+""|*[!0-9]*) die "Please set SET to a number or use \`num' argument" ;;
+esac
 
 #
 # Gather information about requested benchmark
