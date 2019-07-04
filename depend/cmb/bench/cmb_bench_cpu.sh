@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 11:01:03 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 11:33:01 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -63,6 +63,15 @@ interrupt() # Ctrl-C handler
 	exec 2> /dev/null
 	kill $pids
 	ABORTED=1
+}
+
+get_elapsed()
+{
+	local t="$(( $( date +%s ) - $S ))" # time in seconds since epoch
+	min=$(( $t / 60 ))
+	sec=$(( $t - 60 * $min ))
+	[ ${#sec} -eq 1 ] && sec="0$sec"
+	elapsed="${min}m${sec}s"
 }
 
 ############################################################ MAIN
@@ -145,14 +154,17 @@ fi
 printf "Waiting for threads to complete. Press Ctrl-C to cancel test.\n"
 n=20
 while :; do
-	running=
+	_pids=
 	for pid in $pids; do
-		kill -0 $pid 2> /dev/null && running=1 && break
+		kill -0 $pid 2> /dev/null && _pids="$_pids $pid"
 	done
-	[ "$running" ] || break
+	[ "$_pids" ] || break
+	pids="${_pids# }"
 	if [ $(( $n % 20 )) -eq 0 ]; then
-		printf "%s -- load: %.2f\n" "$( date )" \
-			"$( uptime | awk '($0=$(NF-2)) sub(/,$/,"")' )"
+		get_elapsed
+		printf "%s -- load: %8.2f -- elapsed: %8s\n" "$( date )" \
+			"$( uptime | awk '($0=$(NF-2)) sub(/,$/,"")' )" \
+			"$elapsed"
 		n=1
 	else
 		n=$(( $n + 1 ))
@@ -163,11 +175,9 @@ done
 #
 # All done
 #
-E=$(( $( date +%s ) - $S )) # End time in seconds since epoch
 [ "$ABORTED" ] || printf "Solved C(%d,S): %s\n" "$SET" "$( date )"
-min=$(( $E / 60 ))
-sec=$(( $E - 60 * $min ))
-printf "Elapsed Time: %dm%ds\n" "$min" "$sec"
+get_elapsed
+printf "Elapsed Time: %s\n" "$elapsed"
 
 exit $SUCCESS
 
