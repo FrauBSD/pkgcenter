@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:27:42 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:28:26 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -60,7 +60,7 @@ usage()
 	printf "$optfmt" "-n num" "Use num threads instead of nproc threads."
 	printf "$optfmt" "-O" "Enable/use OpenSSL."
 	printf "Notes:\n"
-	printf "\tThe default set-num is 38.\n"
+	printf "\tThe default set-num is 32.\n"
 	die
 }
 
