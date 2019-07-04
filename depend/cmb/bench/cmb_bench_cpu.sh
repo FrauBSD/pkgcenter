@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:12:11 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu.sh 2019-07-04 13:14:36 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -124,6 +124,7 @@ fi
 # Inform the user of what we are about to do
 #
 printf "Started: %s\n" "$( date )"
+[ ! "$USE_OPENSSL" ] || printf "OpenSSL enabled -- %s\n" "$( cmb -v )"
 printf "Spawning %d threads to to solve C(%d,S)... " \
 	"$THREADS" "$SET"
 
