@@ -3,7 +3,7 @@
 #
 # $Title: Combinatorics based CPU benchmark for floating-point operations $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu_flops.sh 2019-07-04 13:27:42 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmb_bench_cpu_flops.sh 2019-07-04 23:58:53 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -12,7 +12,7 @@
 	getconf NPROCESSORS_ONLN 2> /dev/null )}
 
 # Perform n-choose-k with n value of $SET and k value of 2
-: ${SET:=30}
+: ${SET:=1000000}
 
 # Solve on all cores (AC=1) or solve once spread over $THREADS
 : ${AC:=}
@@ -60,7 +60,7 @@ usage()
 	printf "$optfmt" "-n num" "Use num threads instead of nproc threads."
 	printf "$optfmt" "-O" "Enable/use OpenSSL."
 	printf "Notes:\n"
-	printf "\tThe default set-num is 30.\n"
+	printf "\tThe default set-num is 1,000,000.\n"
 	die
 }
 
@@ -115,7 +115,7 @@ esac
 # Gather information about requested benchmark
 #
 S=$( date +%s ) # Start time in seconds since epoch (Jan 1, 1970 00:00:00 UTC)
-T=$( cmb -otr $SET ) # Total number of combinations in n-choose-k given $SET
+T=$( cmb -otrk2 $SET ) # Total number of combinations in n-choose-k given $SET
 if [ ! "$AC" ]; then
 	C=$(( $T / $THREADS )) # Combinations for each thread
 fi
@@ -133,9 +133,9 @@ printf "Spawning %d threads to to solve C(%d,2) => division... " \
 #
 for n in $( seq 1 $THREADS ); do
 	if [ "$USE_OPENSSL" ]; then
-		cmd="cmb -Sr -X div"
+		cmd="cmb -Sr -k 2 -X div"
 	else
-		cmd="cmb -oSr -X div"
+		cmd="cmb -oSr -k 2 -X div"
 	fi
 	if [ "$AC" ]; then # All-core stress test
 		$cmd $SET &
