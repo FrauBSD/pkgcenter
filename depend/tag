@@ -4,8 +4,8 @@
 ############################################################ IDENT(1)
 #
 # $Title: Script for tagging pkgcenter depend files in git $
-# $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/tag 2019-03-08 19:37:38 -0800 freebsdfrau $
+# $Copyright: 1999-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: pkgcenter/depend/tag 2019-07-07 11:46:57 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -209,7 +209,7 @@ PKGCENTER="${PKGCENTER_DEPEND%/*}"
 PWD=$( realpath "$PWD" )
 TAGPREFIX="${PWD#${PKGCENTER%/*}/}" # Remove everything leading up to pkgcenter
 case "$TAGPREFIX" in
-pkgcenter/depend|pkgcenter/depend/*) : acceptable ;;
+pkgcenter*/depend|pkgcenter*/depend/*) : acceptable ;;
 *) die "ERROR! PWD not in pkgcenter/depend/ -- Exiting."
 esac
 replaceall "$TAGPREFIX" / - TAGPREFIX
