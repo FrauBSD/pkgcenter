@@ -5,7 +5,7 @@
 ################################ CONFIGURATION #################################
 ################################################################################
 
-PKGCENTER      = ../../../../../pkgcenter
+PKGCENTER      = ../../../..
 MANIFEST       = ./MANIFEST
 PLIST          = $(MANIFEST)
 STAGEDIR       = ./stage
@@ -191,6 +191,9 @@ taglist:
 
 import:
 	@$(ENVIRON) $(PKGCENTER)/Mk/git_import
+
+autoimport:
+	@$(ENVIRON) $(PKGCENTER)/Mk/git_import -a
 
 commit:
 	@$(GIT) commit
