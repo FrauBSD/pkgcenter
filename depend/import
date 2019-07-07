@@ -5,7 +5,7 @@
 #
 # $Title: Script for importing a directory to git $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/import 2017-07-23 16:16:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/import 2019-07-07 11:45:10 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -20,21 +20,32 @@ SUCCESS=0
 FAILURE=1
 
 #
+# Command-line options
+#
+MESSAGE=	# -m msg
+
+#
 # Utility pathnames
 #
 : ${GIT:=git}
 
 ############################################################ MAIN
 
-if [ $# -eq 0 ]; then
-	exec >&2
-	echo "Usage: ${0##*/} PATH ..."
-	exit $FAILURE
-fi
+#
+# Process command-line options
+#
+while getopts m: flag; do
+	case "$flag" in
+	m) MESSAGE="$OPTARG" ;;
+	*) echo "Usage: ${0##*/} [-m msg] PATH ..." >&2
+	   exit $FAILURE
+	esac
+done
+shift $(( $OPTIND - 1 ))
 
 set -e
 $GIT add "$@"
-$GIT commit
+$GIT commit ${MESSAGE:+-m "$MESSAGE"}
 
 exit $SUCCESS
 
