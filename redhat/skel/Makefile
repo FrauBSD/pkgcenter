@@ -5,7 +5,7 @@
 ################################ CONFIGURATION #################################
 ################################################################################
 
-PKGCENTER      = ../../../../../../pkgcenter
+PKGCENTER      = ../../../../..
 SPECFILE       = ./SPECFILE
 STAGEDIR       = ./stage
 PKGCENTER_CONF = ./pkgcenter.conf
@@ -108,7 +108,7 @@ specfile: $(SPECFILE)
 
 check_name: specfile
 	@[ "$(NAME)" ] || $(PKGCENTER)/Mk/die \
-	    "ERROR: Specification $(SPECFILE) has no RPM name"
+		"ERROR: Specification $(SPECFILE) has no RPM name"
 
 .rpmmacros:
 	@:> $(@)
@@ -178,6 +178,9 @@ taglist:
 
 import:
 	@$(ENVIRON) $(PKGCENTER)/Mk/git_import
+
+autoimport:
+	@$(ENVIRON) $(PKGCENTER)/Mk/git_import -a
 
 commit:
 	@$(GIT) commit

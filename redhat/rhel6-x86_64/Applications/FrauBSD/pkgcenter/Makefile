@@ -5,7 +5,7 @@
 ################################ CONFIGURATION #################################
 ################################################################################
 
-PKGCENTER      = ../../../../../../pkgcenter
+PKGCENTER      = ../../../../..
 SPECFILE       = ./SPECFILE
 STAGEDIR       = ./stage
 PKGCENTER_CONF = ./pkgcenter.conf
@@ -178,6 +178,9 @@ taglist:
 
 import:
 	@$(ENVIRON) $(PKGCENTER)/Mk/git_import
+
+autoimport:
+	@$(ENVIRON) $(PKGCENTER)/Mk/git_import -a
 
 commit:
 	@$(GIT) commit
