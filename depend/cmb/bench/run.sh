@@ -3,7 +3,7 @@
 #
 # $Title: Script to run benchmarks and log results $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/run.sh 2019-07-06 20:50:10 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/run.sh 2019-07-07 09:08:30 -0700 freebsdfrau $
 #
 ############################################################ CONFIGURATION
 
@@ -34,7 +34,7 @@ TESTS="
 	# Spread-Core Test (274B ops / %u cores)
 	logs/log3.%s.txt = ./cmb_bench_cpu.sh -n %u 38
 
-	# Flops Test (2.1B ops x %u cores)
+	# Flops Test (2.1B flops x %u cores)
 	logs/log4.%s.txt = ./cmb_bench_cpu_flops.sh -an 44 65543
 " # END-QUOTE
 
