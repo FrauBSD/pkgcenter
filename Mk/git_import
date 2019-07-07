@@ -5,11 +5,11 @@
 #
 # $Title: Script for importing current working directory to git $
 # $Copyright: 1999-2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/Mk/git_import 2018-07-04 04:06:08 +0000 freebsdfrau $
+# $FrauBSD: pkgcenter/Mk/git_import 2019-07-07 10:56:30 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
-# Usage: git_import
+# Usage: git_import [-a]
 #
 ############################################################ GLOBALS
 
@@ -20,9 +20,19 @@ SUCCESS=0
 FAILURE=1
 
 #
+# Command-line options
+#
+AUTO=		# -a
+
+#
 # Utility pathnames
 #
 : ${GIT:=git}
+
+#
+# Miscellaneous
+#
+MESSAGE=
 
 ############################################################ FUNCTIONS
 
@@ -37,9 +47,26 @@ eval2()
 set -e
 
 #
+# Process command-line options
+#
+while getopts a flag; do
+	case "$flag" in
+	a) AUTO=1 ;;
+	*) echo "Usage: ${0##*/} [-a]" >&2
+	   exit $FAILURE
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+#
 # Clean before import to prevent importing +MANIFEST et al.
 #
 make clean
+
+#
+# Automation
+#
+[ ! "$AUTO" ] || MESSAGE="Autoimport by ${ID:-$( id -nu )} on $HOSTNAME"
 
 #
 # Import src directory without verification
@@ -47,7 +74,10 @@ make clean
 if [ -d "$SRCDIR" ]; then
 	echo $GIT add -v "$SRCDIR"
 	added=$( $GIT add -v "$SRCDIR" )
-	[ ! "$added" ] || eval2 $GIT commit --no-verify
+	if [ "$added" ]; then
+		[ ! "$MESSAGE" ] || printf "Commit message:\n%s\n\n" "$MESSAGE"
+		eval2 $GIT commit --no-verify ${MESSAGE:+-m \"\$MESSAGE\"}
+	fi
 fi
 
 #
@@ -60,7 +90,10 @@ make distclean
 #
 echo $GIT add -v .
 added=$( $GIT add -v . )
-[ ! "$added" ] || eval2 $GIT commit
+if [ "$added" ]; then
+	[ ! "$MESSAGE" ] || printf "Commit message:\n%s\n\n" "$MESSAGE"
+	eval2 $GIT commit ${MESSAGE:+-m \"\$MESSAGE\"}
+fi
 
 ################################################################################
 # END
