@@ -4,8 +4,8 @@
 ############################################################ IDENT(1)
 #
 # $Title: Script to update pkgcenter.conf file $
-# $Copyright: 2017 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/redhat/Mk/rpmconf 2017-11-15 14:21:09 -0800 freebsdfrau $
+# $Copyright: 2017-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: pkgcenter/redhat/Mk/rpmconf 2019-07-07 11:43:30 -0700 freebsdfrau $
 #
 ############################################################ INFORMATION
 #
@@ -115,6 +115,7 @@ $AWK '$1 == "%files", /^[[:space:]]*$/ { if ($0 ~ "^/") print }' "$SPECFILE" |
 		stagedir  = "$STAGEDIR"
 		stagelen  = length(stagedir)
 		readlink  = ENVIRON["READLINK"] " "
+		template  = pkgcenter "/redhat/Mk/template.conf"
 
 		if (ENVIRON["UNAME_s"] == "Darwin")
 			readlink = sprintf("%s -le '\''%s'\'' -- ",
@@ -168,37 +169,48 @@ $AWK '$1 == "%files", /^[[:space:]]*$/ { if ($0 ~ "^/") print }' "$SPECFILE" |
 	################################################## END
 	END {
 		n = _asorti(DIRS, sorted_dirs)
-		print "\nDIRS=\"\n\t# Directory"
-		for (i = n; i >= 1; i--) print "\t" stagedir sorted_dirs[i]
-		print "\""
+		dir_list = "# Directory"
+		for (i = n; i >= 1; i--)
+			dir_list = dir_list "\n\t" stagedir sorted_dirs[i]
 
 		n = _asorti(SYMLINKS, sorted_symlinks)
 		L = 17 - stagelen
 		for (i = 1; i <= n; i++)
 			L = (len = length(sorted_symlinks[i])) > L ? len : L
-		printf "\nSYMLINKS=\"\n\t%-*s %s\n",
-			L + stagelen, "# Symbolic-link", "Target"
+		symlink_list = sprintf("%-*s %s", L + stagelen,
+			"# Symbolic-link", "Target")
 		for (i = 1; i <= n; i++) {
 			symlink = sorted_symlinks[i]
 			cmd = readlink argsafe(src symlink)
 			cmd | getline target
 			close(cmd)
-			printf "\t%s%-*s %s\n", stagedir, L, symlink, target
+			symlink_list = symlink_list sprintf("\n\t%s%-*s %s",
+				stagedir, L, symlink, target)
 		}
-		print "\""
 
 		n = _asorti(STAGE, sorted_stage)
 		if (substr(src, 1, len = length(pkgcenter)) == pkgcenter)
 			src = "$PKGCENTER" substr(src, len + 1)
-		printf "\nSRCDIR=\"%s\"\n", src
-		print "STAGE=\"\n\t# Source   Destination"
+		stage_list = "# Source   Destination"
 		for (i = 1; i <= n; i++) {
 			path = sorted_stage[i]
-			printf "\t%s\n\t%11s%s\n",
-				prefix path, "", stagedir path
+			stage_list = stage_list sprintf("\n\t%s\n\t%11s%s",
+				prefix path, "", stagedir path)
 		}
-		print "\""
-	}'
+
+		while (getline < template) {
+			gsub(/@DIRS@/, dir_list)
+			gsub(/@SYMLINKS@/, symlink_list)
+			gsub(/@SRCDIR@/, src)
+			gsub(/@STAGE@/, stage_list)
+			print
+		}
+	}' > "$PKGCENTER_CONF.new"
+
+#
+# Move new file into place
+#
+mv -f "$PKGCENTER_CONF.new" "$PKGCENTER_CONF"
 
 ################################################################################
 # END
