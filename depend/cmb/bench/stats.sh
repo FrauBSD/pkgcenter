@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 10:57:24 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 15:08:20 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -149,9 +149,144 @@ fi
 #
 for file in "$@"; do
 	awk '
-		/^Command:/
-		$1 ~ /user$/
-		/^Elapsed Time:/
+	################################################## FUNCTIONS
+
+	function _asort(src, dest,        k, nitems, i, val)
+	{
+		k = nitems = 0
+		for (i in src) dest[++nitems] = src[i]
+		for (i = 1; i <= nitems; k = i++) {
+			val = dest[i]
+			while ((k > 0) && (dest[k] > val)) {
+				dest[k+1] = dest[k]; k--
+			}
+			dest[k+1] = val
+		}
+		return nitems
+	}
+
+	function avg(n, nums,        i, a)
+	{
+		a = 0
+		for (i = 1; i <= n; i++) a += nums[i]
+		return a / n
+	}
+
+	function stddev(mean, n, nums,        i, cmd, ans)
+	{
+		cmd = ""
+		ans = "(0"
+		for (i = 1; i <= n; i++) {
+			cmd = cmd sprintf(";n%u=%s", i, nums[i])
+			cmd = cmd sprintf(";x%u=(n%u-%s)^2", i, i, mean)
+			ans = ans sprintf("+x%u", i)
+		}
+		cmd = sprintf("echo \"scale=3%s;sqrt(%s)/%u)\" | bc",
+			cmd, ans, n) | getline ans
+		close(cmd)
+		return ans
+	}
+
+	function st(seconds,        min, sec)
+	{
+		min = int(seconds / 60)
+		sec = sprintf("%.3f", seconds - min * 60)
+		if (sec ~ /\./) sub(/\.?0+$/, "", sec)
+		if (min == 0)
+			return sprintf("%ss", sec)
+		else
+			return sprintf("%um%ss", min, sec)
+	}
+
+	################################################## MAIN
+
+	sub(/^Command:[[:space:]]*/, "") { cmds[++ncmds] = $0; next }
+
+	sub(/elapsed$/, "", $3) {
+		sec = 0
+		n = split($3, a, /:/)
+		if (n == 3) sec = sprintf("%.2f",
+			a[1] * 3600 + a[2] * 60 + a[3])
+		else if (n == 2) sec = sprintf("%.2f",
+			a[1] * 60 + a[2])
+		if (!sec) next
+		cmd = cmds[n = ncmds]
+		run[n,++nruns[cmd]] = sec
+	}
+
+	/^Elapsed Time:/ {
+		sec = 0
+		n = split($3, a, /[ms]/)
+		if (n == 3) sec = a[1] * 60 + a[2]
+		if (!sec) next
+		cmd = cmds[n = ncmds]
+		run[n,++nruns[cmd]] = sec
+	}
+
+	################################################## END
+
+	END {
+		for (n = 1; n <= ncmds; n++) {
+			print cmd = cmds[n]
+
+			#
+			# Eliminate outliers
+			runs = nruns[cmd]
+			delete xrun
+			for (i = 1; i <= runs; i++) {
+				xrun[i] = run[n,i]
+			}
+			delete sxrun
+			_asort(xrun, sxrun)
+			delete outliers
+			r = runs
+			l = 1
+			while (r > 10) {
+				if (sxrun[l+1] - sxrun[l] >= \
+				    sxrun[r] - sxrun[r-1]) {
+					outliers[sxrun[l]]++
+					delete sxrun[l++]
+				} else {
+					outliers[sxrun[r]]++
+					delete sxrun[r]
+				}
+				r--
+			}
+			delete results
+			nresults = 0
+			for (i = 1; i <= runs; i++) {
+				arun = xrun[i]
+				if (arun in outliers) {
+					outliers[arun]--
+					if (outliers[arun] == 0)
+						delete outliers[arun]
+					continue
+				}
+				results[++nresults] = xrun[i]
+			}
+
+			#
+			# Print results
+			#
+			min = results[1]
+			max = -1
+			for (i = 1; i <= nresults; i++) {
+				if (results[i] < min) min = results[i]
+				if (results[i] > max) max = results[i]
+				printf "%2u: %s", i, st(results[i])
+				if (i % 4 == 0) printf "\n"
+				else printf "\t"
+			}
+			printf "\n"
+			printf "min: %s", st(min)
+			printf "\tmax: %s", st(max)
+			printf "\tavg: %s", st(mean = avg(nresults, results))
+			printf "\tstddev: %s",
+				st(stddev(mean, nresults, results))
+			printf "\n"
+			printf "\n"
+		}
+	}
 	' "$file"
 done
 
