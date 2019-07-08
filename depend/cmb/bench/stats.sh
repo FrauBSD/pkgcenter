@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 10:14:33 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 10:51:44 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -39,7 +39,7 @@ die()
 usage()
 {
 	exec >&2
-	echo "Usage: $pgm -H | file ..."
+	echo "Usage: $pgm [-H] file ..."
 	die
 }
 
@@ -140,7 +140,6 @@ if [ "$HOSTINFO" ]; then
 		}
 	' # END-QUOTE
 	printf "$fmt" "Kernel:" "$( uname -r )"
-	exit $SUCCESS
 fi
 
 #
