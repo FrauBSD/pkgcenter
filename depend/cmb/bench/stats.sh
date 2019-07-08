@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 10:51:44 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 10:57:24 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -110,7 +110,8 @@ if [ "$HOSTINFO" ]; then
 		}
 
 		END {
-			printf fmt, "Base board:", mbase " " mprod
+			if (mbase != "")
+				printf fmt, "Base board:", mbase " " mprod
 			for (c in cpu) {
 				n = cpu[c]
 				gsub(/\(R\)/, "", c)
@@ -140,20 +141,19 @@ if [ "$HOSTINFO" ]; then
 		}
 	' # END-QUOTE
 	printf "$fmt" "Kernel:" "$( uname -r )"
+	printf "\n"
 fi
 
 #
-# Check command-line arguments
+# Read benchmark files
 #
-FILE="$1"
-[ "$FILE" ] || usage # NOTREACHED
-[ -e "$FILE" ] || die "%s: No such file or directory" "$FILE"
-[ -d "$FILE" ] && die "%s: Is a directory" "$FILE"
-
-#
-# Read benchmark file
-#
-: TODO
+for file in "$@"; do
+	awk '
+		/^Command:/
+		$1 ~ /user$/
+		/^Elapsed Time:/
+	' "$file"
+done
 
 exit $SUCCESS
 
