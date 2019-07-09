@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 22:09:19 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-09 00:11:54 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -24,6 +24,11 @@ FAILURE=1
 #
 HOSTINFO=	# -H
 
+#
+# Miscellaneous
+#
+HI=
+
 ############################################################ FUNCTIONS
 
 die()
@@ -39,7 +44,7 @@ die()
 usage()
 {
 	exec >&2
-	echo "Usage: $pgm [-H] file ..."
+	printf "Usage: %s [-H] file ...\n" "$pgm"
 	die
 }
 
@@ -60,9 +65,10 @@ shift $(( $OPTIND - 1 ))
 # Get host information
 #
 if [ "$HOSTINFO" ]; then
+	dmidecode=$( sudo dmidecode )
 	fmt="%-13s %s\n"
 	printf "$fmt" "Hostname:" "$HOSTNAME"
-	dmidecode | awk -v fmt="$fmt" '
+	HI=$( printf "%s\n" "$dmidecode" | awk -v fmt="$fmt" '
 		# Motherboard
 		/^Base/, /^$/ {
 			sub(/^[[:space:]]*/, "")
@@ -112,11 +118,25 @@ if [ "$HOSTINFO" ]; then
 		END {
 			if (mbase != "")
 				printf fmt, "Base board:", mbase " " mprod
+			ncputypes = 0
+			for (c in cpu) ncputypes++
+			if (ncputypes == 1) {
+				cmd = sprintf("getconf %s || getconf %s",
+					"_NPROCESSORS_ONLN 2> /dev/null",
+					"NPROCESSORS_ONLN 2> /dev/null")
+				cmd | getline nproc
+				close(cmd)
+			}
 			for (c in cpu) {
 				n = cpu[c]
 				gsub(/\(R\)/, "", c)
 				gsub(/ +CPU +/, " ", c)
-				printf fmt, "Processor(s):", c " x " n
+				cpu_desc = sprintf("%s x %u", c, n)
+				if (ncputypes == 1) {
+					cpu_desc = sprintf("%s (%u cores)",
+						cpu_desc, nproc)
+				}
+				printf fmt, "Processor(s):", cpu_desc
 			}
 			nmemtypes = 0
 			for (m in mem) nmemtypes++
@@ -139,9 +159,9 @@ if [ "$HOSTINFO" ]; then
 				printf fmt, "Memory:", mem_desc
 			}
 		}
-	' # END-QUOTE
-	printf "$fmt" "Kernel:" "$( uname -r )"
-	printf "\n"
+	' )
+	HI="$HI$( printf "\n$fmt" "Kernel:" "$( uname -r )" )"
+	printf "%s\n" "$HI"
 fi
 
 #
@@ -155,6 +175,11 @@ for file in "$@"; do
 	esac
 
 	printf "\e[31;1m==>\e[39m %s\e[m\n" "$sfile"
+	if [ "$HOSTINFO" ]; then
+		printf "%s\n" "$HI" > "$sfile"
+	else
+		:> "$sfile"
+	fi
 	awk '
 	################################################## FUNCTIONS
 
@@ -188,7 +213,7 @@ for file in "$@"; do
 			cmd = cmd sprintf(";x%u=(n%u-%s)^2", i, i, mean)
 			ans = ans sprintf("+x%u", i)
 		}
-		cmd = sprintf("echo \"scale=3%s;sqrt(%s)/%u)\" | bc",
+		cmd = sprintf("printf \"scale=3%s;sqrt(%s)/%u)\\n\" | bc",
 			cmd, ans, n) | getline ans
 		close(cmd)
 		return ans
@@ -202,7 +227,7 @@ for file in "$@"; do
 		if (min == 0)
 			return sprintf("%ss", sec)
 		else
-			return sprintf("%um%ss", min, sec)
+			return sprintf("%um%02ss", min, sec)
 	}
 
 	################################################## MAIN
@@ -294,7 +319,7 @@ for file in "$@"; do
 			printf "\n"
 		}
 	}
-	' "$file" | tee "$sfile"
+	' "$file" | tee -a "$sfile"
 done
 
 exit $SUCCESS
