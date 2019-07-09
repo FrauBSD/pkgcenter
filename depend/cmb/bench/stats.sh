@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 15:08:20 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 21:56:41 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -205,9 +205,9 @@ for file in "$@"; do
 	sub(/elapsed$/, "", $3) {
 		sec = 0
 		n = split($3, a, /:/)
-		if (n == 3) sec = sprintf("%.2f",
+		if (n == 3) sec = sprintf("%.4f",
 			a[1] * 3600 + a[2] * 60 + a[3])
-		else if (n == 2) sec = sprintf("%.2f",
+		else if (n == 2) sec = sprintf("%.4f",
 			a[1] * 60 + a[2])
 		if (!sec) next
 		cmd = cmds[n = ncmds]
