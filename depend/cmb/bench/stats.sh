@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 21:56:41 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-08 22:09:19 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -148,6 +148,13 @@ fi
 # Read benchmark files
 #
 for file in "$@"; do
+	filename="${file##*/}" # file basename
+	case "$file" in
+	*/*) sfile="${file%/*}/stats${filename#log}" ;;
+	*) sfile="stats${filename#log}"
+	esac
+
+	printf "\e[31;1m==>\e[39m %s\e[m\n" "$sfile"
 	awk '
 	################################################## FUNCTIONS
 
@@ -287,7 +294,7 @@ for file in "$@"; do
 			printf "\n"
 		}
 	}
-	' "$file"
+	' "$file" | tee "$sfile"
 done
 
 exit $SUCCESS
