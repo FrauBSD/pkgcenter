@@ -3,7 +3,7 @@
 #
 # $Title: Script to produce results from benchmark file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-09 00:11:54 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/stats.sh 2019-07-10 04:55:03 -0700 freebsdfrau $
 #
 ############################################################ ENVIRONMENT
 
@@ -88,7 +88,11 @@ if [ "$HOSTINFO" ]; then
 		}
 
 		# Memory
-		/^Memory/, /^$/ {
+		/^Memory Device/, /^$/ {
+			if (/^Memory Device/) {
+				mem_maker = ""
+				mem_size = ""
+			}
 			sub(/^[[:space:]]*/, "")
 			sub(/[[:space:]]*$/, "")
 			if (sub(/^Manufacturer:[[:space:]]*/, ""))
@@ -102,7 +106,8 @@ if [ "$HOSTINFO" ]; then
 				if ($3 ~ /MHz/) mem_speed = \
 					sprintf("%.3f", mem_speed / 1000)
 				mem_speed = mem_speed "GHz"
-			} else if (/^$/ && mem_maker != "") {
+			} else if (/^$/ && mem_maker != "" &&
+			    tolower(mem_size) !~ /^no/) {
 				mem_desc = sprintf("%s %s %s @ %s",
 					mem_maker, mem_size, mem_type,
 					mem_speed)
@@ -155,7 +160,7 @@ if [ "$HOSTINFO" ]; then
 				if (nmemtypes == 1) {
 					mem_desc = sprintf("%s; %s avail)",
 						mem_desc, avail)
-				}
+				} else mem_desc = mem_desc ")"
 				printf fmt, "Memory:", mem_desc
 			}
 		}
@@ -213,8 +218,8 @@ for file in "$@"; do
 			cmd = cmd sprintf(";x%u=(n%u-%s)^2", i, i, mean)
 			ans = ans sprintf("+x%u", i)
 		}
-		cmd = sprintf("printf \"scale=3%s;sqrt(%s)/%u)\\n\" | bc",
-			cmd, ans, n) | getline ans
+		(cmd = sprintf("printf \"scale=3%s;sqrt(%s)/%u)\\n\" | bc",
+			cmd, ans, n)) | getline ans
 		close(cmd)
 		return ans
 	}
@@ -232,7 +237,7 @@ for file in "$@"; do
 
 	################################################## MAIN
 
-	sub(/^Command:[[:space:]]*/, "") { cmds[++ncmds] = $0; next }
+	sub(/^Command:[[:space:]]*/, "") { cmds[ncmds = 1] = $0; next }
 
 	sub(/elapsed$/, "", $3) {
 		sec = 0
