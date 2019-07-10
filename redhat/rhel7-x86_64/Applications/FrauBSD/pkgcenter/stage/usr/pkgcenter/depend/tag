@@ -1,0 +1,243 @@
+#!/bin/sh
+# -*- tab-width: 4 -*- ;; Emacs
+# vi: set noexpandtab  :: Vi/ViM
+############################################################ IDENT(1)
+#
+# $Title: Script for tagging pkgcenter depend files in git $
+# $Copyright: 1999-2019 Devin Teske. All rights reserved. $
+# $FrauBSD: pkgcenter/redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/stage/usr/pkgcenter/depend/tag 2019-07-10 13:30:46 -0700 freebsdfrau $
+#
+############################################################ INFORMATION
+#
+# Usage: tag [OPTIONS] TAG
+# OPTIONS:
+# 	-d   Delete given tag for the given sub-directory you are in.
+# 	-f   Force. Allow tagging of files already tagged at a lower revision
+# 	     with the same tag.
+# 	-l   List tags for the given sub-directory you are in.
+#
+############################################################ GLOBALS
+
+pgm="${0##*/}" # Program basename
+
+#
+# Global exit status
+#
+SUCCESS=0
+FAILURE=1
+
+#
+# OS Glue
+#
+: ${UNAME_s:=$( uname -s )}
+
+#
+# Utility pathnames
+#
+: ${GIT:=git}
+
+#
+# Literal whitespace characters
+#
+TAB="	" # END-QUOTE
+NL="
+" # END-QUOTE
+
+#
+# Command-line arguments
+#
+TAG=
+
+#
+# Command-line options
+#
+DELETE=		# -d
+FORCE=		# -f
+LIST=		# -l
+
+#
+# Miscellaneous
+#
+TAGPREFIX=
+
+############################################################ FUNCTIONS
+
+# err FORMAT [ARGUMENT ...]
+#
+# Print a message to stderr.
+#
+err()
+{
+	local fmt="$1"
+	shift 1 # fmt
+	[ "$fmt" ] || return $SUCCESS
+	printf "$fmt\n" "$@" >&2
+}
+
+# die [FORMAT [ARGUMENT ...]]
+#
+# Optionally print a message to stderr before exiting with failure status.
+#
+die()
+{
+	err "$@"
+	exit $FAILURE
+}
+
+# usage
+#
+# Print short usage statement to stderr and exit.
+#
+usage()
+{
+	local optfmt="\t%-4s %s\n"
+	exec >&2
+	printf "Usage: %s [OPTIONS] TAG\n" "$pgm"
+	printf "OPTIONS:\n"
+	printf "$optfmt" -d \
+	    "Delete given tag for the given sub-directory you are in."
+	printf "$optfmt" -f \
+	    "Force. Allow tagging files already tagged at a lower revision"
+	printf "$optfmt" "" \
+	    "with the same tag"
+	printf "$optfmt" -l \
+	    "List tags for the given sub-directory you are in."
+	die
+}
+
+eval2()
+{
+	echo "$*"
+	eval "$@"
+}
+
+if ! type realpath > /dev/null 2>&1; then
+case "$UNAME_s" in
+Darwin)
+realpath()
+{
+	perl -le 'use Cwd; print Cwd::abs_path(@ARGV)' -- "$@"
+}
+;;
+*)
+realpath()
+{
+	readlink -f "$@"
+}
+esac
+fi
+
+if ! type setvar > /dev/null 2>&1; then
+setvar()
+{
+	local __setvar_l="" __setvar_r="$2" __setvar_var_to_set="$1"
+	[ "$__setvar_var_to_set" ] || return $FAILURE
+	while :; do
+		case "$__setvar_r" in *\'*)
+			__setvar_l="$__setvar_l${__setvar_r%%\'*}'\\''"
+			__setvar_r="${__setvar_r#*\'}"
+			continue
+		esac
+		break
+	done
+	__setvar_l="$__setvar_l${__setvar_r#*\'}"
+	eval "$__setvar_var_to_set='$__setvar_l'"
+}
+fi
+
+# replaceall STRING FIND REPLACE [VAR_TO_SET]
+#
+# Replace all occurrences of find in string with replace. If var_to_set is
+# either missing or NULL, the modified string is produced on standard out for
+# capturing in a sub-shell (which is less recommended due to performance
+# degradation).
+#
+replaceall()
+{
+	local __left="" __right="$1"
+	local __find="$2" __replace="$3" __var_to_set="$4"
+	while :; do
+		case "$__right" in *$__find*)
+			__left="$__left${__right%%$__find*}$__replace"
+			__right="${__right#*$__find}"
+			continue
+		esac
+		break
+	done
+	__left="$__left${__right#*$__find}"
+	if [ "$__var_to_set" ]; then
+		setvar "$__var_to_set" "$__left"
+	else
+		echo "$__left"
+	fi
+}
+
+############################################################ MAIN
+
+#
+# Process command-line options
+#
+while getopts dfl flag; do
+	case "$flag" in
+	d) DELETE=1 ;;
+	f) FORCE=1 ;;
+	l) LIST=1 ;;
+	*) usage # NOTREACHED
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+#
+# Validate number of arguments
+#
+[ $# -ge 1 -a "$1" ] || [ "$LIST" ] || usage
+
+#
+# Get the tag to use
+#
+TAG="$1"
+shift 1
+
+#
+# Build the tag prefix
+#
+case "$0" in
+/*) PKGCENTER_DEPEND="${0%/*}" ;;
+ *) PKGCENTER_DEPEND=$( realpath "${0%/*}" )
+esac
+PKGCENTER="${PKGCENTER_DEPEND%/*}"
+PWD=$( realpath "$PWD" )
+TAGPREFIX="${PWD#${PKGCENTER%/*}/}" # Remove everything leading up to pkgcenter
+case "$TAGPREFIX" in
+pkgcenter*/depend|pkgcenter*/depend/*) : acceptable ;;
+*) die "ERROR! PWD not in pkgcenter/depend/ -- Exiting."
+esac
+replaceall "$TAGPREFIX" / - TAGPREFIX
+replaceall "$TAGPREFIX" "[ $TAB$NL]" _ TAGPREFIX
+
+#
+# Process `-l' flag
+#
+if [ "$LIST" ]; then
+	eval2 $GIT tag -l "$TAGPREFIX-*"
+	exit
+fi
+
+#
+# Build the tag
+#
+replaceall "$TAG" "[ $TAB$NL]" _ TAG
+
+#
+# Tag everything
+#
+set -- "$TAGPREFIX-$TAG"
+if [ "$DELETE" ]; then
+	eval2 $GIT tag -d ${FORCE:+-f} "$@"
+else
+	eval2 $GIT tag -a ${FORCE:+-f} -m "\"Create tag $1\"" "$@"
+fi
+
+################################################################################
+# END
+################################################################################

@@ -10,7 +10,7 @@ Group: Applications/FrauBSD
 Summary: pkgcenter
 License: BSD
 Version: 4.0
-Release: 1
+Release: 1.el7
 Buildarch: noarch
 
 URL: https://www.fraubsd.org/
@@ -130,6 +130,10 @@ WWW: https://www.fraubsd.org/
 /usr/pkgcenter/redhat/rhel6-x86_64/Applications/FrauBSD/pkgcenter/SPECFILE
 /usr/pkgcenter/redhat/rhel6-x86_64/Applications/FrauBSD/pkgcenter/pkgcenter.conf
 /usr/pkgcenter/redhat/rhel6-x86_64/Makefile
+/usr/pkgcenter/redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/Makefile
+/usr/pkgcenter/redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/SPECFILE
+/usr/pkgcenter/redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/pkgcenter.conf
+/usr/pkgcenter/redhat/rhel7-x86_64/Makefile
 /usr/pkgcenter/redhat/skel/Makefile
 /usr/pkgcenter/redhat/skel/pkgcenter.conf
 /usr/pkgcenter/redhat/unpack.sh
@@ -149,5 +153,5 @@ WWW: https://www.fraubsd.org/
 
 
 %changelog
-* Sun Jul 07 2017 Devin Teske <dteske@freebsd.org> 3.0-1
+* Wed Jul 10 2019 Devin Teske <dteske@freebsd.org> 4.0-1.el7
 - Package created.

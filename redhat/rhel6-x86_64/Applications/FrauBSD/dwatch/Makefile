@@ -108,7 +108,7 @@ specfile: $(SPECFILE)
 
 check_name: specfile
 	@[ "$(NAME)" ] || $(PKGCENTER)/Mk/die \
-	    "ERROR: Specification $(SPECFILE) has no RPM name"
+		"ERROR: Specification $(SPECFILE) has no RPM name"
 
 .rpmmacros:
 	@:> $(@)
@@ -140,6 +140,12 @@ rpm: check_name .rpmmacros
 
 conf:
 	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmconf
+
+srcfiles:
+	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmsrcfiles
+
+stagefiles: stage
+	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmstagefiles
 
 clean:
 	$(RM) -f $(GENERATED_FILES)

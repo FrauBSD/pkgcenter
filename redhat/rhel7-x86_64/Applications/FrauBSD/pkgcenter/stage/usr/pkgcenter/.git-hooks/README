@@ -1,0 +1,23 @@
+# $FrauBSD: pkgcenter/redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/stage/usr/pkgcenter/.git-hooks/README 2019-07-10 13:30:46 -0700 freebsdfrau $
+
+!! ATTENTION DEVELOPERS AND CONTRIBUTORS !!
+
+To get RCS Keywords (like the FrauBSD one at the top of this file) to expand,
+follow these steps before using `git commit' in this project:
+
+   $ .git-hooks/install.sh
+
+Cheers!
+
+Supported keywords:
+
+	$Author: freebsdfrau $
+	$Branch: master $
+	$Date: 2019-07-10 13:30:46 -0700 $
+	$Header: redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/stage/usr/pkgcenter/.git-hooks/README 2019-07-10 13:30:46 -0700 freebsdfrau $
+	$Origin: https://github.com/FrauBSD/pkgcenter.git $
+	$Project: //github.com/FrauBSD/pkgcenter.git $
+	$RCSfile: README $
+	$Source: redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/stage/usr/pkgcenter/.git-hooks/README $
+	$FrauBSD: pkgcenter/redhat/rhel7-x86_64/Applications/FrauBSD/pkgcenter/stage/usr/pkgcenter/.git-hooks/README 2019-07-10 13:30:46 -0700 freebsdfrau $
+

@@ -5,8 +5,9 @@
 ################################ CONFIGURATION #################################
 ################################################################################
 
-PKGCENTER      = ../../../../..
-SPECFILE       = ./SPECFILE
+PKGCENTER      = ../../../..
+MANIFEST       = ./MANIFEST
+PLIST          = $(MANIFEST)
 STAGEDIR       = ./stage
 PKGCENTER_CONF = ./pkgcenter.conf
 
@@ -18,7 +19,8 @@ PKGCENTER_CONF = ./pkgcenter.conf
 # Environment
 #
 ENVIRON = PKGCENTER=$(PKGCENTER) \
-          SPECFILE=$(SPECFILE) \
+          MANIFEST=$(MANIFEST) \
+          PLIST=$(PLIST) \
           STAGEDIR=$(STAGEDIR) \
           PKGCENTER_CONF=$(PKGCENTER_CONF)
 
@@ -41,23 +43,32 @@ STAGE    = $(SOURCE_CONF) STAGE    | $(PKGCENTER)/Mk/xargs -n 1024
 #
 # Package tools
 #
-RPMBUILD      = rpmbuild
-RPMBUILDFLAGS = -bb
+PKGCC        = $(PKGCENTER)/freebsd/Mk/pkgcc
+PKGCCFLAGS   = -y
+CONVERT      = $(PKGCENTER)/freebsd/Mk/convert
+CONVERTFLAGS = -f
+TAR          = tar
+TARFLAGS     = c --exclude CVS -f
+TARSUFFIX    = tar
+ZIP          = xz
+ZIPSUFFIX    = xz
+SUFFIX       = txz
 
 #
 # Generated files
 #
 GENERATED_FILES = \
-	.rpmmacros
+	$(STAGEDIR)/+MANIFEST \
+	$(STAGEDIR)/+COMPACT_MANIFEST
 
 #
 # Package Specifics
 #
 CWD     = $$($(PWD))
-NAME    = $$($(PKGCENTER)/redhat/Mk/rpmname "$(SPECFILE)")
-TAG     = $$($(PKGCENTER)/redhat/Mk/rpmtag "$(NAME)")
-TAGNAME = $$($(PKGCENTER)/redhat/Mk/rpmtagname "$(SPECFILE)")
-GROUP   = $$($(PKGCENTER)/redhat/Mk/rpmgroup "$(SPECFILE)")
+NAME    = $$($(PKGCENTER)/freebsd/Mk/pkgname "$(PLIST)")
+TAG     = $$($(PKGCENTER)/freebsd/Mk/pkgtag "$(NAME)")
+TAGNAME = $$($(PKGCENTER)/freebsd/Mk/pkgtagname "$(PLIST)")
+ORIGIN  = $$($(PKGCENTER)/freebsd/Mk/pkgorigin "$(PLIST)")
 
 #
 # Standard utility pathnames
@@ -65,6 +76,7 @@ GROUP   = $$($(PKGCENTER)/redhat/Mk/rpmgroup "$(SPECFILE)")
 CAT   = cat
 GIT   = git
 MKDIR = mkdir
+MV    = mv
 PWD   = pwd
 RM    = rm
 
@@ -82,9 +94,9 @@ EVAL2 = eval2(){ echo "$$@"; eval "$$@"; }
 # Package Building Targets
 #
 
-.PHONY: all dirs symlinks stage forcestage specfile check_name rpm
+.PHONY: all dirs symlinks stage forcestage plist check_name package
 
-all: stage dirs symlinks rpm
+all: stage dirs symlinks package
 
 dirs:
 	@echo "Creating directories..."
@@ -104,58 +116,53 @@ forcestage:
 	@$(EVAL2); [ -e "$(STAGEDIR)" ] || eval2 $(MKDIR) -p $(STAGEDIR)
 	@$(STAGE) $(PKGCENTER)/Mk/make_stage -f
 
-specfile: $(SPECFILE)
+$(PLIST):
+	@$(EVAL2); [ "$(PLIST)" = "$(MANIFEST)" -o \
+	 	"$(PLIST)" -nt "$(MANIFEST)" ] || eval2 $(CONVERT) \
+	 	$(CONVERTFLAGS) $(MANIFEST) $(PLIST) $(STAGEDIR)
 
-check_name: specfile
+plist: $(PLIST)
+
+check_name: plist
 	@[ "$(NAME)" ] || $(PKGCENTER)/Mk/die \
-		"ERROR: Specification $(SPECFILE) has no RPM name"
+	    "ERROR: Package $(PLIST) has no package name"
 
-.rpmmacros:
-	@:> $(@)
-	@echo "#XXX NOTE: escaped %% for use in headerSprintf()" >> $(@)
-	@echo "%_build_name_fmt" \
-	      "%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" >> $(@)
-	@echo >> $(@)
-	@echo "%_srcdir $(STAGEDIR)" >> $(@)
-	@echo >> $(@)
-	@echo "%_topdir $(CWD)" >> $(@)
-	@echo "%_builddir %{_topdir}" >> $(@)
-	@echo "%_rpmdir %{_topdir}" >> $(@)
-	@echo "%_sourcedir %{_topdir}" >> $(@)
-	@echo "%_buildrootdir %{_topdir}" >> $(@)
-	@echo "%_specdir %{_topdir}" >> $(@)
-	@echo "%_srcrpmdir %{_topdir}" >> $(@)
-	@echo "%_tmppath %{_topdir}/tmp" >> $(@)
-	@echo >> $(@)
-	@echo "%debug_package %{nil}" >> $(@)
-
-rpm: check_name .rpmmacros
-	HOME="$(CWD)" $(RPMBUILD) $(RPMBUILDFLAGS) $(SPECFILE)
+package: check_name
+	$(PKGCC) $(PKGCCFLAGS) $(PLIST) $(STAGEDIR)
+	@$(EVAL2); cwd=$(CWD); name=$(NAME);            \
+	 eval2 cd $(STAGEDIR) || exit;                  \
+	 TARFILE=$$cwd/$$name.$(TARSUFFIX);             \
+	 if tar --help 2>&1 | grep -q bsdtar; then      \
+	     vers=$$( tar --version 2> /dev/null );     \
+	     case "$${vers#"$${vers%%[0-9]*}"}" in      \
+	     [0-2].*) TRANSFORM=':^[^+]:/~:' ;;         \
+	           *) TRANSFORM=':^[^+]:/~:S' ;;        \
+	     esac;                                      \
+	     TARFLAGS2="-s '$$TRANSFORM' -P";           \
+	 else                                           \
+	     TARFLAGS2="--transform 's:^[^+]:/&:S' -P"; \
+	 fi;                                            \
+	 eval2 $(TAR) $(TARFLAGS) $$TARFILE $$TARFLAGS2 * || exit; \
+	 ! type "$(ZIP)" > /dev/null 2>&1 && exit;      \
+	 eval2 $(ZIP) $$TARFILE || exit;                \
+	 eval2 $(MV) -f $$TARFILE.$(ZIPSUFFIX) $$cwd/$$name.$(SUFFIX)
+	@[ "$(ORIGIN)" ] || echo "WARNING: Empty or missing package origin"
 
 #
 # Package Maintenance Targets
 #
 
-.PHONY: conf clean distclean
-
-conf:
-	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmconf
-
-srcfiles:
-	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmsrcfiles
-
-stagefiles: stage
-	@$(ENVIRON) $(PKGCENTER)/redhat/Mk/rpmstagefiles
+.PHONY: clean distclean
 
 clean:
 	$(RM) -f $(GENERATED_FILES)
-	$(RM) -Rf tmp
 	@$(SYMLINKS) $(PKGCENTER)/Mk/clean_symlinks
 	@$(DIRS) $(PKGCENTER)/Mk/clean_directories
 	[ -e .keep-stage ] || $(RM) -Rf $(STAGEDIR)
+	@$(EVAL2); [ "$(MANIFEST)" = "$(PLIST)" ] || eval2 $(RM) -f $(PLIST)
 
 distclean: clean
-	$(RM) -f *.rpm
+	$(RM) -f *.$(TARSUFFIX) *.$(SUFFIX)
 
 #
 # Git Maintenance Targets
@@ -165,7 +172,7 @@ distclean: clean
 
 check_tag:
 	@[ "$(TAG)" ] || $(PKGCENTER)/Mk/die \
-	    "ERROR: Specification $(SPECFILE) has invalid RPM name"
+	    "ERROR: Package $(PLIST) has invalid package name"
 
 tag: check_tag
 	@$(ENVIRON) $(PKGCENTER)/Mk/git_tag "$(TAG)"
@@ -201,10 +208,10 @@ pull:
 .PHONY: usage targets help
 
 usage:
-	@$(CAT) $(PKGCENTER)/redhat/Mk/USAGE_RPM
+	@$(CAT) $(PKGCENTER)/freebsd/Mk/USAGE_PACKAGE
 
 targets help:
-	@$(CAT) $(PKGCENTER)/redhat/Mk/HELP_RPM
+	@$(CAT) $(PKGCENTER)/freebsd/Mk/HELP_PACKAGE
 
 ################################################################################
 # END
