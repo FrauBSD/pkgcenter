@@ -3,7 +3,7 @@
 #
 # $Title: Script to compare results from benchmark stats file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmp.sh 2019-07-09 21:06:57 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmp.sh 2019-07-10 04:53:57 -0700 freebsdfrau $
 #
 ############################################################ CONFIGURATION
 
@@ -138,7 +138,8 @@ for file1 in "$LOGDIR"/stats*.$1.txt; do
 		}
 
 		# Calculate comparison statistics
-		upavg = sprintf("%.3f", 100 - ts(avg1) * 100 / ts(avg2))
+		if ((div = ts(avg2)) == 1) div = 1
+		upavg = sprintf("%.3f", 100 - ts(avg1) * 100 / div)
 		if (upavg > 0) {
 			speed = "faster"
 		} else {
@@ -146,7 +147,8 @@ for file1 in "$LOGDIR"/stats*.$1.txt; do
 			upavg = sprintf("%.3f", upavg * -1)
 		}
 		if (upavg ~ /\./) sub(/\.?0+$/, "", upavg)
-		updev = sprintf("%.3f", 100 - ts(stddev1) * 100 / ts(stddev2))
+		if ((div = ts(stddev2)) == 0) div = 1
+		updev = sprintf("%.3f", 100 - ts(stddev1) * 100 / div)
 		if (updev > 0) {
 			runtime = "tighter"
 		} else {
