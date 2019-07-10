@@ -3,7 +3,7 @@
 #
 # $Title: Script to compare results from benchmark stats file $
 # $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/cmb/bench/cmp.sh 2019-07-09 00:13:12 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/bench/cmp.sh 2019-07-09 21:06:57 -0700 freebsdfrau $
 #
 ############################################################ CONFIGURATION
 
@@ -95,6 +95,8 @@ for file1 in "$LOGDIR"/stats*.$1.txt; do
 	################################################## MAIN
 
 	BEGIN {
+		stderr = "/dev/stderr"
+
 		# Get information about primary
 		getline < file1
 		if (/^Base/) {
@@ -125,10 +127,14 @@ for file1 in "$LOGDIR"/stats*.$1.txt; do
 
 		# Make sure we are comparing the same tests
 		if (cmd1 != cmd2) {
-			printf "\033[33;1mWARNING!\033[m Command mismatch\n"
-			printf "file1=[%s] cmd1=[%s]\n", file1, cmd1
-			printf "file2=[%s] cmd2=[%s]\n", file2, cmd2
-			exit
+			printf "\033[33;1mWARNING!\033[m %s\n",
+				"Command mismatch" > stderr
+			printf "\033[2mfile1=[%s] cmd1=[%s]\033[m\n",
+				file1, cmd1 > stderr
+			printf "\033[2mfile2=[%s] cmd2=[%s]\033[m\n",
+				file2, cmd2 > stderr
+			printf "\n" > stderr
+			fflush(stderr)
 		}
 
 		# Calculate comparison statistics
