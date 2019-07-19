@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-04 08:46:21 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-18 22:51:39 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.3 $";
+static char version[] = "$Version: 3.9.4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -637,10 +637,17 @@ main(int argc, char *argv[])
 	/*
 	 * Clean up
 	 */
-	if (opt_transform && !opt_range) {
+	if (opt_file) {
 		for (n = 0; n < nitems; n++)
-			free(items_tmp[n]);
-		free(items_tmp);
+			free(items[n]);
+		free(items);
+	} else if (opt_transform) {
+		for (n = 0; n < nitems; n++) {
+			memcpy(&xitem, &items[n], sizeof(char *));
+			free(xitem->cp);
+			free(xitem);
+		}
+		free(items);
 	}
 	free(config);
 
@@ -933,24 +940,25 @@ range_char(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 {
 	int len;
 	uint32_t num;
-	size_t size;
-	char range_tmp[11];
 
-	size = sizeof(range_tmp);
 	if (start <= stop) {
 		for (num = start; num <= stop; num++) {
-			len = snprintf(range_tmp, size, "%u", num);
-			dst[idx] = (char *)malloc((unsigned long)len + 1);
-			(void)memcpy(dst[idx], range_tmp,
-			    (unsigned long)len + 1);
+			len = snprintf(NULL, 0, "%u", num) + 1;
+			if ((dst[idx] = malloc((unsigned long)len)) == NULL) {
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			}
+			(void)sprintf(dst[idx], "%u", num);
 			idx++;
 		}
 	} else {
 		for (num = start; num >= stop; num--) {
-			len = snprintf(range_tmp, size, "%u", num);
-			dst[idx] = (char *)malloc((unsigned long)len + 1);
-			(void)memcpy(dst[idx], range_tmp,
-			    (unsigned long)len + 1);
+			len = snprintf(NULL, 0, "%u", num) + 1;
+			if ((dst[idx] = (char *)malloc((unsigned long)len)) == NULL) {
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			}
+			(void)sprintf(dst[idx], "%u", num);
 			idx++;
 		}
 	}
@@ -961,29 +969,42 @@ range_char(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 static uint32_t
 range_float(uint32_t start, uint32_t stop, uint32_t idx, char *dst[])
 {
+	int len;
 	uint32_t num;
 	size_t size;
-	long double ld;
+	struct cmb_xitem *xitem;
 
-	size = sizeof(long double);
+	size = sizeof(struct cmb_xitem);
 	if (start <= stop) {
 		for (num = start; num <= stop; num++) {
-			if ((dst[idx] = (char *)malloc(size)) == NULL) {
+			if ((xitem = malloc(size)) == NULL) {
 				errx(EXIT_FAILURE, "Out of memory?!");
 				/* NOTREACHED */
 			}
-			ld = (long double)num;
-			(void)memcpy(dst[idx], &ld, size);
+			len = snprintf(NULL, 0, "%u", num) + 1;
+			if ((xitem->cp = malloc((unsigned long)len)) == NULL) {
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			}
+			(void)sprintf(xitem->cp, "%u", num);
+			xitem->as.ld = (long double)num;
+			dst[idx] = (char *)xitem;
 			idx++;
 		}
 	} else {
 		for (num = start; num >= stop; num--) {
-			if ((dst[idx] = (char *)malloc(size)) == NULL) {
+			if ((xitem = malloc(size)) == NULL) {
 				errx(EXIT_FAILURE, "Out of memory?!");
 				/* NOTREACHED */
 			}
-			ld = (long double)num;
-			(void)memcpy(dst[idx], &ld, size);
+			len = snprintf(NULL, 0, "%u", num) + 1;
+			if ((xitem->cp = malloc((unsigned long)len)) == NULL) {
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			}
+			(void)sprintf(xitem->cp, "%u", num);
+			xitem->as.ld = (long double)num;
+			dst[idx] = (char *)xitem;
 			idx++;
 		}
 	}
