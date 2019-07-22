@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-22 16:42:16 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-22 16:43:34 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-alpha-3 $";
+static char version[] = "$Version: 3.9.5-alpha-4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -367,7 +367,7 @@ main(int argc, char *argv[])
 	 * `-f' required if given `-0'
 	 */
 	if (opt_nulparse && !opt_file) {
-		errx(EXIT_FAILURE, "-0: `-f file' required when using `-0'");
+		errx(EXIT_FAILURE, "-0: `-f' required when using `-0'");
 		/* NOTREACHED */
 	}
 
