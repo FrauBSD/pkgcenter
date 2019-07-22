@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-18 22:51:39 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-22 15:09:41 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.4 $";
+static char version[] = "$Version: 3.9.5-alpha-1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -144,6 +144,7 @@ main(int argc, char *argv[])
 	char **items = NULL;
 	char **items_tmp = NULL;
 	const char *libver = cmb_version(CMB_VERSION);
+	char *opt_find = NULL;
 	char *opt_transform = NULL;
 	int ch;
 	int len;
@@ -179,7 +180,7 @@ main(int argc, char *argv[])
 	/*
 	 * Process command-line options
 	 */
-#define OPTSTRING "0c:Dd:efi:k:Nn:oP:p:qrSs:tvX:z"
+#define OPTSTRING "0c:Dd:eF:fi:k:Nn:oP:p:qrSs:tvX:z"
 	while ((ch = getopt(argc, argv, OPTSTRING)) != -1) {
 		switch(ch) {
 		case '0': /* NUL terminate */
@@ -219,6 +220,9 @@ main(int argc, char *argv[])
 		case 'e': /* empty */
 			opt_empty = TRUE;
 			config->options ^= CMB_OPT_EMPTY;
+			break;
+		case 'F': /* find */
+			opt_find = optarg;
 			break;
 		case 'f': /* file */
 			opt_file = TRUE;
@@ -673,6 +677,8 @@ cmb_usage(void)
 	);
 	fprintf(stderr, OPTFMT, "-d text", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
+	fprintf(stderr, OPTFMT, "-F [op]num",
+	    "Find `-X op' values. Default op is `=' for finding matches.");
 	fprintf(stderr, OPTFMT, "-f",
 	    "Treat arguments as files to read items from; `-' for stdin.");
 	fprintf(stderr, OPTFMT, "-i num",

@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-05-23 20:16:34 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-07-22 15:09:41 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd May 23, 2019
+.Dd July 22, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -35,6 +35,7 @@
 .Op Fl 0DefNorStvz
 .Op Fl c Ar num
 .Op Fl d Ar str
+.Op Fl F Ar "[op]num"
 .Op Fl i Ar num
 .Op Fl k Ar size
 .Op Fl n Ar num
@@ -94,6 +95,28 @@ Ignored when given
 .It Fl e
 Show empty set.
 A single combination containing no-items.
+.It Fl F Ar "[op]num"
+Find
+.Sq Fl X Ar op
+values that equal
+.Ar num
+.Pq default .
+Can be prefixed with
+.Ar op ;
+supported
+.Ar op
+values include
+.Sq Li =
+.Pq default ,
+.Sq Li ==
+.Pq same as Sq Li = ,
+.Sq Li >= ,
+.Sq Li <= ,
+.Sq Li > ,
+or
+.Sq Li < .
+Requires
+.Sq Fl X Ar op .
 .It Fl f
 Treat each command-line argument as a file containing items,
 one item per line
