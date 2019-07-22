@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-22 16:38:34 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-22 16:42:16 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-alpha-2 $";
+static char version[] = "$Version: 3.9.5-alpha-3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -133,6 +133,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_LIBCRYPTO
 	uint8_t opt_nossl = FALSE;
 #endif
+	uint8_t opt_nulparse = FALSE;
 	uint8_t opt_nulprint = FALSE;
 	uint8_t opt_precision = FALSE;
 	uint8_t opt_randi = FALSE;
@@ -185,6 +186,7 @@ main(int argc, char *argv[])
 		switch(ch) {
 		case '0': /* NUL terminate */
 			config->options ^= CMB_OPT_NULPARSE;
+			opt_nulparse = TRUE;
 			break;
 		case 'c': /* count */
 			if ((optlen = strlen(optarg)) == 0 ||
@@ -358,6 +360,14 @@ main(int argc, char *argv[])
 	 */
 	if (opt_find != NULL && opt_transform == NULL) {
 		errx(EXIT_FAILURE, "-F: `-X op' required when using `-F op'");
+		/* NOTREACHED */
+	}
+
+	/*
+	 * `-f' required if given `-0'
+	 */
+	if (opt_nulparse && !opt_file) {
+		errx(EXIT_FAILURE, "-0: `-f file' required when using `-0'");
 		/* NOTREACHED */
 	}
 
