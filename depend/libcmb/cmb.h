@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-07-23 21:29:49 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-07-23 21:57:32 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -83,7 +83,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	5
-#define CMB_H_VERSION_PATCH	0
+#define CMB_H_VERSION_PATCH	1
 
 /*
  * Macros for cmb_config options bitmask
@@ -274,12 +274,12 @@ extern struct cmb_xitem *cmb_transform_find;
     	const char *suffix = NULL;                                           \
     	struct cmb_xitem *xitem = NULL;                                      \
     	                                                                     \
-    	for (n = 1; n < nitems; n++) {                                       \
+    	for (n = 0; n < nitems; n++) {                                       \
     		memcpy(&xitem, &items[n], sizeof(struct cmb_xitem *));       \
     		ld = xitem->as.ld;                                           \
     		total = eq;                                                  \
     	}                                                                    \
-    	if (fabsl(total - cmb_transform_find->as.ld) <= LDBL_EPSILON *       \
+    	if (fabsl(total - cmb_transform_find->as.ld) > LDBL_EPSILON *        \
     	    fmaxl(fabsl(total), fabsl(cmb_transform_find->as.ld)))           \
     		return (0);                                                  \
     	if (config != NULL) {                                                \
@@ -298,7 +298,6 @@ extern struct cmb_xitem *cmb_transform_find;
     	}                                                                    \
     	if (nitems > 0) {                                                    \
     		memcpy(&xitem, &items[0], sizeof(struct cmb_xitem *));       \
-    		total = xitem->as.ld;                                        \
     		if (!opt_silent && !opt_quiet) {                             \
     			printf("%s", xitem->cp);                             \
     			if (nitems > 1)                                      \
