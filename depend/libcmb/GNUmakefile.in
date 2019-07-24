@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/GNUmakefile.in 2018-11-12 20:58:20 -0800 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/GNUmakefile.in 2019-07-23 21:29:49 -0700 freebsdfrau $
 
 LIB=		cmb
 SHLIB_MAJOR=	0
@@ -10,7 +10,7 @@ OSX_MIN=	10.6
 DEFS=		@DEFS@
 CC=		@CC@
 CFLAGS=		-fPIC -Wall -I. @CFLAGS@ $(DEFS)
-LIBS=		-lc @LIBS@
+LIBS=		-lc -lm @LIBS@
 LDFLAGS=	-shared @LDFLAGS@ $(LIBS)
 
 PREFIX=		@prefix@

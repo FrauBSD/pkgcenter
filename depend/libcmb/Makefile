@@ -12,6 +12,8 @@ SRCS=		cmb.c
 
 CFLAGS+=	-I${.CURDIR}
 
+LIBADD+=	m
+
 .if ${MK_OPENSSL} != "no"
 CFLAGS+=	-DHAVE_LIBCRYPTO
 LIBADD+=	crypto

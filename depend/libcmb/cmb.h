@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-05-23 20:16:34 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-07-23 21:29:49 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -34,6 +34,7 @@
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -81,8 +82,8 @@
  * Header version info
  */
 #define CMB_H_VERSION_MAJOR	3
-#define CMB_H_VERSION_MINOR	4
-#define CMB_H_VERSION_PATCH	3
+#define CMB_H_VERSION_MINOR	5
+#define CMB_H_VERSION_PATCH	0
 
 /*
  * Macros for cmb_config options bitmask
@@ -252,6 +253,87 @@ struct cmb_xitem {
 	CMB_TRANSFORM_EQ(total op ld, op, x, BIGNUM *seq, cmb_print_seq_bn)
 #define CMB_TRANSFORM_FN_BN(op, fn, x) \
 	CMB_TRANSFORM_EQ(fn(total, ld), op, x, BIGNUM *seq, cmb_print_seq_bn)
+#endif
+
+extern struct cmb_xitem *cmb_transform_find;
+
+#ifndef LDBL_EPSILON
+#define LDBL_EPSILON (long double)(2e-105)
+#endif
+
+#define CMB_TRANSFORM_EQ_FIND(eq, op, x, seqt, seqp) \
+    int                                                                      \
+    x(struct cmb_config *config, seqt, uint32_t nitems, char *items[])       \
+    {                                                                        \
+    	uint8_t show_numbers = FALSE;                                        \
+    	uint32_t n;                                                          \
+    	long double ld;                                                      \
+    	long double total = 0;                                               \
+    	const char *delimiter = " ";                                         \
+    	const char *prefix = NULL;                                           \
+    	const char *suffix = NULL;                                           \
+    	struct cmb_xitem *xitem = NULL;                                      \
+    	                                                                     \
+    	for (n = 1; n < nitems; n++) {                                       \
+    		memcpy(&xitem, &items[n], sizeof(struct cmb_xitem *));       \
+    		ld = xitem->as.ld;                                           \
+    		total = eq;                                                  \
+    	}                                                                    \
+    	if (fabsl(total - cmb_transform_find->as.ld) <= LDBL_EPSILON *       \
+    	    fmaxl(fabsl(total), fabsl(cmb_transform_find->as.ld)))           \
+    		return (0);                                                  \
+    	if (config != NULL) {                                                \
+    		if (config->delimiter != NULL)                               \
+    			delimiter = config->delimiter;                       \
+    		if ((config->options & CMB_OPT_NUMBERS) != 0)                \
+    			show_numbers = TRUE;                                 \
+    		prefix = config->prefix;                                     \
+    		suffix = config->suffix;                                     \
+    	}                                                                    \
+    	if (!opt_silent) {                                                   \
+    		if (show_numbers)                                            \
+    			seqp(seq);                                           \
+    		if (prefix != NULL && !opt_quiet)                            \
+    			printf("%s", prefix);                                \
+    	}                                                                    \
+    	if (nitems > 0) {                                                    \
+    		memcpy(&xitem, &items[0], sizeof(struct cmb_xitem *));       \
+    		total = xitem->as.ld;                                        \
+    		if (!opt_silent && !opt_quiet) {                             \
+    			printf("%s", xitem->cp);                             \
+    			if (nitems > 1)                                      \
+    				printf("%s" #op "%s", delimiter, delimiter); \
+    		}                                                            \
+    	}                                                                    \
+    	for (n = 1; n < nitems; n++) {                                       \
+    		if (!opt_silent && !opt_quiet) {                             \
+    			printf("%s", xitem->cp);                             \
+    			if (n < nitems - 1)                                  \
+    				printf("%s" #op "%s", delimiter, delimiter); \
+    		}                                                            \
+    	}                                                                    \
+    	if (!opt_silent) {                                                   \
+    		if (suffix != NULL && !opt_quiet)                            \
+    			printf("%s", suffix);                                \
+    		printf("%s%.*Lf\n", opt_quiet ? "" : " = ",                  \
+    			cmb_transform_precision, total);                     \
+    	}                                                                    \
+    	return (0);                                                          \
+    }
+
+#define CMB_TRANSFORM_OP_FIND(op, x) \
+	CMB_TRANSFORM_EQ_FIND(total op ld, op, x, uint64_t seq, cmb_print_seq)
+#define CMB_TRANSFORM_FN_FIND(op, fn, x) \
+	CMB_TRANSFORM_EQ_FIND(fn(total, ld), op, x, uint64_t seq, \
+	    cmb_print_seq)
+
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+#define CMB_TRANSFORM_OP_FIND_BN(op, x) \
+	CMB_TRANSFORM_EQ_FIND(total op ld, op, x, BIGNUM *seq, \
+	    cmb_print_seq_bn)
+#define CMB_TRANSFORM_FN_FIND_BN(op, fn, x) \
+	CMB_TRANSFORM_EQ_FIND(fn(total, ld), op, x, BIGNUM *seq, \
+	    cmb_print_seq_bn)
 #endif
 
 /*
