@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-23 21:39:50 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-23 22:03:17 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-alpha-9 $";
+static char version[] = "$Version: 3.9.5-alpha-10 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -142,6 +142,7 @@ main(int argc, char *argv[])
 {
 	uint8_t opt_empty = FALSE;
 	uint8_t opt_file = FALSE;
+	uint8_t opt_find = FALSE;
 #ifdef HAVE_LIBCRYPTO
 	uint8_t opt_nossl = FALSE;
 #endif
@@ -157,7 +158,6 @@ main(int argc, char *argv[])
 	char **items = NULL;
 	char **items_tmp = NULL;
 	const char *libver = cmb_version(CMB_VERSION);
-	char *opt_find = NULL;
 	char *opt_transform = NULL;
 	int ch;
 	int len;
@@ -236,7 +236,15 @@ main(int argc, char *argv[])
 			config->options ^= CMB_OPT_EMPTY;
 			break;
 		case 'F': /* find */
-			opt_find = optarg;
+			opt_find = TRUE;
+			if (cmb_transform_find != NULL)
+				free(cmb_transform_find);
+			if ((cmb_transform_find =
+			    malloc(sizeof(struct cmb_xitem))) == NULL) {
+				errx(EXIT_FAILURE, "Out of memory?!");
+				/* NOTREACHED */
+			}
+			cmb_transform_find->as.ld = strtold(optarg, NULL);
 			break;
 		case 'f': /* file */
 			opt_file = TRUE;
@@ -370,7 +378,7 @@ main(int argc, char *argv[])
 	/*
 	 * `-X op' required if given `-F [op]num'
 	 */
-	if (opt_find != NULL && opt_transform == NULL) {
+	if (opt_find && opt_transform == NULL) {
 		errx(EXIT_FAILURE, "`-X op' required when using `-F op[num]'");
 		/* NOTREACHED */
 	}
@@ -530,15 +538,23 @@ main(int argc, char *argv[])
 			while ((cp = cmb_xforms[++ch].opname) != NULL) {
 				if (strncmp(cp, opt_transform, optlen) != 0)
 					continue;
-				config->action = cmb_xforms[ch].action;
+				if (opt_find)
+					config->action =
+					    cmb_xforms[ch].action_find;
+				else
+					config->action = cmb_xforms[ch].action;
 				break;
 			}
 		} else {
 			while ((cp = cmb_xforms_bn[++ch].opname) != NULL) {
 				if (strncmp(cp, opt_transform, optlen) != 0)
 					continue;
-				config->action_bn =
-				    cmb_xforms_bn[ch].action_bn;
+				if (opt_find)
+					config->action_bn =
+					    cmb_xforms_bn[ch].action_find_bn;
+				else
+					config->action_bn =
+					    cmb_xforms_bn[ch].action_bn;
 				break;
 			}
 		}
@@ -551,7 +567,10 @@ main(int argc, char *argv[])
 		while ((cp = cmb_xforms[++ch].opname) != NULL) {
 			if (strncmp(cp, opt_transform, optlen) != 0)
 				continue;
-			config->action = cmb_xforms[ch].action;
+			if (opt_find)
+				config->action = cmb_xforms[ch].action_find;
+			else
+				config->action = cmb_xforms[ch].action;
 			break;
 		}
 		if (config->action == NULL) {
