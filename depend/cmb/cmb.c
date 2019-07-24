@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-22 16:52:47 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-23 21:35:31 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-alpha-7 $";
+static char version[] = "$Version: 3.9.5-alpha-8 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -75,6 +75,16 @@ static		CMB_ACTION_BN(cmb_mul_bn);
 static		CMB_ACTION_BN(cmb_nop_bn);
 static		CMB_ACTION_BN(cmb_sub_bn);
 #endif
+static		CMB_ACTION(cmb_add_find);
+static		CMB_ACTION(cmb_div_find);
+static		CMB_ACTION(cmb_mul_find);
+static		CMB_ACTION(cmb_sub_find);
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+static		CMB_ACTION_BN(cmb_add_find_bn);
+static		CMB_ACTION_BN(cmb_div_find_bn);
+static		CMB_ACTION_BN(cmb_mul_find_bn);
+static		CMB_ACTION_BN(cmb_sub_find_bn);
+#endif
 static size_t	numlen(const char *s);
 static size_t	rangelen(const char *s, size_t nlen, size_t slen);
 static size_t	unumlen(const char *s);
@@ -100,28 +110,30 @@ struct cmb_xfdef
 {
 	char *opname;
 	CMB_ACTION((*action));
+	CMB_ACTION((*action_find));
 };
 static struct cmb_xfdef cmb_xforms[] = {
 	/* opname    action */
-	{"multiply", cmb_mul},
-	{"divide",   cmb_div},
-	{"add",      cmb_add},
-	{"subtract", cmb_sub},
-	{NULL,       NULL},
+	{"multiply", cmb_mul, cmb_mul_find},
+	{"divide",   cmb_div, cmb_div_find},
+	{"add",      cmb_add, cmb_add_find},
+	{"subtract", cmb_sub, cmb_sub_find},
+	{NULL,       NULL,    NULL},
 };
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 struct cmb_xfdef_bn
 {
 	char *opname;
 	CMB_ACTION_BN((*action_bn));
+	CMB_ACTION_BN((*action_find_bn));
 };
 static struct cmb_xfdef_bn cmb_xforms_bn[] = {
 	/* opname    action_bn */
-	{"multiply", cmb_mul_bn},
-	{"divide",   cmb_div_bn},
-	{"add",      cmb_add_bn},
-	{"subtract", cmb_sub_bn},
-	{NULL,       NULL},
+	{"multiply", cmb_mul_bn, cmb_mul_find_bn},
+	{"divide",   cmb_div_bn, cmb_div_find_bn},
+	{"add",      cmb_add_bn, cmb_add_find_bn},
+	{"subtract", cmb_sub_bn, cmb_sub_find_bn},
+	{NULL,       NULL,       NULL},
 };
 #endif
 
@@ -1080,4 +1092,14 @@ static CMB_TRANSFORM_OP_BN(*, cmb_mul_bn);
 static CMB_TRANSFORM_OP_BN(/, cmb_div_bn);
 static CMB_TRANSFORM_OP_BN(+, cmb_add_bn);
 static CMB_TRANSFORM_OP_BN(-, cmb_sub_bn);
+#endif
+static CMB_TRANSFORM_OP_FIND(*, cmb_mul_find);
+static CMB_TRANSFORM_OP_FIND(/, cmb_div_find);
+static CMB_TRANSFORM_OP_FIND(+, cmb_add_find);
+static CMB_TRANSFORM_OP_FIND(-, cmb_sub_find);
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+static CMB_TRANSFORM_OP_FIND_BN(*, cmb_mul_find_bn);
+static CMB_TRANSFORM_OP_FIND_BN(/, cmb_div_find_bn);
+static CMB_TRANSFORM_OP_FIND_BN(+, cmb_add_find_bn);
+static CMB_TRANSFORM_OP_FIND_BN(-, cmb_sub_find_bn);
 #endif
