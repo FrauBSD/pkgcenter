@@ -1,6 +1,6 @@
 <HTML>
 <BODY>
-<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-07-22 15:09:41 -0700 freebsdfrau $ -->
+<!-- $FrauBSD: pkgcenter/depend/cmb/cmb.1.html 2019-08-03 16:27:13 -0700 freebsdfrau $ -->
 <!-- Manpage converted by man2html 3.0.1 -->
 <PRE>
 CMB(1)		         BSD General Commands Manual		         CMB(1)
@@ -10,8 +10,8 @@ CMB(1)		         BSD General Commands Manual		         CMB(1)
 
 </PRE>
 <H2>SYNOPSIS</H2><PRE>
-     <B>cmb</B> [<B>-0DefNorStvz</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-F</B> <I>[op]num</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>]
-	 [<B>-n</B> <I>num</I>] [<B>-P</B> <I>num</I>] [<B>-p</B> <I>str</I>] [<B>-s</B> <I>str</I>] [<B>-X</B> <I>op</I>] [<I[<I>item</I> <I>...</I>]
+     <B>cmb</B> [<B>-0DefNorStvz</B>] [<B>-c</B> <I>num</I>] [<B>-d</B> <I>str</I>] [<B>-F</B> <I>num</I>] [<B>-i</B> <I>num</I>] [<B>-k</B> <I>size</I>] [<B>-n</B> <I>num</I>]
+	 [<B>-P</B> <I>num</I>] [<B>-p</B> <I>str</I>] [<B>-s</B> <I>str</I>] [<B>-X</B> <I>op</I>] [<I[<I>item</I> <I>...</I>]
 
 
 </PRE>
@@ -41,10 +41,7 @@ CMB(1)		         BSD General Commands Manual		         CMB(1)
 
      <B>-e</B>	       Show empty set.	A single combination containing	no-items.
 
-     <B>-F</B>  <I>[op]num</I>
-               Find `<B>-X</B> <I>op</I>' values that equal <I>num</I> (default).  Can be prefixed
-               with <I>op</I>; supported <I>op</I> values include `=' (default), `==' (same
-               as `='), `&gt;=', `&lt;=', `&gt;', or `&lt;'.  Requires `<B>-X</B> <I>op</I>'.
+     <B>-F</B> <I>num</I>    Find `<B>-X</B> <I>op</I>' values that equal <I>num</I>.  Requires `<B>-X</B> <I>op</I>'.
 
      <B>-f</B>	       Treat each command-line argument as a file containing items,
 	       one item per line (default).	With `<B>-0</B>', read items separated
@@ -187,7 +184,7 @@ CMB(1)		         BSD General Commands Manual		         CMB(1)
 <H2>AUTHORS</H2><PRE>
      Devin Teske &lt;<I>dteske@FreeBSD.org</I>&gt;
 
-FreeBSD	13.0			 July 22, 2019			   FreeBSD 13.0
+FreeBSD	13.0			 August 3, 2019			   FreeBSD 13.0
 </PRE>
 <HR>
 <ADDRESS>

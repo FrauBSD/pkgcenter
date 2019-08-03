@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-07-23 22:03:17 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-03 16:27:13 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-alpha-10 $";
+static char version[] = "$Version: 3.9.5-beta-1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -244,6 +244,7 @@ main(int argc, char *argv[])
 				errx(EXIT_FAILURE, "Out of memory?!");
 				/* NOTREACHED */
 			}
+			cmb_transform_find->cp = optarg;
 			cmb_transform_find->as.ld = strtold(optarg, NULL);
 			break;
 		case 'f': /* file */
@@ -376,10 +377,10 @@ main(int argc, char *argv[])
 	}
 
 	/*
-	 * `-X op' required if given `-F [op]num'
+	 * `-X op' required if given `-F num'
 	 */
 	if (opt_find && opt_transform == NULL) {
-		errx(EXIT_FAILURE, "`-X op' required when using `-F op[num]'");
+		errx(EXIT_FAILURE, "`-X op' required when using `-F num'");
 		/* NOTREACHED */
 	}
 
@@ -613,6 +614,29 @@ main(int argc, char *argv[])
 	}
 
 	/*
+	 * Adjust precision based on `-F num'
+	 */
+	if (opt_find) {
+		if ((cp = strchr(cmb_transform_find->cp, '.')) != NULL) {
+			len = (int)strlen(cmb_transform_find->cp);
+			len -= cp - cmb_transform_find->cp + 1;
+			if (len > cmb_transform_precision) {
+				cmb_transform_precision = len;
+			} else {
+				cmb_transform_find->cp = malloc(10240);
+				if (cmb_transform_find->cp == NULL) {
+					errx(EXIT_FAILURE, "Out of memory?!");
+					/* NOTREACHED */
+				}
+				snprintf(cmb_transform_find->cp,
+					sizeof(cmb_transform_find->cp),
+					"%.*Lf", cmb_transform_precision,
+					cmb_transform_find->as.ld);
+			}
+		}
+	}
+
+	/*
 	 * Calculate combinations
 	 */
 	if (opt_total) {
@@ -735,8 +759,8 @@ cmb_usage(void)
 	);
 	fprintf(stderr, OPTFMT, "-d text", "Item delimiter (default is ` ').");
 	fprintf(stderr, OPTFMT, "-e", "Show empty set with no items.");
-	fprintf(stderr, OPTFMT, "-F [op]num",
-	    "Find `-X op' values. Default op is `=' for finding matches.");
+	fprintf(stderr, OPTFMT, "-F num",
+	    "Find `-X op' results matching num.");
 	fprintf(stderr, OPTFMT, "-f",
 	    "Treat arguments as files to read items from; `-' for stdin.");
 	fprintf(stderr, OPTFMT, "-i num",

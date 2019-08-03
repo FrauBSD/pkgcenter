@@ -3338,10 +3338,11 @@ if test "$CC" = clang; then :
 	CFLAGS="${CFLAGS:+$CFLAGS }$( echo \
 		-Weverything \
 		-Wno-extra-semi \
+		-Wno-float-equal \
 		-Wno-padded \
 		-Wno-reserved-id-macro \
-		-Wno-unused-macros \
 		-Wno-unknown-warning-option \
+		-Wno-unused-macros \
 	)"
 
 fi

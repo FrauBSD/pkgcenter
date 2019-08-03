@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/cmb/configure.in 2019-04-10 14:53:38 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/cmb/configure.in 2019-08-03 16:27:13 -0700 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -112,10 +112,11 @@ AS_IF(test "$CC" = clang, [
 	CFLAGS="${CFLAGS:+$CFLAGS }$( echo \
 		-Weverything \
 		-Wno-extra-semi \
+		-Wno-float-equal \
 		-Wno-padded \
 		-Wno-reserved-id-macro \
-		-Wno-unused-macros \
 		-Wno-unknown-warning-option \
+		-Wno-unused-macros \
 	)"
 ])
 
