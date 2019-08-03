@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-07-23 21:57:32 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-03 16:22:35 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -83,7 +83,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	5
-#define CMB_H_VERSION_PATCH	1
+#define CMB_H_VERSION_PATCH	2
 
 /*
  * Macros for cmb_config options bitmask
@@ -273,15 +273,24 @@ extern struct cmb_xitem *cmb_transform_find;
     	const char *prefix = NULL;                                           \
     	const char *suffix = NULL;                                           \
     	struct cmb_xitem *xitem = NULL;                                      \
+    	char buf[10240];                                                     \
     	                                                                     \
     	for (n = 0; n < nitems; n++) {                                       \
     		memcpy(&xitem, &items[n], sizeof(struct cmb_xitem *));       \
     		ld = xitem->as.ld;                                           \
     		total = eq;                                                  \
     	}                                                                    \
-    	if (fabsl(total - cmb_transform_find->as.ld) > LDBL_EPSILON *        \
-    	    fmaxl(fabsl(total), fabsl(cmb_transform_find->as.ld)))           \
-    		return (0);                                                  \
+    	if (cmb_transform_precision == 0) {                                  \
+    		if (total != cmb_transform_find->as.ld) {                    \
+    			return (0);                                          \
+    		}                                                            \
+    	} else {                                                             \
+    		snprintf(buf, sizeof(buf), "%.*Lf",                          \
+    			cmb_transform_precision, total);                     \
+    		if (strcmp(buf, cmb_transform_find->cp) != 0) {              \
+    			return (0);                                          \
+    		}                                                            \
+    	}                                                                    \
     	if (config != NULL) {                                                \
     		if (config->delimiter != NULL)                               \
     			delimiter = config->delimiter;                       \
@@ -305,6 +314,7 @@ extern struct cmb_xitem *cmb_transform_find;
     		}                                                            \
     	}                                                                    \
     	for (n = 1; n < nitems; n++) {                                       \
+    		memcpy(&xitem, &items[n], sizeof(struct cmb_xitem *));       \
     		if (!opt_silent && !opt_quiet) {                             \
     			printf("%s", xitem->cp);                             \
     			if (n < nitems - 1)                                  \
