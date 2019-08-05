@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-03 18:57:26 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-04 19:35:55 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,41 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-beta-2 $";
-
-/*
- * For float equality comparisons (`-F num'), use a buffer big enough to hold
- * the maximum floating point number produced by `long double'. 128-bit floats
- * are defined as:
- * 	+ 1 bit for the sign
- * 	+ 15 bits for the mantissa
- * 	+ 112 bits for the significand
- * Smallest positive subnormal number:
- * 	= 2^-16382 * 2^-112
- * 	= 6.4751751194380251109244389582276465524995 * 10^-4966
- * 	= 4968 digits (leading "0." and one non-zero decimal [6])
- * Largest subnormal number:
- * 	= 2^-16382 * (1 - 2^-112)
- * 	= 3.3621031431120935062626778173217519550804 * 10^-4932
- * 	= 4934 digits (leading "0." and one non-zero decimal [3])
- * Smallest positive normal number:
- * 	= 2^-16382
- * 	= 3.3621031431120935062626778173217526025980 * 10^-4932
- * 	= 4934 digits (leading "0." and one non-zero decimal [3])
- * Largest normal number:
- * 	= 2^16383 * (2 - 2^-112)
- * 	= 1.1897314953572317650857593266280070161965 * 10^4932
- * 	= 4974 digits (leading digits and 40 decimal digits)
- * Largest number less than one:
- * 	= 1 - 2^-113
- * 	= 0.9999999999999999999999999999999999037035
- * 	= variable digits
- * Smallest number larger than one:
- * 	= 1 + 2−112
- * 	= 1.0000000000000000000000000000000001925929
- * 	= variable digits
- */
-#define CMB_FIND_BUF_SIZE 10240
+static char version[] = "$Version: 3.9.5-beta-3 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -658,27 +624,31 @@ main(int argc, char *argv[])
 			if (len > cmb_transform_precision) {
 				cmb_transform_precision = len;
 			} else {
+				len = snprintf(NULL, 0, "%.*Lf",
+				    cmb_transform_precision,
+				    cmb_transform_find->as.ld) + 1;
 				cmb_transform_find->cp =
-				    malloc(CMB_FIND_BUF_SIZE);
+				    malloc((unsigned long)len);
 				if (cmb_transform_find->cp == NULL) {
 					errx(EXIT_FAILURE, "Out of memory?!");
 					/* NOTREACHED */
 				}
 				free_find = TRUE;
-				snprintf(cmb_transform_find->cp,
-					sizeof(cmb_transform_find->cp),
-					"%.*Lf", cmb_transform_precision,
-					cmb_transform_find->as.ld);
+				(void)sprintf(cmb_transform_find->cp, "%.*Lf",
+				    cmb_transform_precision,
+				    cmb_transform_find->as.ld);
 			}
 		} else if (cmb_transform_precision > 0) {
-			cmb_transform_find->cp = malloc(CMB_FIND_BUF_SIZE);
+			len = snprintf(NULL, 0, "%.*Lf",
+			    cmb_transform_precision,
+			    cmb_transform_find->as.ld);
+			cmb_transform_find->cp = malloc((unsigned long)len);
 			if (cmb_transform_find->cp == NULL) {
 				errx(EXIT_FAILURE, "Out of memory?!");
 				/* NOTREACHED */
 			}
 			free_find = TRUE;
-			snprintf(cmb_transform_find->cp,
-				sizeof(cmb_transform_find->cp),
+			(void)sprintf(cmb_transform_find->cp,
 				"%.*Lf", cmb_transform_precision,
 				cmb_transform_find->as.ld);
 		}
@@ -770,7 +740,7 @@ main(int argc, char *argv[])
 	/*
 	 * Clean up
 	 */
-	if (opt_file) {
+	if (opt_file || opt_range) {
 		for (n = 0; n < nitems; n++)
 			free(items[n]);
 		free(items);
@@ -783,8 +753,10 @@ main(int argc, char *argv[])
 		}
 		free(items);
 	}
-	if (free_find) {
-		free(cmb_transform_find->cp);
+	if (opt_find) {
+		if (free_find)
+			free(cmb_transform_find->cp);
+		free(cmb_transform_find);
 	}
 	free(config);
 
