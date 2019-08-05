@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-03 16:22:35 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-04 19:32:01 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -38,6 +38,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -83,7 +84,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	5
-#define CMB_H_VERSION_PATCH	2
+#define CMB_H_VERSION_PATCH	3
 
 /*
  * Macros for cmb_config options bitmask
@@ -255,11 +256,9 @@ struct cmb_xitem {
 	CMB_TRANSFORM_EQ(fn(total, ld), op, x, BIGNUM *seq, cmb_print_seq_bn)
 #endif
 
+extern char *cmb_transform_find_buf;
+extern int cmb_transform_find_buf_size;
 extern struct cmb_xitem *cmb_transform_find;
-
-#ifndef LDBL_EPSILON
-#define LDBL_EPSILON (long double)(2e-105)
-#endif
 
 #define CMB_TRANSFORM_EQ_FIND(eq, op, x, seqt, seqp) \
     int                                                                      \
@@ -267,13 +266,13 @@ extern struct cmb_xitem *cmb_transform_find;
     {                                                                        \
     	uint8_t show_numbers = FALSE;                                        \
     	uint32_t n;                                                          \
+    	int len;                                                             \
     	long double ld;                                                      \
     	long double total = 0;                                               \
     	const char *delimiter = " ";                                         \
     	const char *prefix = NULL;                                           \
     	const char *suffix = NULL;                                           \
     	struct cmb_xitem *xitem = NULL;                                      \
-    	char buf[10240];                                                     \
     	                                                                     \
     	for (n = 0; n < nitems; n++) {                                       \
     		memcpy(&xitem, &items[n], sizeof(struct cmb_xitem *));       \
@@ -285,11 +284,23 @@ extern struct cmb_xitem *cmb_transform_find;
     			return (0);                                          \
     		}                                                            \
     	} else {                                                             \
-    		snprintf(buf, sizeof(buf), "%.*Lf",                          \
-    			cmb_transform_precision, total);                     \
-    		if (strcmp(buf, cmb_transform_find->cp) != 0) {              \
-    			return (0);                                          \
+    		len = snprintf(NULL, 0, "%.*Lf",                             \
+    		    cmb_transform_precision, total) + 1;                     \
+    		if (len > cmb_transform_find_buf_size) {                     \
+    			cmb_transform_find_buf =                             \
+    			    realloc(cmb_transform_find_buf,                  \
+    			    (unsigned long)len);                             \
+    			if (cmb_transform_find_buf == NULL) {                \
+    				errx(EXIT_FAILURE, "Out of memory?!");       \
+    				/* NOTREACHED */                             \
+    			}                                                    \
+    			cmb_transform_find_buf_size = len;                   \
     		}                                                            \
+    		(void)sprintf(cmb_transform_find_buf, "%.*Lf",               \
+    		    cmb_transform_precision, total);                         \
+    		if (strcmp(cmb_transform_find_buf,                           \
+    		    cmb_transform_find->cp) != 0)                            \
+    			return (0);                                          \
     	}                                                                    \
     	if (config != NULL) {                                                \
     		if (config->delimiter != NULL)                               \
