@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-04 19:32:01 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-05 16:19:03 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -84,7 +84,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	5
-#define CMB_H_VERSION_PATCH	3
+#define CMB_H_VERSION_PATCH	4
 
 /*
  * Macros for cmb_config options bitmask
@@ -191,7 +191,7 @@ struct cmb_xitem {
 
 #define CMB_TRANSFORM_EQ(eq, op, x, seqt, seqp) \
     int                                                                      \
-    x(struct cmb_config *config, seqt, uint32_t nitems, char *items[])       \
+    x(struct cmb_config *config, seqt seq, uint32_t nitems, char *items[])   \
     {                                                                        \
     	uint8_t show_numbers = FALSE;                                        \
     	uint32_t n;                                                          \
@@ -245,16 +245,33 @@ struct cmb_xitem {
     }
 
 #define CMB_TRANSFORM_OP(op, x) \
-	CMB_TRANSFORM_EQ(total op ld, op, x, uint64_t seq, cmb_print_seq)
+	CMB_TRANSFORM_EQ(total op ld, op, x, uint64_t, cmb_print_seq)
 #define CMB_TRANSFORM_FN(op, fn, x) \
-	CMB_TRANSFORM_EQ(fn(total, ld), op, x, uint64_t seq, cmb_print_seq)
+	CMB_TRANSFORM_EQ(fn(total, ld), op, x, uint64_t, cmb_print_seq)
 
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 #define CMB_TRANSFORM_OP_BN(op, x) \
-	CMB_TRANSFORM_EQ(total op ld, op, x, BIGNUM *seq, cmb_print_seq_bn)
+	CMB_TRANSFORM_EQ(total op ld, op, x, BIGNUM *, cmb_print_seq_bn)
 #define CMB_TRANSFORM_FN_BN(op, fn, x) \
-	CMB_TRANSFORM_EQ(fn(total, ld), op, x, BIGNUM *seq, cmb_print_seq_bn)
+	CMB_TRANSFORM_EQ(fn(total, ld), op, x, BIGNUM *, cmb_print_seq_bn)
 #endif
+
+/*
+ * Example transformations
+ */
+
+#if 0
+CMB_TRANSFORM_OP(+, cmb_add);			/* creates cmb_add() */
+CMB_TRANSFORM_FN(/, div, cmb_div);		/* creates cmb_div() */
+#if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
+CMB_TRANSFORM_OP_BN(+, cmb_add_bn);		/* creates cmb_add_bn() */
+CMB_TRANSFORM_FN_BN(/, div, cmb_div_bn);	/* creates cmb_div_bn() */
+#endif
+#endif
+
+/*
+ * Find transformations
+ */
 
 extern char *cmb_transform_find_buf;
 extern int cmb_transform_find_buf_size;
@@ -262,7 +279,7 @@ extern struct cmb_xitem *cmb_transform_find;
 
 #define CMB_TRANSFORM_EQ_FIND(eq, op, x, seqt, seqp) \
     int                                                                      \
-    x(struct cmb_config *config, seqt, uint32_t nitems, char *items[])       \
+    x(struct cmb_config *config, seqt seq, uint32_t nitems, char *items[])   \
     {                                                                        \
     	uint8_t show_numbers = FALSE;                                        \
     	uint32_t n;                                                          \
@@ -342,30 +359,27 @@ extern struct cmb_xitem *cmb_transform_find;
     }
 
 #define CMB_TRANSFORM_OP_FIND(op, x) \
-	CMB_TRANSFORM_EQ_FIND(total op ld, op, x, uint64_t seq, cmb_print_seq)
+	CMB_TRANSFORM_EQ_FIND(total op ld, op, x, uint64_t, cmb_print_seq)
 #define CMB_TRANSFORM_FN_FIND(op, fn, x) \
-	CMB_TRANSFORM_EQ_FIND(fn(total, ld), op, x, uint64_t seq, \
-	    cmb_print_seq)
+	CMB_TRANSFORM_EQ_FIND(fn(total, ld), op, x, uint64_t, cmb_print_seq)
 
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 #define CMB_TRANSFORM_OP_FIND_BN(op, x) \
-	CMB_TRANSFORM_EQ_FIND(total op ld, op, x, BIGNUM *seq, \
-	    cmb_print_seq_bn)
+	CMB_TRANSFORM_EQ_FIND(total op ld, op, x, BIGNUM *, cmb_print_seq_bn)
 #define CMB_TRANSFORM_FN_FIND_BN(op, fn, x) \
-	CMB_TRANSFORM_EQ_FIND(fn(total, ld), op, x, BIGNUM *seq, \
-	    cmb_print_seq_bn)
+	CMB_TRANSFORM_EQ_FIND(fn(total, ld), op, x, BIGNUM *, cmb_print_seq_bn)
 #endif
 
 /*
- * Example transformations
+ * Example find transformations
  */
 
 #if 0
-CMB_TRANSFORM_OP(+, cmb_add);			/* creates cmb_add() */
-CMB_TRANSFORM_FN(/, div, cmb_div);		/* creates cmb_div() */
+CMB_TRANSFORM_OP_FIND(+, cmb_add_find);		/* creates cmb_add_find() */
+CMB_TRANSFORM_FN_FIND(/, div, cmb_div_find);	/* creates cmb_div_find() */
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
-CMB_TRANSFORM_OP_BN(+, cmb_add_bn);		/* creates cmb_add_bn() */
-CMB_TRANSFORM_FN_BN(/, div, cmb_div_bn);	/* creates cmb_div_bn() */
+CMB_TRANSFORM_OP_FIND_BN(+, cmb_add_bn);	/* creates cmb_add_bn() */
+CMB_TRANSFORM_FN_FIND_BN(/, div, cmb_div_bn);	/* creates cmb_div_bn() */
 #endif
 #endif
 
