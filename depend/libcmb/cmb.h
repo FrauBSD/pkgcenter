@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-05 16:19:03 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-05 17:35:30 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -84,7 +84,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	5
-#define CMB_H_VERSION_PATCH	4
+#define CMB_H_VERSION_PATCH	5
 
 /*
  * Macros for cmb_config options bitmask
@@ -109,6 +109,14 @@
     int x(struct cmb_config *config, BIGNUM *seq, uint32_t nitems, \
         char *items[])
 #endif
+
+/*
+ * Build info
+ */
+struct cmb_build_info {
+	uint8_t debug;	/* CMB_DEBUG */
+};
+extern struct cmb_build_info cmb_build_info;
 
 /*
  * Anatomy of config option to pass as cmb*() config argument
