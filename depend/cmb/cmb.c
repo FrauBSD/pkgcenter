@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-04 19:35:55 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-05 17:37:59 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-beta-3 $";
+static char version[] = "$Version: 3.9.5-beta-4 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -360,11 +360,14 @@ main(int argc, char *argv[])
 		cmdver += 10; /* Seek past "$Version: " */
 		cmdver[strlen(cmdver)-2] = '\0'; /* Place NUL before "$" */
 #ifdef HAVE_OPENSSL_CRYPTO_H
-		printf("%s: %s (%s; %s)\n", pgm, cmdver, libver,
+		printf("%s: %s (%s; %s)", pgm, cmdver, libver,
 		    SSLeay_version(SSLEAY_VERSION));
 #else
-		printf("%s: %s (%s)\n", pgm, cmdver, libver);
+		printf("%s: %s (%s)", pgm, cmdver, libver);
 #endif
+		if (cmb_build_info.debug)
+			printf(" [debug]");
+		printf("\n");
 		exit(EXIT_SUCCESS);
 	}
 
@@ -757,6 +760,8 @@ main(int argc, char *argv[])
 		if (free_find)
 			free(cmb_transform_find->cp);
 		free(cmb_transform_find);
+		if (cmb_transform_find_buf != NULL)
+			free(cmb_transform_find);
 	}
 	free(config);
 
@@ -1160,6 +1165,10 @@ static CMB_TRANSFORM_OP_BN(/, cmb_div_bn);
 static CMB_TRANSFORM_OP_BN(+, cmb_add_bn);
 static CMB_TRANSFORM_OP_BN(-, cmb_sub_bn);
 #endif
+
+/*
+ * Find transformation functions
+ */
 static CMB_TRANSFORM_OP_FIND(*, cmb_mul_find);
 static CMB_TRANSFORM_OP_FIND(/, cmb_div_find);
 static CMB_TRANSFORM_OP_FIND(+, cmb_add_find);
