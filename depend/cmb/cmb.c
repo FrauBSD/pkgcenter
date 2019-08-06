@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-05 17:37:59 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-06 13:26:09 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-beta-4 $";
+static char version[] = "$Version: 3.9.5-rc-1 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -156,6 +156,7 @@ main(int argc, char *argv[])
 	uint8_t opt_version = FALSE;
 	char *cp;
 	char *cmdver = version;
+	char *endptr = NULL;
 	char **items = NULL;
 	char **items_tmp = NULL;
 	const char *libver = cmb_version(CMB_VERSION);
@@ -246,7 +247,16 @@ main(int argc, char *argv[])
 				/* NOTREACHED */
 			}
 			cmb_transform_find->cp = optarg;
-			cmb_transform_find->as.ld = strtold(optarg, NULL);
+			endptr = NULL;
+			errno = 0;
+			cmb_transform_find->as.ld = strtold(optarg, &endptr);
+			if (endptr == NULL || *endptr != '\0') {
+				if (errno == 0)
+					errno = EINVAL;
+				errx(EXIT_FAILURE, "-F: %s `%s'",
+				    strerror(errno), optarg);
+				/* NOTREACHED */
+			}
 			break;
 		case 'f': /* file */
 			opt_file = TRUE;
@@ -602,7 +612,16 @@ main(int argc, char *argv[])
 					/* NOTREACHED */
 				}
 				xitem->cp = items[n];
-				xitem->as.ld = strtold(items[n], NULL);
+				endptr = NULL;
+				errno = 0;
+				xitem->as.ld = strtold(items[n], &endptr);
+				if (endptr == NULL || *endptr != '\0') {
+					if (errno == 0)
+						errno = EINVAL;
+					errx(EXIT_FAILURE, "-X: %s `%s'",
+						strerror(errno), items[n]);
+					/* NOTREACHED */
+				}
 				items_tmp[n] = (char *)xitem;
 				if (opt_precision)
 					continue;
@@ -761,7 +780,7 @@ main(int argc, char *argv[])
 			free(cmb_transform_find->cp);
 		free(cmb_transform_find);
 		if (cmb_transform_find_buf != NULL)
-			free(cmb_transform_find);
+			free(cmb_transform_find_buf);
 	}
 	free(config);
 
