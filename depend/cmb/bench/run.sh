@@ -35,7 +35,7 @@ TESTS="
 	logs/log3.%s.txt = ./cmb_bench_cpu.sh -n %u 38
 
 	# Flops Test (2.1B flops x %u cores)
-	logs/log4.%s.txt = ./cmb_bench_cpu_flops.sh -an 44 65543
+	logs/log4.%s.txt = ./cmb_bench_cpu_flops.sh -an %u 65543
 " # END-QUOTE
 
 ############################################################ ENVIRONMENT
