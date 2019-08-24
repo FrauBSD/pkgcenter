@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2019-08-05 17:35:30 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2019-08-23 18:07:49 -0700 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -121,6 +121,7 @@ AS_IF([test "$host_os" != "${host_os#darwin}"],
 AS_IF(test "$CC" = clang, [
 	CFLAGS="${CFLAGS:+$CFLAGS }$( echo \
 		-Weverything \
+		-Wno-disabled-macro-expansion \
 		-Wno-extra-semi \
 		-Wno-padded \
 		-Wno-reserved-id-macro \

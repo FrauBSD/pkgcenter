@@ -22,7 +22,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-05 17:35:30 -0700 freebsdfrau $
+ * $FrauBSD: pkgcenter/depend/libcmb/cmb.h 2019-08-23 18:07:49 -0700 freebsdfrau $
  * $FreeBSD$
  */
 
@@ -84,7 +84,7 @@
  */
 #define CMB_H_VERSION_MAJOR	3
 #define CMB_H_VERSION_MINOR	5
-#define CMB_H_VERSION_PATCH	5
+#define CMB_H_VERSION_PATCH	6
 
 /*
  * Macros for cmb_config options bitmask
