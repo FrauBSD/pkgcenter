@@ -1,4 +1,4 @@
-# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2019-08-23 18:07:49 -0700 freebsdfrau $
+# $FrauBSD: pkgcenter/depend/libcmb/configure.in 2019-08-23 18:13:04 -0700 freebsdfrau $
 
 AC_INIT
 ############################################################ CONFIGURATION
@@ -14,7 +14,7 @@ AC_PREREQ(2.69)
 # 	Place static version identifier information into autoconf-generated
 # 	`configure' for source-code tracking purposes.
 #
-AC_REVISION($Revision: 1.5 $)
+AC_REVISION($Revision: 1.6 $)
 
 #
 # AC_CONFIG_HEADERS (HEADER ..., [CMDS], [INIT-CMDS])
