@@ -21,10 +21,10 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-08-03 16:27:13 -0700 freebsdfrau $
+.\" $FrauBSD: pkgcenter/depend/cmb/cmb.1 2019-08-23 20:37:14 -0700 freebsdfrau $
 .\" $FreeBSD$
 .\"
-.Dd August 3, 2019
+.Dd August 23, 2019
 .Dt CMB 1
 .Os
 .Sh NAME
@@ -380,6 +380,11 @@ Roll a set of 2 six-sided dice,
 producing a single random combination of two numbers:
 .Bd -literal -offset indent
 cmb -c 1 -k 2 -i rand -r 6 6
+.Ed
+.Pp
+Find all combinations of numbers 1, 2, and 3 that produce the sum of 4:
+.Bd -literal -offset indent
+cmb -X add -F 4 -r 3
 .Ed
 .Sh HISTORY
 The
