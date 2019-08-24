@@ -25,7 +25,7 @@
 
 #include <sys/cdefs.h>
 #ifdef __FBSDID
-__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-06 13:26:09 -0700 freebsdfrau $");
+__FBSDID("$FrauBSD: pkgcenter/depend/cmb/cmb.c 2019-08-23 18:20:48 -0700 freebsdfrau $");
 __FBSDID("$FreeBSD$");
 #endif
 
@@ -46,7 +46,7 @@ __FBSDID("$FreeBSD$");
 #define UINT_MAX 0xFFFFFFFF
 #endif
 
-static char version[] = "$Version: 3.9.5-rc-1 $";
+static char version[] = "$Version: 3.9.5-rc-2 $";
 
 /* Environment */
 static char *pgm; /* set to argv[0] by main() */
@@ -108,7 +108,7 @@ static inline uint64_t	urand64(void) { return (((uint64_t)lrand48() << 42)
  */
 struct cmb_xfdef
 {
-	char *opname;
+	const char *opname;
 	CMB_ACTION((*action));
 	CMB_ACTION((*action_find));
 };
@@ -123,7 +123,7 @@ static struct cmb_xfdef cmb_xforms[] = {
 #if defined(HAVE_LIBCRYPTO) && defined(HAVE_OPENSSL_BN_H)
 struct cmb_xfdef_bn
 {
-	char *opname;
+	const char *opname;
 	CMB_ACTION_BN((*action_bn));
 	CMB_ACTION_BN((*action_find_bn));
 };
@@ -154,7 +154,7 @@ main(int argc, char *argv[])
 	uint8_t opt_range = FALSE;
 	uint8_t opt_total = FALSE;
 	uint8_t opt_version = FALSE;
-	char *cp;
+	const char *cp;
 	char *cmdver = version;
 	char *endptr = NULL;
 	char **items = NULL;
