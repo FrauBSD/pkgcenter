@@ -25,7 +25,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-# $FreeBSD: head/usr.sbin/bsdinstall/scripts/zfsboot 342283 2018-12-20 19:39:37Z bcran $
+# $FreeBSD: head/usr.sbin/bsdinstall/scripts/zfsboot 353335 2019-10-09 05:28:10Z yuripv $
 #
 ############################################################ INCLUDES
 
@@ -1655,6 +1655,9 @@ while :; do
 
 		zfs_create_boot "$ZFSBOOT_POOL_NAME" \
 		                "$vdev_type" $ZFSBOOT_DISKS || continue
+
+		# To be reused by bootconfig
+		echo "$ZFSBOOT_DISKS" > /tmp/bsdinstall-zfsboot
 
 		break # to success
 		;;

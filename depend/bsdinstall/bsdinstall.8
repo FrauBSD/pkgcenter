@@ -23,9 +23,9 @@
 .\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.\" $FreeBSD: head/usr.sbin/bsdinstall/bsdinstall.8 339193 2018-10-05 08:17:29Z 0mp $
+.\" $FreeBSD: head/usr.sbin/bsdinstall/bsdinstall.8 354967 2019-11-21 15:54:56Z 0mp $
 .\"
-.Dd October 4, 2018
+.Dd November 21, 2019
 .Dt BSDINSTALL 8
 .Os
 .Sh NAME
@@ -260,7 +260,7 @@ Others are set by various interactive user prompts, and can be usefully
 overridden when making scripted or customized installers.
 .Bl -tag -width ".Ev BSDINSTALL_DISTSITE"
 .It Ev DISTRIBUTIONS
-The set of distributions to install, e.g., "base kernel ports".
+The set of distributions to install, e.g., "base.txz kernel.txz ports.txz".
 Default: unset
 .It Ev BSDINSTALL_DISTDIR
 The directory in which the distribution files can be found (or to which they
