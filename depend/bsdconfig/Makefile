@@ -26,6 +26,10 @@ SUBDIR+= examples
 FILESDIR=	${LIBEXECDIR}/bsdconfig
 FILES=		USAGE
 
+#? DO NOT MERGE THESE (3) LINES
+PREFIX?=	/usr
+SCRIPTSDIR?=	${PREFIX}/sbin
+
 SCRIPTS= bsdconfig
 
 MAN= bsdconfig.8
