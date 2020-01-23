@@ -2187,8 +2187,8 @@ f_dialog_init()
 	# Add `-S' and `-X' to the list of standard arguments supported by all
 	#
 	case "$GETOPTS_STDARGS" in
-	*SX*) : good ;; # already present
-	   *) GETOPTS_STDARGS="${GETOPTS_STDARGS}SX"
+	*SXZ*) : good ;; # already present
+	    *) GETOPTS_STDARGS="${GETOPTS_STDARGS}SXZ"
 	esac
 
 	#
