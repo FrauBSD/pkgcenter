@@ -24,7 +24,7 @@ if [ ! "$_SYSRC_SUBR" ]; then _SYSRC_SUBR=1
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 #
-# $FreeBSD: head/usr.sbin/bsdconfig/share/sysrc.subr 335302 2018-06-17 20:32:43Z dteske $
+# $FreeBSD: head/usr.sbin/bsdconfig/share/sysrc.subr 355280 2019-12-02 05:24:16Z dteske $
 #
 ############################################################ INCLUDES
 
@@ -560,7 +560,7 @@ f_sysrc_set()
 	#
 	if [ "$not_found" ]; then
 		# Add a newline if missing before appending to the file
-		awk 'BEGIN { wc = 0 } NR == 1 {
+		[ ! -e "$file" ] || awk 'BEGIN { wc = 0 } NR == 1 {
 			(cmd = "wc -l " FILENAME) | getline
 			close(cmd)
 			wc = $1
