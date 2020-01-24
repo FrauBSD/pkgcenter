@@ -86,6 +86,12 @@ export DIALOG_ERROR=254 # sh(1) can't handle the default of `-1'
 DIALOG_ESC=255
 
 #
+# Exit codes for zenity(1)
+#
+ZENITY_OK=${SUCCESS:-0}
+ZENITY_CANCEL=${FAILURE:-1}
+
+#
 # Default behavior is to call f_dialog_init() automatically when loaded.
 #
 : ${DIALOG_SELF_INITIALIZE=1}
@@ -300,7 +306,9 @@ f_dialog_max_size()
 	local __var_height="$1" __var_width="$2" __max_size
 	[ "$__var_height" -o "$__var_width" ] || return $FAILURE
 	if [ "$USE_XDIALOG" ]; then
-		__max_size="$XDIALOG_MAXSIZE" # see CONFIGURATION
+		__max_size="$XDIALOG_MAXSIZE" # see f_dialog_init()
+	elif [ "$USE_ZENITY" ]; then
+		__max_size="$ZENITY_MAXSIZE" # see f_dialog_init()
 	else
 		if __max_size=$( $DIALOG --print-maxsize \
 			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD )
@@ -654,6 +662,9 @@ f_dialog_infobox_size()
 		# Bump width by 16.6% if using Xdialog(1)
 		[ "$USE_XDIALOG" ] && __width=$(( $__width + $__width / 6 ))
 
+		# Bump width by 650% if using zenity(1)
+		[ "$USE_ZENITY" ] && __width=$(( $__width * 6 + $__width / 2 ))
+
 		setvar "$__var_width" $__width
 	fi
 
@@ -920,10 +931,10 @@ f_dialog_menu_size()
 		__rows=$(( $__rows + 1 ))
 	done
 
-	# Adjust rows early (for up-comning height calculation)
+	# Adjust rows early (for up-coming height calculation)
 	if [ "$__var_height" -o "$__var_rows" ]; then
-		# Add a row for visual aid if using Xdialog(1)
-		[ "$USE_XDIALOG" ] && __rows=$(( $__rows + 1 ))
+		# Add a row for visual aid if using Xdialog(1)/zenity(1)
+		[ "$USE_XDIALOG$USE_ZENITY" ] && __rows=$(( $__rows + 1 ))
 	fi
 
 	# Adjust height if desired
@@ -935,6 +946,11 @@ f_dialog_menu_size()
 		else
 			__height_menu_size=$((
 				$__height_menu_size + $__rows + 4 ))
+		fi
+		# Bump height by rows if using zenity(1)
+		if [ "$USE_ZENITY" ]; then
+			__height_menu_size=$((
+				$__height_menu_size + $__rows * 36 ))
 		fi
 		setvar "$__var_height" $__height_menu_size
 	fi
@@ -1018,8 +1034,8 @@ f_dialog_menu_with_help_size()
 
 	# Adjust rows early (for up-coming height calculation)
 	if [ "$__var_height" -o "$__var_rows" ]; then
-		# Add a row for visual aid if using Xdialog(1)
-		[ "$USE_XDIALOG" ] && __rows=$(( $__rows + 1 ))
+		# Add a row for visual aid if using Xdialog(1)/zenity(1)
+		[ "$USE_XDIALOG$USE_ZENITY" ] && __rows=$(( $__rows + 1 ))
 	fi
 
 	# Adjust height if desired
@@ -1031,6 +1047,11 @@ f_dialog_menu_with_help_size()
 		else
 			__height_menu_with_help_size=$((
 				$__height_menu_with_help_size + $__rows + 4 ))
+		fi
+		# Bump height by rows if using zenity(1)
+		if [ "$USE_ZENITY" ]; then
+			__height_menu_with_help_size=$((
+				$__height_menu_with_help_size + $__rows * 36 ))
 		fi
 		setvar "$__var_height" $__height_menu_with_help_size
 	fi
@@ -1644,12 +1665,23 @@ f_dialog_msgbox()
 	local msg_text="$1" hline="$2" height width
 	f_dialog_buttonbox_size height width \
 		"$DIALOG_TITLE" "$DIALOG_BACKTITLE" "$msg_text" "$hline"
-	$DIALOG \
-		--title "$DIALOG_TITLE"         \
-		--backtitle "$DIALOG_BACKTITLE" \
-		--hline "$hline"                \
-		--ok-label "$msg_ok"            \
-		--msgbox "$msg_text" $height $width
+	if [ "$USE_ZENITY" ]; then
+		$DIALOG \
+			--title "$DIALOG_TITLE" \
+			--ok-label "$msg_ok"    \
+			--width $width          \
+			--height $height        \
+			--text "$msg_text"      \
+			--ellipsize             \
+			--info
+	else
+		$DIALOG \
+			--title "$DIALOG_TITLE"         \
+			--backtitle "$DIALOG_BACKTITLE" \
+			--hline "$hline"                \
+			--ok-label "$msg_ok"            \
+			--msgbox "$msg_text" $height $width
+	fi
 }
 
 ############################################################ TEXTBOX FUNCTIONS
@@ -2333,6 +2365,40 @@ f_dialog_init()
 
 			echo $height $width
 		)
+		f_dprintf "$funcname: XDIALOG_MAXSIZE=[$XDIALOG_MAXSIZE]"
+	fi
+
+	#
+	# Probe xrandr(1)/xwininfo(1) for maximum height/width constraints if
+	# asked to use zenity(1).
+	#
+	if [ "$USE_ZENITY" ]; then
+		local xdata scale=0.9
+		ZENITY_MAXSIZE="691 921" # int(768*0.9) int(1024*0.9)
+		if f_eval_catch -k xdata $funcname xwininfo "xwininfo -root"
+		then
+			ZENITY_MAXSIZE=$( echo "$xdata" | awk -v scale=$scale '
+				$1 == "Width:" { width = $2 }
+				$1 == "Height:" { height = $2 }
+				END {
+					printf "%u %u\n",
+						int(height * scale),
+						int(width * scale)
+				}
+			' )
+		elif f_eval_catch -k xdata $funcname xrandr xrandr
+		then
+			ZENITY_MAXSIZE=$( echo "$xdata" | awk -v scale=$scale '
+				sub(/.*current/, "") {
+					sub(/,.*/, "")
+					printf "%u %u\n",
+						int($3 * scale), # height
+						int($1 * scale)  # width
+					exit
+				}
+			' )
+		fi
+		f_dprintf "$funcname: ZENITY_MAXSIZE=[$ZENITY_MAXSIZE]"
 	fi
 
 	#
@@ -2347,7 +2413,7 @@ f_dialog_init()
 		DIALOG_BACKTITLE="$_DIALOG_TITLE"
 	fi
 
-	f_dprintf "f_dialog_init: dialog(1) API initialized."
+	f_dprintf "$funcname: dialog(1) API initialized."
 }
 
 ############################################################ MAIN
