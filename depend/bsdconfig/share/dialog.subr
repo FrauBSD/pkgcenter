@@ -1083,12 +1083,16 @@ f_dialog_menu_with_help_size()
 		[ $__n -gt $__width_menu_with_help_size ] &&
 			__width_menu_with_help_size=$__n
 
-		# Update width for help text if using Xdialog(1)
+		# Update width for help text if using Xdialog(1)/zenity(1)
 		if [ "$USE_XDIALOG" ]; then
 			__n=$(( $__longest_help + 10 ))
 			__n=$(( $__n + $__n / 6 )) # plus 16.6%
 			[ $__n -gt $__width_menu_with_help_size ] &&
 				__width_menu_with_help_size=$__n
+		elif [ "$USE_ZENITY" ]; then
+			__width_menu_with_help_size=$((
+				$__width_menu_with_help_size +
+				$__longest_help * 5 ))
 		fi
 
 		setvar "$__var_width" $__width_menu_with_help_size
