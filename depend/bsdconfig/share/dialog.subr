@@ -622,6 +622,9 @@ f_dialog_infobox_size()
 			__height=$(( $__height + $__n + 2 ))
 		fi
 
+		# Bump height by font size (in pixels) if using zenity(1)
+		[ "$USE_ZENITY" ] && __height=$(( $__height * 19 ))
+
 		setvar "$__var_height" $__height
 	fi
 
@@ -652,9 +655,9 @@ f_dialog_infobox_size()
 		#
 		# Bump width for long hlines. Xdialog(1) supports `--hline' but
 		# it's currently not used (so don't do anything here if using
-		# Xdialog(1)).
+		# Xdialog(1)). zenity(1) also does not support `--hline'.
 		#
-		if [ ! "$USE_XDIALOG" ]; then
+		if [ ! "$USE_XDIALOG$USE_ZENITY" ]; then
 			__n=$(( ${#__hline} + 12 ))
 			[ $__n -gt $__width ] && __width=$__n
 		fi
@@ -715,11 +718,17 @@ f_dialog_buttonbox_size()
 	# Adjust height if desired
 	if [ "$__var_height" ]; then
 		# Add height to accommodate the buttons
-		__height_bbox_size=$(( $__height_bbox_size + 2 ))
+		if [ "$USE_ZENITY" ]; then
+			# Button height in pixels
+			__height_bbox_size=$(( $__height_bbox_size + 34 ))
+		elif [ "$USE_XDIALOG" ]; then
+			__height_bbox_size=$(( $__height_bbox_size + 2 ))
 
-		# Adjust for clipping with Xdialog(1) on Linux/GTK2
-		[ "$USE_XDIALOG" ] &&
+			# Adjust for clipping with Xdialog(1) on Linux/GTK2
 			__height_bbox_size=$(( $__height_bbox_size + 3 ))
+		else
+			__height_bbox_size=$(( $__height_bbox_size + 2 ))
+		fi
 
 		setvar "$__var_height" $__height_bbox_size
 	fi
@@ -943,14 +952,18 @@ f_dialog_menu_size()
 		if [ "$USE_XDIALOG" ]; then
 			__height_menu_size=$((
 				$__height_menu_size + $__rows + 7 ))
+		elif [ "$USE_ZENITY" ]; then
+			#
+			# Adjust height from f_dialog_infobox_size():
+			# 23 = menu line height (in pixels)
+			# 34 = button height (in pixels)
+			#  5 = whitespace around menu (in pixels)
+			#
+			__height_menu_size=$((
+				$__height_menu_size + $__rows * 23 + 34 + 5 ))
 		else
 			__height_menu_size=$((
 				$__height_menu_size + $__rows + 4 ))
-		fi
-		# Bump height by rows if using zenity(1)
-		if [ "$USE_ZENITY" ]; then
-			__height_menu_size=$((
-				$__height_menu_size + $__rows * 36 ))
 		fi
 		setvar "$__var_height" $__height_menu_size
 	fi
@@ -1044,14 +1057,19 @@ f_dialog_menu_with_help_size()
 		if [ "$USE_XDIALOG" ]; then
 			__height_menu_with_help_size=$((
 				$__height_menu_with_help_size + $__rows + 8 ))
+		elif [ "$USE_ZENITY" ]; then
+			#
+			# Adjust height from f_dialog_infobox_size():
+			# 23 = menu line height (in pixels)
+			# 34 = button height (in pixels)
+			#  5 = whitespace around menu (in pixels)
+			#
+			__height_menu_with_help_size=$((
+				$__height_menu_with_help_size + $__rows * 23
+				+ 34 + 5 ))
 		else
 			__height_menu_with_help_size=$((
 				$__height_menu_with_help_size + $__rows + 4 ))
-		fi
-		# Bump height by rows if using zenity(1)
-		if [ "$USE_ZENITY" ]; then
-			__height_menu_with_help_size=$((
-				$__height_menu_with_help_size + $__rows * 36 ))
 		fi
 		setvar "$__var_height" $__height_menu_with_help_size
 	fi
@@ -1707,18 +1725,53 @@ f_dialog_textbox()
 		"$DIALOG_TITLE" "$DIALOG_BACKTITLE" "$contents"
 
 	if [ $retval -eq $SUCCESS ]; then
-		$DIALOG \
-			--title "$DIALOG_TITLE"         \
-			--backtitle "$DIALOG_BACKTITLE" \
-			--exit-label "$msg_ok"          \
-			--no-cancel                     \
-			--textbox "$file" $height $width
+		if [ "$USE_ZENITY" ]; then
+			#
+			# Adjust height/width from f_dialog_buttonbox_size():
+			# 34 = button height (in pixels)
+			# 19 = non-menu line height (in pixels)
+			#  4 = difference between non-menu (19) line height and
+			#      menu-list line-height (23) (in pixels)
+			#  5 = whitespace around menu (in pixels)
+			#
+			height=$(( $height + ($height - 34) / 19 * 4 + 5 ))
+			width=$(( $width + 24 ))
+
+			# [Re-]Constrain height
+			f_dialog_size_constrain height width
+
+			$DIALOG \
+				--title "$DIALOG_TITLE" \
+				--ok-label "$msg_ok" \
+				--text-info \
+				--filename "$file" \
+				--height $height \
+				--width $width
+		else
+			$DIALOG \
+				--title "$DIALOG_TITLE"         \
+				--backtitle "$DIALOG_BACKTITLE" \
+				--exit-label "$msg_ok"          \
+				--no-cancel                     \
+				--textbox "$file" $height $width
+		fi
 	else
-		$DIALOG \
-			--title "$DIALOG_TITLE"         \
-			--backtitle "$DIALOG_BACKTITLE" \
-			--ok-label "$msg_ok"            \
-			--msgbox "$contents" $height $width
+		if [ "$USE_ZENITY" ]; then
+			$DIALOG \
+				--title "$DIALOG_TITLE" \
+				--ok-label "$msg_ok" \
+				--info \
+				--text "$contents" \
+				--ellipsize \
+				--height $height \
+				--width $width
+		else
+			$DIALOG \
+				--title "$DIALOG_TITLE"         \
+				--backtitle "$DIALOG_BACKTITLE" \
+				--ok-label "$msg_ok"            \
+				--msgbox "$contents" $height $width
+		fi
 	fi
 }
 
