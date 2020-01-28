@@ -665,8 +665,9 @@ f_dialog_infobox_size()
 		# Bump width by 16.6% if using Xdialog(1)
 		[ "$USE_XDIALOG" ] && __width=$(( $__width + $__width / 6 ))
 
-		# Bump width by 650% if using zenity(1)
-		[ "$USE_ZENITY" ] && __width=$(( $__width * 6 + $__width / 2 ))
+		# Bump width by 666% if using zenity(1)
+		[ "$USE_ZENITY" ] &&
+			__width=$(( $__width * 6 + 2 * $__width / 3 ))
 
 		setvar "$__var_width" $__width
 	fi
