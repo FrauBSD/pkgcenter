@@ -1583,7 +1583,14 @@ f_dialog_clear()
 #
 f_dialog_info()
 {
-	local info_text="$*" height width
+	local info_text="$*"
+
+	if [ "$USE_ZENITY" ]; then
+		$DIALOG --notification --text="$info_text"
+		return
+	fi
+
+	local height width
 	f_dialog_infobox_size height width \
 		"$DIALOG_TITLE" "$DIALOG_BACKTITLE" "$info_text"
 	$DIALOG \
