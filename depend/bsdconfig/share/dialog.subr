@@ -1586,7 +1586,7 @@ f_dialog_info()
 	local info_text="$*"
 
 	if [ "$USE_ZENITY" ]; then
-		$DIALOG --notification --text="$info_text"
+		$DIALOG --notification --text="$DIALOG_TITLE: $info_text"
 		return
 	fi
 
