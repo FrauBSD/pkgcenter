@@ -396,14 +396,13 @@ f_authenticate_some_user()
 		#
 		# Validate sudo(8) credentials for given user
 		#
-		su -m "$user" <<-EOF
-			sh <<EOS
-				sudo -k
-				sudo -S -v 2> /dev/null <<EOP
-				$password
-				EOP
-			EOS
-		EOF
+		local ignored
+		ignored=$( eval 'su -m "$user" <<-'\'EOF\''
+			sudo -k
+			sudo -S -v <<'\'EOP\''
+			'"$password"'
+			EOP
+		EOF' 2>&1 )
 		retval=$?
 		unset user
 		unset password # scrub memory
