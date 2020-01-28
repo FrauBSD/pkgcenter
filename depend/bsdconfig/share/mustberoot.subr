@@ -278,7 +278,7 @@ f_become_root_via_sudo()
 		f_have xauth || f_die 1 \
 			"$msg_no_such_file_or_directory" "$pgm" "xauth"
 		local HOSTNAME displaynum
-		HOSTNAME=$(hostname)
+		HOSTNAME=$( hostname )
 		displaynum="${DISPLAY#*:}"
 		xauth -f ~/.Xauthority extract - $HOSTNAME/unix:$displaynum \
 			$HOSTNAME:$displaynum | sudo sh -c 'xauth -ivf \
