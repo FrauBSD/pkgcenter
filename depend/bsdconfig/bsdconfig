@@ -266,6 +266,12 @@ dialog_menu_main()
 		index=$(( $index + 1 ))
 	done
 
+	if [ "$USE_ZENITY" ]; then
+		# Adjust title to include backtitle
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+	fi
+
 	local height width rows
 	eval f_dialog_menu_with_help_size height width rows \
 	                                  \"\$title\"  \

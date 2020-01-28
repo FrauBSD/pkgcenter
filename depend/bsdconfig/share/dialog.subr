@@ -1586,7 +1586,12 @@ f_dialog_info()
 	local info_text="$*"
 
 	if [ "$USE_ZENITY" ]; then
-		$DIALOG --notification --text="$DIALOG_TITLE: $info_text"
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		$DIALOG --notification --text="$title\n$info_text"
 		return
 	fi
 
@@ -1695,13 +1700,18 @@ f_dialog_msgbox()
 	f_dialog_buttonbox_size height width \
 		"$DIALOG_TITLE" "$DIALOG_BACKTITLE" "$msg_text" "$hline"
 	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
 		$DIALOG \
-			--title "$DIALOG_TITLE" \
-			--ok-label "$msg_ok"    \
-			--width $width          \
-			--height $height        \
-			--text "$msg_text"      \
-			--ellipsize             \
+			--title "$title"     \
+			--ok-label "$msg_ok" \
+			--width $width       \
+			--height $height     \
+			--text "$msg_text"   \
+			--ellipsize          \
 			--info
 	else
 		$DIALOG \
@@ -1751,12 +1761,17 @@ f_dialog_textbox()
 			# [Re-]Constrain height
 			f_dialog_size_constrain height width
 
+			# Calculate title
+			local title="$DIALOG_TITLE"
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+
 			$DIALOG \
-				--title "$DIALOG_TITLE" \
+				--title "$title"     \
 				--ok-label "$msg_ok" \
-				--text-info \
-				--filename "$file" \
-				--height $height \
+				--text-info          \
+				--filename "$file"   \
+				--height $height     \
 				--width $width
 		else
 			$DIALOG \
@@ -1768,13 +1783,18 @@ f_dialog_textbox()
 		fi
 	else
 		if [ "$USE_ZENITY" ]; then
+			# Calculate title
+			local title="$DIALOG_TITLE"
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+
 			$DIALOG \
-				--title "$DIALOG_TITLE" \
+				--title "$title"     \
 				--ok-label "$msg_ok" \
-				--info \
-				--text "$contents" \
-				--ellipsize \
-				--height $height \
+				--info               \
+				--text "$contents"   \
+				--ellipsize          \
+				--height $height     \
 				--width $width
 		else
 			$DIALOG \
