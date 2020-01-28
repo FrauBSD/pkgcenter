@@ -76,6 +76,9 @@ SECURE_DIVULGE_UNKNOWN_USER=
 # 	USE_XDIALOG   Either NULL or Non-NULL. If given a value will indicate
 # 	              that Xdialog(1) should be used instead of dialog(1).
 #
+# 	USE_ZENITY    Either NULL or Non-NULL. If given a value will indicate
+# 	              that zenity(1) should be used instead of dialog(1).
+#
 f_become_root_via_sudo()
 {
 	local funcname=f_become_root_via_sudo
@@ -109,17 +112,37 @@ f_become_root_via_sudo()
 		                        $menu_list
 
 		local mtag
-		mtag=$( eval $DIALOG \
-			--title \"\$DIALOG_TITLE\"         \
-			--backtitle \"\$DIALOG_BACKTITLE\" \
-			--hline \"\$hline\"                \
-			--ok-label \"\$msg_ok\"            \
-			--cancel-label \"\$msg_cancel\"    \
-			--menu \"\$prompt\"                \
-			$height $width $rows               \
-			$menu_list                         \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		) || f_die
+		if [ "$USE_ZENITY" ]; then
+			# Calculate title
+			local title="$DIALOG_TITLE"
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+
+			mtag=$( eval $DIALOG \
+				--title \"\$title\"             \
+				--ok-label \"\$msg_ok\"         \
+				--cancel-label \"\$msg_cancel\" \
+				--text \"\$prompt\"             \
+				--height $height                \
+				--width $width                  \
+				--column=1                      \
+				--column=2                      \
+				--hide-header                   \
+				--list $menu_list
+			) || f_die
+		else
+			mtag=$( eval $DIALOG \
+				--title \"\$DIALOG_TITLE\"         \
+				--backtitle \"\$DIALOG_BACKTITLE\" \
+				--hline \"\$hline\"                \
+				--ok-label \"\$msg_ok\"            \
+				--cancel-label \"\$msg_cancel\"    \
+				--menu \"\$prompt\"                \
+				$height $width $rows               \
+				$menu_list                         \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			) || f_die
+		fi
 		f_dialog_data_sanitize mtag
 
 		case "$mtag" in
@@ -181,6 +204,20 @@ f_become_root_via_sudo()
 					# User cancelled
 					exit $retval
 				fi
+			elif [ "$USE_ZENITY" ]; then
+				# Calculate title
+				local title="$DIALOG_TITLE"
+				[ "${DIALOG_BACKTITLE:-$title}" \
+				    = "$DIALOG_TITLE" ] ||
+					title="$DIALOG_BACKTITLE: $title"
+				password=$( $DIALOG \
+					--title "$DIALOG_TITLE"      \
+					--ok-label "$msg_ok"         \
+					--cancel-label "$msg_cancel" \
+					--password                   \
+					--height $height             \
+					--width $width
+				) || exit $?
 			else
 				password=$( $DIALOG \
 					--title "$DIALOG_TITLE"         \
@@ -236,7 +273,8 @@ f_become_root_via_sudo()
 	fi
 
 	# Use xauth(1) to grant root the ability to use this X11/SSH session
-	if [ "$USE_XDIALOG" -a "$SSH_CONNECTION" -a "$DISPLAY" ]; then
+	if [ "$USE_XDIALOG$USE_ZENITY" -a "$SSH_CONNECTION" -a "$DISPLAY" ]
+	then
 		f_have xauth || f_die 1 \
 			"$msg_no_such_file_or_directory" "$pgm" "xauth"
 		local HOSTNAME displaynum
@@ -268,6 +306,9 @@ f_become_root_via_sudo()
 # 	USE_XDIALOG   Either NULL or Non-NULL. If given a value will indicate
 # 	              that Xdialog(1) should be used instead of dialog(1).
 #
+# 	USE_ZENITY    Either NULL or Non-NULL. If given a value will indicate
+# 	              that zenity(1) should be used instead of dialog(1).
+#
 f_authenticate_some_user()
 {
 	local msg hline height width
@@ -278,7 +319,8 @@ f_authenticate_some_user()
 	# Secure-mode has been requested.
 	#
 
-	[ "$USE_XDIALOG" ] || f_die 1 "$msg_secure_mode_requires_x11"
+	[ "$USE_XDIALOG$USE_ZENITY" ] ||
+		f_die 1 "$msg_secure_mode_requires_x11"
 	[ "$(id -u)" = "0" ] || f_die 1 "$msg_secure_mode_requires_root"
 
 	#
