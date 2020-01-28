@@ -329,13 +329,15 @@ f_authenticate_some_user()
 
 	msg="$msg_please_enter_username_password"
 	hline="$hline_alnum_punc_tab_enter"
-	f_xdialog_2inputsbox_size height width \
-	                          "$DIALOG_TITLE"      \
-	                          "$DIALOG_BACKTITLE"  \
-	                          "$msg"               \
-	                          "$field_username" "" \
-	                          "$field_password" ""
-	height=$(( $height + 2 )) # Add height for --password
+	if [ "$USE_XDIALOG" ]; then
+		f_xdialog_2inputsbox_size height width \
+					  "$DIALOG_TITLE"      \
+					  "$DIALOG_BACKTITLE"  \
+					  "$msg"               \
+					  "$field_username" "" \
+					  "$field_password" ""
+		height=$(( $height + 2 )) # Add height for --password
+	fi
 
 	#
 	# Continue prompting until they either Cancel, succeed or exceed the
@@ -343,31 +345,55 @@ f_authenticate_some_user()
 	#
 	local user_pass nfailures=0 retval
 	while [ $nfailures -lt $PASSWD_TRIES ]; do
-		user_pass=$( $DIALOG \
-			--title "$DIALOG_TITLE"         \
-			--backtitle "$DIALOG_BACKTITLE" \
-			--hline "$hline"                \
-			--ok-label "$msg_ok"            \
-			--cancel-label "$msg_cancel"    \
-			--password --2inputsbox "$msg"  \
-			$height $width                  \
-			"$field_username" ""            \
-			"$field_password" ""            \
-			2>&1 > /dev/null )
-		retval=$?
+		if [ "$USE_XDIALOG" ]; then
+			user_pass=$( $DIALOG \
+				--title "$DIALOG_TITLE"         \
+				--backtitle "$DIALOG_BACKTITLE" \
+				--hline "$hline"                \
+				--ok-label "$msg_ok"            \
+				--cancel-label "$msg_cancel"    \
+				--password --2inputsbox "$msg"  \
+				$height $width                  \
+				"$field_username" ""            \
+				"$field_password" ""            \
+				2>&1 > /dev/null )
+			retval=$?
 
-		# Catch X11-related errors
-		[ $retval -eq $DIALOG_ESC ] && f_die $retval "$user_pass"
+			# Catch X11-related errors
+			[ $retval -eq $DIALOG_ESC ] &&
+				f_die $retval "$user_pass"
 
-		# Exit if the user cancelled.
-		[ $retval -eq $DIALOG_OK ] || exit $retval
+			# Exit if the user cancelled
+			[ $retval -eq $DIALOG_OK ] || exit $retval
+		elif [ "$USE_ZENITY" ]; then
+			# Calculate title
+			local title="$DIALOG_TITLE"
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+
+			user_pass=$( $DIALOG \
+				--title "$title"             \
+				--ok-label "$msg_ok"         \
+				--cancel-label "$msg_cancel" \
+				--password                   \
+				--username )
+			retval=$?
+
+			# Exit if the user cancelled
+			[ $retval -eq $ZENITY_OK ] || exit $retval
+		fi
 
 		#
 		# Make sure the user exists and is non-root
 		#
 		local user password
-		user="${user_pass%%/*}"
-		password="${user_pass#*/}"
+		if [ "$USE_XDIALOG" ]; then
+			user="${user_pass%%/*}"
+			password="${user_pass#*/}"
+		elif [ "$USE_ZENITY" ]; then
+			user="${user_pass%%\|*}"
+			password="${user_pass#*\|}"
+		fi
 		unset user_pass # scrub memory
 		if [ ! "$user" ]; then
 			nfailures=$(( $nfailures + 1 ))
