@@ -1592,7 +1592,13 @@ f_dialog_info()
 		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
-		$DIALOG --notification --text="$title\n$info_text"
+		if [ "$USER" = root -a "$SUDO_USER" ]; then
+			su -m "$SUDO_USER" -c \
+				'$1 --notification --text "$2\n$3"' \
+				"$DIALOG" "$title" "$info_text"
+		else
+			$DIALOG --notification --text "$title\n$info_text"
+		fi
 		return
 	fi
 
