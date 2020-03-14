@@ -87,7 +87,7 @@ dialog_menu_main()
 			--column=2				\
 			--hide-header				\
 			--list $menu_list
-		)
+		) || f_die
 	else
 		menu_choice=$( eval $DIALOG \
 			--title \"\$DIALOG_TITLE\"		\
@@ -100,17 +100,9 @@ dialog_menu_main()
 			$height $width $rows			\
 			$menu_list				\
 			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		) || f_die
 	fi
 	local retval=$?
-
-	if [ $retval -eq $DIALOG_ESC ]; then
-		f_die $retval "$menu_choice"
-	elif [ $retval -ne $DIALOG_OK ]; then
-		# User cancelled
-		exit $retval
-	fi 
-
 	f_dialog_data_sanitize menu_choice
 	f_dialog_menutag_store "$menu_choice"
 	f_dialog_default_store "$menu_choice"
