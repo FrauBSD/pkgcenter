@@ -103,6 +103,14 @@ dialog_menu_main()
 		)
 	fi
 	local retval=$?
+
+	if [ $retval -eq $DIALOG_ESC ]; then
+		f_die $retval "$menu_choice"
+	elif [ $retval -ne $DIALOG_OK ]; then
+		# User cancelled
+		exit $retval
+	fi 
+
 	f_dialog_data_sanitize menu_choice
 	f_dialog_menutag_store "$menu_choice"
 	f_dialog_default_store "$menu_choice"
