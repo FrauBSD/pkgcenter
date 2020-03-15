@@ -80,21 +80,42 @@ dialog_menu_main()
 	f_dialog_default_fetch defaultitem
 
 	local menu_choice
-	menu_choice=$( eval $DIALOG \
-		--title \"\$DIALOG_TITLE\"  \
-		--backtitle \"\$DIALOG_BACKTITLE\" \
-		--hline \"\$hline\"                \
-		--ok-label \"\$msg_ok\"            \
-		--cancel-label \"\$msg_cancel\"    \
-		--help-button                      \
-		--help-label \"\$msg_help\"        \
-		${USE_XDIALOG:+--help \"\"}        \
-		--default-item \"\$defaultitem\"   \
-		--menu \"\$prompt\"                \
-		$height $width $rows               \
-		$menu_list                         \
-		2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-	)
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		menu_choice=$( eval $DIALOG \
+			--title \"\$title\"			\
+			--ok-label \"\$msg_ok\"			\
+			--cancel-label \"\$msg_cancel\"		\
+			--extra-button \"\$msg_help\"		\
+			--text \"\$prompt\"			\
+			--height $height			\
+			--width $width				\
+			--column=1				\
+			--column=2				\
+			--hide-header				\
+			--list $menu_list
+		)
+	else
+		menu_choice=$( eval $DIALOG \
+			--title \"\$DIALOG_TITLE\"		\
+			--backtitle \"\$DIALOG_BACKTITLE\"	\
+			--hline \"\$hline\"			\
+			--ok-label \"\$msg_ok\"			\
+			--cancel-label \"\$msg_cancel\"		\
+			--help-button				\
+			--help-label \"\$msg_help\"		\
+			${USE_XDIALOG:+--help \"\"}		\
+			--default-item \"\$defaultitem\"	\
+			--menu \"\$prompt\"			\
+			$height $width $rows			\
+			$menu_list				\
+			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+		)
+	fi
 	local retval=$?
 	f_dialog_data_sanitize menu_choice
 	f_dialog_menutag_store "$menu_choice"
@@ -136,11 +157,21 @@ while :; do
 	f_dialog_menutag_fetch mtag
 	f_dprintf "retval=%u mtag=[%s]" $retval "$mtag"
 
-	if [ $retval -eq $DIALOG_HELP ]; then
-		f_show_help "$USERMGMT_HELPFILE"
-		continue
-	elif [ $retval -ne $DIALOG_OK ]; then
-		f_die
+	if [ "$USE_ZENITY" ]; then
+		if [ $retval -eq $ZENITY_CANCEL ] && [ "$mtag" = "$msg_help" ]
+		then
+			f_show_help "$USERMGMT_HELPFILE"
+			continue
+		elif [ $retval -ne $ZENITY_OK ]; then
+			f_die
+		fi
+	else # [X]dialog(1)
+		if [ $retval -eq $DIALOG_HELP ]; then
+			f_show_help "$USERMGMT_HELPFILE"
+			continue
+		elif [ $retval -ne $DIALOG_OK ]; then
+			f_die
+		fi
 	fi
 
 	command=
