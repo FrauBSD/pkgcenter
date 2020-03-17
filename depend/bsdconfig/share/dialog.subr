@@ -1960,21 +1960,34 @@ f_dialog_input()
 		"$__prompt" "$__init" "$__hline"
 
 	local __opterm="--"
-	[ "$USE_XDIALOG" ] && __opterm=
+	[ "$USE_XDIALOG$USE_ZENITY" ] && __opterm=
 
 	local __dialog_input
-	__dialog_input=$(
-		$DIALOG \
-			--title "$DIALOG_TITLE"         \
-			--backtitle "$DIALOG_BACKTITLE" \
-			--hline "$__hline"              \
-			--ok-label "$msg_ok"            \
-			--cancel-label "$msg_cancel"    \
-			--inputbox "$__prompt"          \
-			$__height_input $__width_input  \
-			$__opterm "$__init"             \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-	)
+	if [ "$USE_ZENITY" ]; then
+		--dialog_input=$(
+			$DIALOG \
+				--title "$DIALOG_BACKTITLE"	\
+				--ok-label "$msg_ok"		\
+				--cancel-label "$msg_cancel"	\
+				--forms --text "$DIALOG_TITLE"	\
+				--add-entry "$__prompt"		\
+				--height $__height_input	\
+				--width $__width_input
+		)
+	else
+		__dialog_input=$(
+			$DIALOG \
+				--title "$DIALOG_TITLE"		\
+				--backtitle "$DIALOG_BACKTITLE"	\
+				--hline "$__hline"		\
+				--ok-label "$msg_ok"		\
+				--cancel-label "$msg_cancel"	\
+				--inputbox "$__prompt"		\
+				$__height_input $__width_input	\
+				$__opterm "$__init"		\
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+		)
+	fi
 	local __retval=$?
 
 	# Remove warnings and leading/trailing whitespace from user input
