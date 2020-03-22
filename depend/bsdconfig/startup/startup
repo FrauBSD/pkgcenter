@@ -149,6 +149,10 @@ while :; do
 
 	if [ "$command" ]; then
 		$BSDCFG_LIBE/$APP_DIR/$command ${USE_XDIALOG:+-X}
+	elif [ "$USE_ZENITY" ]; then
+		# Zenity defaults to no menu items selected
+		# user clicked OK without making a selection
+		continue
 	else
 		f_die 1 "$msg_unknown_startup_menu_selection"
 	fi
