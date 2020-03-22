@@ -623,7 +623,7 @@ f_dialog_infobox_size()
 		fi
 
 		# Bump height by font size (in pixels) if using zenity(1)
-		[ "$USE_ZENITY" ] && __height=$(( $__height * 19 ))
+		[ "$USE_ZENITY" ] && __height=$(( $__height * 19 + 1 ))
 
 		setvar "$__var_height" $__height
 	fi
