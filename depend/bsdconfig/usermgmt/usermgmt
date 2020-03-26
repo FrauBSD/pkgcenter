@@ -191,7 +191,8 @@ while :; do
 	esac
 
 	if [ "$command" ]; then
-		$BSDCFG_LIBE/$APP_DIR/$command ${USE_XDIALOG:+-X}
+		$BSDCFG_LIBE/$APP_DIR/$command \
+			${USE_XDIALOG:+-X} ${USE_ZENITY:+-Z}
 	elif [ "$mtag" = "-" ]; then
 		continue
 	else
