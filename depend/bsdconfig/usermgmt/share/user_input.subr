@@ -182,11 +182,8 @@ f_dialog_input_member_groups()
 {
 	local __var_to_set="$1" __input="$2"
 	local __prompt="$msg_member_of_groups"
-	local __menu_list=
-	[ "$USE_ZENITY" ] || __menu_list="$__menu_list
+	local __menu_list="
 		'X' '$msg_continue'
-	" # END-QUOTE
-	__menu_list="$__menu_list
 		'1' '$msg_select_groups_from_list'
 		'2' '$msg_enter_groups_manually'
 	" # END-QUOTE
@@ -249,7 +246,7 @@ f_dialog_input_member_groups()
 		[ $__retval -eq $DIALOG_OK ] || return $__retval
 
 		local __member_groups
-		case "${__menu_choice:-X}" in
+		case "$__menu_choice" in
 		X) # Exit
 			break ;;
 		1) # Select Groups from a list
