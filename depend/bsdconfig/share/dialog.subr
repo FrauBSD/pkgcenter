@@ -637,10 +637,10 @@ f_dialog_infobox_size()
 		[ $__n -gt $__width ] && __width=$__n
 
 		#
-		# If using Xdialog(1), bump width for long backtitles (which
-		# appear within the window).
+		# If using Xdialog(1) or zenity(1), bump width for long
+		# backtitles (which appear within the window).
 		#
-		if [ "$USE_XDIALOG" ]; then
+		if [ "$USE_XDIALOG$USE_ZENITY" ]; then
 			__n=$(( ${#__btitle} + 4 ))
 			[ $__n -gt $__width ] && __width=$__n
 		fi
@@ -667,7 +667,7 @@ f_dialog_infobox_size()
 
 		# Bump width by 666% if using zenity(1)
 		[ "$USE_ZENITY" ] &&
-			__width=$(( $__width * 6 + 2 * $__width / 3 ))
+			__width=$(( $__width * 7 + 2 * $__width / 3 ))
 
 		setvar "$__var_width" $__width
 	fi
@@ -975,7 +975,7 @@ f_dialog_menu_size()
 		# longest item-length should be used to bump menu width
 		local __n=$(( $__longest_tag + $__longest_item + 10 ))
 		[ "$USE_XDIALOG" ] && __n=$(( $__n + $__n / 6 )) # plus 16.6%
-		[ "$USE_ZENITY" ] && __n=$(( $__n * 6 + 2 * $__n / 3 )) # 666%
+		[ "$USE_ZENITY" ] && __n=$(( $__n * 7 + 2 * $__n / 3 )) # +666%
 		[ $__n -gt $__width_menu_size ] && __width_menu_size=$__n
 
 		setvar "$__var_width" $__width_menu_size
