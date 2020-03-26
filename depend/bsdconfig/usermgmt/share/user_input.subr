@@ -182,8 +182,11 @@ f_dialog_input_member_groups()
 {
 	local __var_to_set="$1" __input="$2"
 	local __prompt="$msg_member_of_groups"
-	local __menu_list="
+	local __menu_list=
+	[ "$USE_ZENITY" ] || __menu_list="$__menu_list
 		'X' '$msg_continue'
+	" # END-QUOTE
+	__menu_list="$__menu_list
 		'1' '$msg_select_groups_from_list'
 		'2' '$msg_enter_groups_manually'
 	" # END-QUOTE
@@ -199,19 +202,40 @@ f_dialog_input_member_groups()
 	                        $__menu_list
 
 	local __menu_choice __retval
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local __title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$__title}" != "$DIALOG_TITLE" ] ||
+			__title="$DIALOG_BACKTITLE: $__title"
+	fi
 	while :; do
-		__menu_choice=$( eval $DIALOG \
-			--title \"\$DIALOG_TITLE\"         \
-			--backtitle \"\$DIALOG_BACKTITLE\" \
-			--hline \"\$__hline\"              \
-			--ok-label \"\$msg_ok\"            \
-			--cancel-label \"\$msg_cancel\"    \
-			--default-item \"\$__defaultitem\" \
-			--menu \"\$__prompt\"              \
-			$__mheight $__mwidth $__mrows      \
-			$__menu_list                       \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			__menu_choice=$( eval $DIALOG \
+				--title \"\$__title\"           \
+				--ok-label \"\$msg_ok\"         \
+				--cancel-label \"\$msg_cancel\" \
+				--text \"\$__prompt\"           \
+				--height $__mheight             \
+				--width $__mwidth               \
+				--column=1                      \
+				--column=2                      \
+				--hide-header                   \
+				--list $__menu_list
+			)
+		else
+			__menu_choice=$( eval $DIALOG \
+				--title \"\$DIALOG_TITLE\"         \
+				--backtitle \"\$DIALOG_BACKTITLE\" \
+				--hline \"\$__hline\"              \
+				--ok-label \"\$msg_ok\"            \
+				--cancel-label \"\$msg_cancel\"    \
+				--default-item \"\$__defaultitem\" \
+				--menu \"\$__prompt\"              \
+				$__mheight $__mwidth $__mrows      \
+				$__menu_list                       \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		__retval=$?
 		f_dialog_data_sanitize __menu_choice
 		__defaultitem="$__menu_choice"
@@ -222,7 +246,7 @@ f_dialog_input_member_groups()
 		[ $__retval -eq $DIALOG_OK ] || return $__retval
 
 		local __member_groups
-		case "$__menu_choice" in
+		case "${__menu_choice:-X}" in
 		X) # Exit
 			break ;;
 		1) # Select Groups from a list
