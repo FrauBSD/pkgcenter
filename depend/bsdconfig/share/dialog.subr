@@ -1157,11 +1157,22 @@ f_dialog_radiolist_size()
 	# longest item-length (both used to bump the width), and the number of
 	# rows (used to bump the height).
 	#
-	local __longest_tag=0 __longest_item=0 __rows_rlist_size=0
+	local __longest_item=0 __item
+	local __rows_rlist_size=0
+	if [ ! "$USE_ZENITY" ]; then
+		local __longest_tag=0 __tag
+	fi
 	while [ $# -ge 3 ]; do
-		local __tag="$1" __item="$2"
-		shift 3 # tag/item/status
-		[ ${#__tag} -gt $__longest_tag ] && __longest_tag=${#__tag}
+		if [ "$USE_ZENITY" ]; then
+			__item="$2"
+			shift 2 # status/item
+		else
+			__tag="$1"
+			__item="$2"
+			shift 3 # tag/item/status
+			[ ${#__tag} -gt $__longest_tag ] &&
+				__longest_tag=${#__tag}
+		fi
 		[ ${#__item} -gt $__longest_item ] && __longest_item=${#__item}
 		__rows_rlist_size=$(( $__rows_rlist_size + 1 ))
 	done
@@ -1176,7 +1187,17 @@ f_dialog_radiolist_size()
 	# Adjust height if desired
 	if [ "$__var_height" ]; then
 		# Add rows to height
-		if [ "$USE_XDIALOG" ]; then
+		if [ "$USE_ZENITY" ]; then
+			#
+			# Adjust height from f_dialog_infobox_size():
+			# 23 = menu line height (in pixels)
+			# 34 = button height (in pixels)
+			#  5 = whitespace around menu (in pixels)
+			#
+			__height_rlist_size=$(( $__height_rlist_size +
+				$__rows_rlist_size * 23 + 34 + 5
+			))
+		elif [ "$USE_XDIALOG" ]; then
 			__height_rlist_size=$((
 				$__height_rlist_size + $__rows_rlist_size + 7
 			))
@@ -1192,8 +1213,15 @@ f_dialog_radiolist_size()
 	if [ "$__var_width" ]; then
 		# Sum total between longest tag-length, longest item-length,
 		# and radio-button width should be used to bump menu width
-		local __n=$(( $__longest_tag + $__longest_item + 13 ))
-		[ "$USE_XDIALOG" ] && __n=$(( $__n + $__n / 6 )) # plus 16.6%
+		local __n
+		if [ "$USE_ZENITY" ]; then
+			__n=$(( $__longest_item ))
+			__n=$(( $__n * 7 + 2 * $__n / 3 )) # plus 666%
+		else
+			__n=$(( $__longest_tag + $__longest_item + 13 ))
+			[ "$USE_XDIALOG" ] &&
+				__n=$(( $__n + $__n / 6 )) # plus 16.6%
+		fi
 		[ $__n -gt $__width_rlist_size ] && __width_rlist_size=$__n
 
 		setvar "$__var_width" $__width_rlist_size
