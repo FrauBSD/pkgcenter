@@ -640,8 +640,11 @@ f_dialog_infobox_size()
 		# If using Xdialog(1) or zenity(1), bump width for long
 		# backtitles (which appear within the window).
 		#
-		if [ "$USE_XDIALOG$USE_ZENITY" ]; then
+		if [ "$USE_XDIALOG" ]; then
 			__n=$(( ${#__btitle} + 4 ))
+			[ $__n -gt $__width ] && __width=$__n
+		elif [ "$USE_ZENITY" ]; then
+			__n=$(( ${#__title} + ${#__btitle} + 6 ))
 			[ $__n -gt $__width ] && __width=$__n
 		fi
 
@@ -1965,13 +1968,18 @@ f_dialog_input()
 
 	local __dialog_input
 	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local __title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$__title}" = "$DIALOG_TITLE" ] ||
+			__title="$DIALOG_BACKTITLE: $__title"
+
 		__dialog_input=$(
 			$DIALOG \
-				--title "$DIALOG_BACKTITLE"	\
+				--title "$__title"		\
 				--ok-label "$msg_ok"		\
 				--cancel-label "$msg_cancel"	\
-				--forms --text "$DIALOG_TITLE"	\
-				--add-entry "$__prompt"		\
+				--entry	--text "$__prompt"	\
+				--entry-text "$__init"		\
 				--height $__height_input	\
 				--width $__width_input
 		)
