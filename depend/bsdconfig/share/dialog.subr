@@ -1965,7 +1965,7 @@ f_dialog_input()
 
 	local __dialog_input
 	if [ "$USE_ZENITY" ]; then
-		--dialog_input=$(
+		__dialog_input=$(
 			$DIALOG \
 				--title "$DIALOG_BACKTITLE"	\
 				--ok-label "$msg_ok"		\
