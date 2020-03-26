@@ -211,7 +211,7 @@ f_become_root_via_sudo()
 				    = "$DIALOG_TITLE" ] ||
 					title="$DIALOG_BACKTITLE: $title"
 				password=$( $DIALOG \
-					--title "$DIALOG_TITLE"      \
+					--title "$title"             \
 					--ok-label "$msg_ok"         \
 					--cancel-label "$msg_cancel" \
 					--password                   \
