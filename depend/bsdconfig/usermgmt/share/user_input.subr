@@ -1043,18 +1043,29 @@ f_dialog_input_shell()
 	#
 	# Generate the radiolist of shells
 	#
-	local __shell_list __s __shell __length=0
+	local __shell_list __s __shell __length=0 __status
 	f_eval_catch -k __shell_list $__funcname awk "awk '%s' \"%s\"" \
 		'!/^[[:space:]]*(#|$)/{print}' "$ETC_SHELLS" || return $FAILURE
 	while [ $__length -ne ${#__shell_list} ]; do
 		__s="${__shell_list%%$NL*}" # First line
 		f_shell_escape "$__s" __shell
 
-		# Format of a radiolist entry: tag item status
-		if [ "$__s" = "$__input" ]; then
-			__radio_list="$__radio_list '$__shell' '' 'on'"
+		if [ "$USE_ZENITY" ]; then
+			# Format of a radiolist entry: status item
+			if [ "$__s" = "$__input" ]; then
+				__status=TRUE
+			else
+				__status=FALSE
+			fi
+			__radio_list="$__radio_list '$__status' '$__shell'"
 		else
-			__radio_list="$__radio_list '$__shell' '' 'off'"
+			# Format of a radiolist entry: tag item status
+			if [ "$__s" = "$__input" ]; then
+				__status=on
+			else
+				__status=off
+			fi
+			__radio_list="$__radio_list '$__shell' '' '$__status'"
 		fi
 
 		__length=${#__shell_list}
@@ -1069,18 +1080,38 @@ f_dialog_input_shell()
 	                             \"\$__hline\"          \
 	                             $__radio_list
 
-	__input=$( eval $DIALOG \
-		--title \"\$DIALOG_TITLE\"         \
-		--backtitle \"\$DIALOG_BACKTITLE\" \
-		--hline \"\$__hline\"              \
-		--ok-label \"\$msg_ok\"            \
-		--cancel-label \"\$msg_cancel\"    \
-		--default-item \"\$__defaultitem\" \
-		--radiolist \"\$__prompt\"         \
-		$__height $__width $__rows         \
-		$__radio_list                      \
-		2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-	) || return $?
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local __title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$__title}" != "$DIALOG_TITLE" ] ||
+			__title="$DIALOG_BACKTITLE: $__title"
+
+		__input=$( eval $DIALOG \
+			--title \"\$__title\"           \
+			--ok-label \"\$msg_ok\"         \
+			--cancel-label \"\$msg_cancel\" \
+			--height $__height              \
+			--width $__width                \
+			--column=1                      \
+			--column=2                      \
+			--hide-header                   \
+			--radiolist                     \
+			--list $__radio_list
+		)
+	else
+		__input=$( eval $DIALOG \
+			--title \"\$DIALOG_TITLE\"         \
+			--backtitle \"\$DIALOG_BACKTITLE\" \
+			--hline \"\$__hline\"              \
+			--ok-label \"\$msg_ok\"            \
+			--cancel-label \"\$msg_cancel\"    \
+			--default-item \"\$__defaultitem\" \
+			--radiolist \"\$__prompt\"         \
+			$__height $__width $__rows         \
+			$__radio_list                      \
+			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+		)
+	fi || return $?
 		# Return if user either pressed ESC or chose Cancel/No
 	f_dialog_data_sanitize __input
 
