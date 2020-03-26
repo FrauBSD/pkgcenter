@@ -609,7 +609,12 @@ f_dialog_infobox_size()
 		# Set height based on number of rows in prompt
 		#
 		__n=$( echo -n "$__prompt" | f_number_of_lines )
-		__n=$(( $__n + 2 ))
+		if [ "$USE_ZENITY" ]; then
+			[ ${__n:-0} -gt 0 ] || __n=1
+			__n=$(( $__n + 1 ))
+		else
+			__n=$(( $__n + 2 ))
+		fi
 		[ $__n -gt $__height ] && __height=$__n
 
 		#
@@ -959,12 +964,11 @@ f_dialog_menu_size()
 		elif [ "$USE_ZENITY" ]; then
 			#
 			# Adjust height from f_dialog_infobox_size():
-			# 23 = menu line height (in pixels)
-			# 34 = button height (in pixels)
-			#  5 = whitespace around menu (in pixels)
+			# 25 = menu line height (in pixels)
+			# 21 = whitespace around menu (in pixels)
 			#
 			__height_menu_size=$((
-				$__height_menu_size + $__rows * 23 + 34 + 5 ))
+				$__height_menu_size + $__rows * 25 + 21 ))
 		else
 			__height_menu_size=$((
 				$__height_menu_size + $__rows + 4 ))
@@ -1065,13 +1069,12 @@ f_dialog_menu_with_help_size()
 		elif [ "$USE_ZENITY" ]; then
 			#
 			# Adjust height from f_dialog_infobox_size():
-			# 23 = menu line height (in pixels)
-			# 34 = button height (in pixels)
-			#  5 = whitespace around menu (in pixels)
+			# 25 = menu line height (in pixels)
+			# 21 = whitespace around menu (in pixels)
 			#
 			__height_menu_with_help_size=$((
-				$__height_menu_with_help_size + $__rows * 23
-				+ 34 + 5 ))
+				$__height_menu_with_help_size + $__rows * 25
+				+ 21 ))
 		else
 			__height_menu_with_help_size=$((
 				$__height_menu_with_help_size + $__rows + 4 ))
@@ -1112,7 +1115,7 @@ f_dialog_menu_with_help_size()
 		"$__var_height" "$__var_width" "$__var_rows" "$__prompt"
 }
 
-# f_dialog_radiolist_size [-n] $var_height $var_width $var_rows \
+# f_dialog_radiolist_size [-cn] $var_height $var_width $var_rows \
 #                         $title $backtitle $prompt $hline \
 #                         $tag1 $item1 $status1 $tag2 $item2 $status2 ...
 #
@@ -1128,13 +1131,26 @@ f_dialog_menu_with_help_size()
 # the actual terminal height or width) is stored in $var_height, $var_width,
 # and $var_rows (respectively).
 #
-# If the first argument is `-n', the calculated sizes ($var_height, $var_width,
-# and $var_rows) are not constrained to minimum/maximum values.
+# If `-c' is given, then calculate sizes for a checklist instead of radiolist.
+# NB: In zenity(1) the line-height of a checklist row is different than a
+# radiolist row.
+#
+# If `-n' is given, the calculated sizes ($var_height, $var_width, and
+# $var_rows) are not constrained to minimum/maximum values.
 #
 f_dialog_radiolist_size()
 {
+	local __checklist=
 	local __constrain=1
-	[ "$1" = "-n" ] && __constrain= && shift 1 # -n
+	local OPTIND=1 OPTARG __flag
+	while getopts cn __flag; do
+		case "$__flag" in
+		c) __checklist=1 ;;
+		n) __constrain= ;;
+		*) break
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
 	local __var_height="$1" __var_width="$2" __var_rows="$3"
 	local __title="$4" __btitle="$5" __prompt="$6" __hline="$7"
 	shift 7 # var_height/var_width/var_rows/title/btitle/prompt/hline
@@ -1190,13 +1206,19 @@ f_dialog_radiolist_size()
 		if [ "$USE_ZENITY" ]; then
 			#
 			# Adjust height from f_dialog_infobox_size():
-			# 23 = menu line height (in pixels)
-			# 34 = button height (in pixels)
-			#  5 = whitespace around menu (in pixels)
+			# 26 = checklist menu line height (in pixels)
+			# 32 = radiolist menu line height (in pixels)
+			# 21 = whitespace around menu (in pixels)
 			#
-			__height_rlist_size=$(( $__height_rlist_size +
-				$__rows_rlist_size * 23 + 34 + 5
-			))
+			if [ "$__checklist" ]; then
+				__height_rlist_size=$(( $__height_rlist_size +
+					$__rows_rlist_size * 26 + 21
+				))
+			else
+				__height_rlist_size=$(( $__height_rlist_size +
+					$__rows_rlist_size * 32 + 21
+				))
+			fi
 		elif [ "$USE_XDIALOG" ]; then
 			__height_rlist_size=$((
 				$__height_rlist_size + $__rows_rlist_size + 7
@@ -1257,7 +1279,7 @@ f_dialog_radiolist_size()
 #
 f_dialog_checklist_size()
 {
-	f_dialog_radiolist_size "$@"
+	f_dialog_radiolist_size -c "$@"
 }
 
 # f_dialog_radiolist_with_help_size [-n] $var_height $var_width $var_rows \
