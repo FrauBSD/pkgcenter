@@ -193,7 +193,7 @@ while :; do
 	if [ "$command" ]; then
 		$BSDCFG_LIBE/$APP_DIR/$command \
 			${USE_XDIALOG:+-X} ${USE_ZENITY:+-Z}
-	elif [ "$mtag" = "-" ]; then
+	elif [ "${mtag:--}" = "-" ]; then
 		continue
 	else
 		f_die 1 "$msg_unknown_user_management_menu_selection"
