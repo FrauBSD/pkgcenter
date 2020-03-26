@@ -202,7 +202,10 @@ f_dialog_input_member_groups()
 	                        $__menu_list
 
 	local __menu_choice __retval
+	local __sep="$NL" __on
 	if [ "$USE_ZENITY" ]; then
+		__sep="|"
+
 		# Calculate title
 		local __title="$DIALOG_TITLE"
 		[ "${DIALOG_BACKTITLE:-$__title}" != "$DIALOG_TITLE" ] ||
@@ -258,15 +261,30 @@ f_dialog_input_member_groups()
 				__g="${__group_list%%$NL*}" # First line
 				f_shell_escape "$__g" __grp
 
-				# Format of a checklist entry: tag item status
-				# NB: Setting both tag/item to group name below
-				__check_list="$__check_list '$__grp' '$__grp'"
-				case "$__input" in
-				"$__g"|"$__g",*|*,"$__g",*|*,"$__g")
-					__check_list="$__check_list on" ;;
-				*)
-					__check_list="$__check_list off"
-				esac
+				if [ "$USE_ZENITY" ]; then
+					# Checklist format: BOOL item
+					# NB: item set to group name below
+					case "$__input" in
+					"$__g"|"$__g",*|*,"$__g",*|*,"$__g")
+						__status=TRUE ;;
+					*)
+						__status=FALSE ;;
+					esac
+					__check_list="$__check_list $__status"
+					__check_list="$__check_list '$__grp'"
+				else
+					# Checklist format: tag item status
+					# NB: tag/item set to group name below
+					__check_list="$__check_list '$__grp'"
+					__check_list="$__check_list '$__grp'"
+					case "$__input" in
+					"$__g"|"$__g",*|*,"$__g",*|*,"$__g")
+						__status=on ;;
+					*)
+						__status=off ;;
+					esac
+					__check_list="$__check_list $__status"
+				fi
 
 				__length=${#__group_list}
 				__group_list="${__group_list#*$NL}" # Kill line
@@ -281,28 +299,43 @@ f_dialog_input_member_groups()
 				\"\$__prompt\"         \
 				\"\$__hline\"          \
 				$__check_list
-			__member_groups=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"         \
-				--backtitle \"\$DIALOG_BACKTITLE\" \
-				--separate-output                  \
-				--hline \"\$__hline\"              \
-				--ok-label \"\$msg_ok\"            \
-				--cancel-label \"\$msg_cancel\"    \
-				--checklist \"\$__prompt\"         \
-				$__cheight $__cwidth $__crows      \
-				$__check_list                      \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			) || continue
+			if [ "$USE_ZENITY" ]; then
+				__member_groups=$( eval $DIALOG \
+					--title \"\$__title\"           \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--height $__cheight             \
+					--width $__cwidth               \
+					--column=1                      \
+					--column=2                      \
+					--hide-header                   \
+					--checklist                     \
+					--list $__check_list
+				)
+			else
+				__member_groups=$( eval $DIALOG \
+					--title \"\$DIALOG_TITLE\"         \
+					--backtitle \"\$DIALOG_BACKTITLE\" \
+					--separate-output                  \
+					--hline \"\$__hline\"              \
+					--ok-label \"\$msg_ok\"            \
+					--cancel-label \"\$msg_cancel\"    \
+					--checklist \"\$__prompt\"         \
+					$__cheight $__cwidth $__crows      \
+					$__check_list                      \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi || continue
 				# Return to previous menu if user either
 				# pressed ESC or chose Cancel/No
 			f_dialog_data_sanitize __member_groups
 
 			#
-			# Convert the newline separated list into a comma-
-			# separated one so that if the user switches over to
-			# manual editing, list reflects checklist selections
+			# Convert list into a comma-separated one so that if
+			# the user switches over to manual editing, list
+			# reflects checklist selections
 			#
-			f_replaceall "$__member_groups" "[$NL]" "," __input
+			f_replaceall "$__member_groups" "[$__sep]" "," __input
 			;;
 		2) # Enter Groups manually
 			local __prompt2="$msg_groups"
