@@ -301,6 +301,7 @@ f_dialog_input_member_groups()
 					--title \"\$__title\"           \
 					--ok-label \"\$msg_ok\"         \
 					--cancel-label \"\$msg_cancel\" \
+					--text \"\$__prompt\"           \
 					--height $__cheight             \
 					--width $__cwidth               \
 					--column=1                      \
@@ -1090,6 +1091,7 @@ f_dialog_input_shell()
 			--title \"\$__title\"           \
 			--ok-label \"\$msg_ok\"         \
 			--cancel-label \"\$msg_cancel\" \
+			--text \"\$__prompt\"           \
 			--height $__height              \
 			--width $__width                \
 			--column=1                      \
