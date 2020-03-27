@@ -1452,6 +1452,13 @@ f_dialog_calendar_size()
 	# Return unless at least one size aspect has been requested
 	[ "$__var_height" -o "$__var_width" ] || return $FAILURE
 
+	# Rely on zenity(1) auto-sizing
+	if [ "$USE_ZENITY" ]; then
+		[ "$__var_height" ] && setvar "$__var_height" 0
+		[ "$__var_width" ] && setvar "$__var_width" 0
+		return $SUCCESS
+	fi
+
 	#
 	# Obtain/Adjust minimum and maximum thresholds
 	# NOTE: Function name appended to prevent __var_{height,width} values

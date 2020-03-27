@@ -705,21 +705,45 @@ f_dialog_input_expire_password()
 			local __input_date __input_time __ret_date __ret_time
 
 			local __seconds="$__input"
-			{ f_isinteger "$__seconds" && [ $__seconds -gt 0 ]; } ||
-				__seconds=
-			__input_date=$( date -j -f "%s" -- "$__seconds" \
-			               		"+%d %m %Y" 2> /dev/null )
-			__ret_date=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"          \
-				--backtitle \"\$DIALOG_BACKTITLE\"  \
-				--hline \"\$__hline\"               \
-				--ok-label \"\$msg_ok\"             \
-				--cancel-label \"\$msg_cancel\"     \
-				--calendar \"\$__prompt\"           \
-				$__cheight $__cwidth                \
-				$__input_date                       \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			)
+			{ f_isinteger "$__seconds" &&
+				[ $__seconds -gt 0 ]; } || __seconds=
+			if [ "$__seconds" ]; then
+				__input_date=$( date -j -f "%s" -- \
+					"$__seconds" "+%d %m %Y" 2> /dev/null )
+			else
+				__input_date=$( date "+%d %m %Y" )
+			fi
+			if [ "$USE_ZENITY" ]; then
+				local __input_day __input_month __input_year
+				__input_day=${__input_date%%[$IFS]*}
+				__input_month="${__input_date#$__input_day }"
+				__input_month=${__input_month%%[$IFS]*}
+				__input_year=${__input_date##*[$IFS]}
+				__ret_date=$( eval $DIALOG \
+					--title \"\$__title\"           \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--text \"\$__prompt\"           \
+					--calendar                      \
+					--height $__cheight             \
+					--width $__cwidth               \
+					--day $__input_day \
+					--month $__input_month \
+					--year $__input_year
+				)
+			else
+				__ret_date=$( eval $DIALOG \
+					--title \"\$DIALOG_TITLE\"          \
+					--backtitle \"\$DIALOG_BACKTITLE\"  \
+					--hline \"\$__hline\"               \
+					--ok-label \"\$msg_ok\"             \
+					--cancel-label \"\$msg_cancel\"     \
+					--calendar \"\$__prompt\"           \
+					$__cheight $__cwidth                \
+					$__input_date                       \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi
 			__retval=$?
 			f_dialog_data_sanitize __ret_date
 			f_dprintf "retval=%u ret_date=[%s]" \
