@@ -397,7 +397,7 @@ if [ "$1" ]; then
 	#
 	if ! { indexfile=$( f_index_file "$1" ) &&
 	       cmd=$( f_index_menusel_command "$indexfile" "$1" )
-	}; then
+	} 2> /dev/null; then
 		# no matches, display usage (which shows valid keywords)
 		f_err "%s: %s: $msg_not_found\n" "$pgm" "$1"
 		usage
