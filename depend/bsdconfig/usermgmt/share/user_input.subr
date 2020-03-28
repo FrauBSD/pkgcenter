@@ -760,18 +760,34 @@ f_dialog_input_expire_password()
 						"$__input" "+%H:%M:%S" \
 						2> /dev/null )
 				else
-					__input_time=00:00:00
+					__input_time=$( date "+%H:%M:%S" )
 				fi
-				__ret_time=$( eval $DIALOG \
-					--title \"\$__title\"           \
-					--ok-label \"\$msg_ok\"         \
-					--cancel-label \"\$msg_cancel\" \
-					--text \"\$__prompt\"           \
-					--entry                         \
-					--entry-text \"\$__input_time\" \
-					--height $__theight             \
-					--width $__twidth
-				)
+				while :; do
+					__ret_time=$( eval $DIALOG \
+						--title \"\$__title\"      \
+						--ok-label \"\$msg_ok\"    \
+						--cancel-label             \
+							\"\$msg_cancel\"   \
+						--text \"\$__prompt\"      \
+						--entry                    \
+						--entry-text               \
+							\"\$__input_time\" \
+						--height $__theight        \
+						--width $__twidth
+					)
+					__retval=$?
+					f_dialog_data_sanitize __ret_time
+					f_dprintf "retval=%u ret_time=[%s]" \
+						  $__retval "$__ret_time"
+					if [ $__retval -ne $ZENITY_OK ]; then
+						break
+					fi
+					__input=$( date -j -f "%d/%m/%Y %T" \
+						-- "$__ret_date $__ret_time" \
+						+%s 2> /dev/null )
+					f_dprintf "input=[%s]" "$__input"
+					[ "$__input" ] && break
+				done
 			else
 				if [ "$__seconds" ]; then
 					__input_time=$( date -j -f %s -- \
@@ -789,11 +805,11 @@ f_dialog_input_expire_password()
 					$__input_time                      \
 					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
 				)
+				__retval=$?
+				f_dialog_data_sanitize __ret_time
+				f_dprintf "retval=%u ret_time=[%s]" \
+					  $__retval "$__ret_time"
 			fi
-			__retval=$?
-			f_dialog_data_sanitize __ret_time
-			f_dprintf "retval=%u ret_time=[%s]" \
-			          $__retval "$__ret_time"
 
 			# Return to menu if either ESC or Cancel/No
 			[ $__retval -eq $DIALOG_OK ] || continue
