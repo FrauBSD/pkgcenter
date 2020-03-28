@@ -727,9 +727,10 @@ f_dialog_input_expire_password()
 					--calendar                      \
 					--height $__cheight             \
 					--width $__cwidth               \
-					--day $__input_day \
-					--month $__input_month \
-					--year $__input_year
+					--day $__input_day              \
+					--month $__input_month          \
+					--year $__input_year            \
+					--date-format=%d/%m/%Y
 				)
 			else
 				__ret_date=$( eval $DIALOG \
@@ -753,19 +754,42 @@ f_dialog_input_expire_password()
 			[ $__retval -eq $DIALOG_OK ] || continue
 
 			__input_time=
-			[ "$__seconds" ] && __input_time=$( date -j \
-				-f %s -- "$__input" "+%H %M %S" 2> /dev/null )
-			__ret_time=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"         \
-				--backtitle \"\$DIALOG_BACKTITLE\" \
-				--hline \"\$__hline\"              \
-				--ok-label \"\$msg_ok\"            \
-				--cancel-label \"\$msg_cancel\"    \
-				--timebox \"\$__prompt\"           \
-				$__theight $__twidth               \
-				$__input_time                      \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			)
+			if [ "$USE_ZENITY" ]; then
+				if [ "$__seconds" ]; then
+					__input_time=$( date -j -f %s -- \
+						"$__input" "+%H:%M:%S" \
+						2> /dev/null )
+				else
+					__input_time=00:00:00
+				fi
+				__ret_time=$( eval $DIALOG \
+					--title \"\$__title\"           \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--text \"\$__prompt\"           \
+					--entry                         \
+					--entry-text \"\$__input_time\" \
+					--height $__theight             \
+					--width $__twidth
+				)
+			else
+				if [ "$__seconds" ]; then
+					__input_time=$( date -j -f %s -- \
+						"$__input" "+%H %M %S" \
+						2> /dev/null )
+				fi
+				__ret_time=$( eval $DIALOG \
+					--title \"\$DIALOG_TITLE\"         \
+					--backtitle \"\$DIALOG_BACKTITLE\" \
+					--hline \"\$__hline\"              \
+					--ok-label \"\$msg_ok\"            \
+					--cancel-label \"\$msg_cancel\"    \
+					--timebox \"\$__prompt\"           \
+					$__theight $__twidth               \
+					$__input_time                      \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi
 			__retval=$?
 			f_dialog_data_sanitize __ret_time
 			f_dprintf "retval=%u ret_time=[%s]" \
