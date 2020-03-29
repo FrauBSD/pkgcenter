@@ -1972,6 +1972,7 @@ f_dialog_noyes()
 
 		$DIALOG \
 			--title "$title"                \
+			--default-cancel                \
 			--question "$msg_text"
 	else
 		$DIALOG \
