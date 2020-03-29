@@ -883,19 +883,39 @@ f_dialog_input_expire_account()
 	# Loop until the user provides taint-free/cancellation-free input
 	#
 	local __retval __date_type
+	if [ "$USE_ZENITY" ]; then
+		local __title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$__title}" = "$DIALOG_TITLE" ] ||
+			__title="$DIALOG_BACKTITLE: $__title"
+	fi
 	while :; do
-		__date_type=$( eval $DIALOG \
-			--title \"\$DIALOG_TITLE\"         \
-			--backtitle \"\$DIALOG_BACKTITLE\" \
-			--hline \"\$__hline\"              \
-			--default-item \"\$__defaultitem\" \
-			--ok-label \"\$msg_ok\"            \
-			--cancel-label \"\$msg_cancel\"    \
-			--menu \"\$__prompt\"              \
-			$__mheight $__mwidth $__mrows      \
-			$__menu_list                       \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			__date_type=$( eval $DIALOG \
+				--title \"\$__title\"           \
+				--ok-label \"\$msg_ok\"         \
+				--cancel-label \"\$msg_cancel\" \
+				--text \"\$__prompt\"           \
+				--height $__mheight             \
+				--width $__mwidth               \
+				--column=1                      \
+				--column=2                      \
+				--hide-header                   \
+				--list $__menu_list
+			)
+		else
+			__date_type=$( eval $DIALOG \
+				--title \"\$DIALOG_TITLE\"         \
+				--backtitle \"\$DIALOG_BACKTITLE\" \
+				--hline \"\$__hline\"              \
+				--default-item \"\$__defaultitem\" \
+				--ok-label \"\$msg_ok\"            \
+				--cancel-label \"\$msg_cancel\"    \
+				--menu \"\$__prompt\"              \
+				$__mheight $__mwidth $__mrows      \
+				$__menu_list                       \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		__retval=$?
 		f_dialog_data_sanitize __date_type
 		__defaultitem="$__date_type"
@@ -912,21 +932,46 @@ f_dialog_input_expire_account()
 			local __input_date __input_time __ret_date __ret_time
 
 			local __seconds="$__input"
-			{ f_isinteger "$__seconds" && [ $__seconds -gt 0 ]; } ||
-				__seconds=
-			__input_date=$( date -j -f "%s" -- "$__seconds" \
-			               		"+%d %m %Y" 2> /dev/null )
-			__ret_date=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"          \
-				--backtitle \"\$DIALOG_BACKTITLE\"  \
-				--hline \"\$__hline\"               \
-				--ok-label \"\$msg_ok\"             \
-				--cancel-label \"\$msg_cancel\"     \
-				--calendar \"\$__prompt\"           \
-				$__cheight $__cwidth                \
-				$__input_date                       \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			)
+			{ f_isinteger "$__seconds" &&
+				[ $__seconds -gt 0 ]; } || __seconds=
+			if [ "$__seconds" ]; then
+				__input_date=$( date -j -f "%s" -- \
+					"$__seconds" "+%d %m %Y" 2> /dev/null )
+			else
+				__input_date=$( date "+%d %m %Y" )
+			fi
+			if [ "$USE_ZENITY" ]; then
+				local __input_day __input_month __input_year
+				__input_day=${__input_date%%[$IFS]*}
+				__input_month="${__input_date#$__input_day }"
+				__input_month=${__input_month%%[$IFS]*}
+				__input_year=${__input_date##*[$IFS]}
+				__ret_date=$( eval $DIALOG \
+					--title \"\$__title\"           \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--text \"\$__prompt\"           \
+					--calendar                      \
+					--height $__cheight             \
+					--width $__cwidth               \
+					--day $__input_day              \
+					--month $__input_month          \
+					--year $__input_year            \
+					--date-format=%d/%m/%Y
+				)
+			else
+				__ret_date=$( eval $DIALOG \
+					--title \"\$DIALOG_TITLE\"          \
+					--backtitle \"\$DIALOG_BACKTITLE\"  \
+					--hline \"\$__hline\"               \
+					--ok-label \"\$msg_ok\"             \
+					--cancel-label \"\$msg_cancel\"     \
+					--calendar \"\$__prompt\"           \
+					$__cheight $__cwidth                \
+					$__input_date                       \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi
 			__retval=$?
 			f_dialog_data_sanitize __ret_date
 			f_dprintf "retval=%u ret_date=[%s]" \
@@ -936,29 +981,68 @@ f_dialog_input_expire_account()
 			[ $__retval -eq $DIALOG_OK ] || continue
 
 			__input_time=
-			[ "$__seconds" ] && __input_time=$( date -j \
-				-f %s -- "$__input" "+%H %M %S" 2> /dev/null )
-			__ret_time=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"         \
-				--backtitle \"\$DIALOG_BACKTITLE\" \
-				--hline \"\$__hline\"              \
-				--ok-label \"\$msg_ok\"            \
-				--cancel-label \"\$msg_cancel\"    \
-				--timebox \"\$__prompt\"           \
-				$__theight $__twidth               \
-				$__input_time                      \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			)
-			__retval=$?
-			f_dialog_data_sanitize __ret_time
-			f_dprintf "retval=%u ret_time=[%s]" \
-			          $__retval "$__ret_time"
+			if [ "$USE_ZENITY" ]; then
+				if [ "$__seconds" ]; then
+					__input_time=$( date -j -f %s -- \
+						"$__input" "+%H:%M:%S" \
+						2> /dev/null )
+				else
+					__input_time=$( date "+%H:%M:%S" )
+				fi
+				while :; do
+					__ret_time=$( eval $DIALOG \
+						--title \"\$__title\"      \
+						--ok-label \"\$msg_ok\"    \
+						--cancel-label             \
+							\"\$msg_cancel\"   \
+						--text \"\$__prompt\"      \
+						--entry                    \
+						--entry-text               \
+							\"\$__input_time\" \
+						--height $__theight        \
+						--width $__twidth
+					)
+					__retval=$?
+					f_dialog_data_sanitize __ret_time
+					f_dprintf "retval=%u ret_time=[%s]" \
+						  $__retval "$__ret_time"
+					if [ $__retval -ne $ZENITY_OK ]; then
+						break
+					fi
+					__input=$( date -j -f "%d/%m/%Y %T" \
+						-- "$__ret_date $__ret_time" \
+						+%s 2> /dev/null )
+					f_dprintf "input=[%s]" "$__input"
+					[ "$__input" ] && break
+				done
+			else
+				if [ "$__seconds" ]; then
+					__input_time=$( date -j -f %s -- \
+						"$__input" "+%H %M %S" \
+						2> /dev/null )
+				fi
+				__ret_time=$( eval $DIALOG \
+					--title \"\$DIALOG_TITLE\"         \
+					--backtitle \"\$DIALOG_BACKTITLE\" \
+					--hline \"\$__hline\"              \
+					--ok-label \"\$msg_ok\"            \
+					--cancel-label \"\$msg_cancel\"    \
+					--timebox \"\$__prompt\"           \
+					$__theight $__twidth               \
+					$__input_time                      \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+				__retval=$?
+				f_dialog_data_sanitize __ret_time
+				f_dprintf "retval=%u ret_time=[%s]" \
+				          $__retval "$__ret_time"
+			fi
 
 			# Return to menu if either ESC or Cancel/No
 			[ $__retval -eq $DIALOG_OK ] || continue
 
 			__input=$( date -j -f "%d/%m/%Y %T" -- \
-				"$ret_date $ret_time" +%s 2> /dev/null )
+				"$__ret_date $__ret_time" +%s 2> /dev/null )
 			f_dprintf "input=[%s]" "$__input"
 			break ;;
 
