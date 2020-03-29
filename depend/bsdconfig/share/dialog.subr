@@ -1754,7 +1754,7 @@ f_dialog_pause_no_cancel()
 
 ############################################################ MSGBOX FUNCTIONS
 
-# f_dialog_msgbox $msg_text [$hline]
+# f_dialog_msgbox [-e] $msg_text [$hline]
 #
 # Throw up a dialog(1) msgbox. The msgbox remains until the user presses ENTER
 # or ESC, acknowledging the modal dialog.
@@ -1762,8 +1762,18 @@ f_dialog_pause_no_cancel()
 # If the user presses ENTER, the exit status is zero (success), otherwise if
 # the user presses ESC the exit status is 255.
 #
+# If given `-e' and using zenity(1), display msgbox with error icon.
+#
 f_dialog_msgbox()
 {
+	local flag error=
+	while getopts e flag; do
+		case "$flag" in
+		e) error=--icon-name=error ;;
+		*) break
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
 	local msg_text="$1" hline="$2" height width
 	f_dialog_buttonbox_size height width \
 		"$DIALOG_TITLE" "$DIALOG_BACKTITLE" "$msg_text" "$hline"
@@ -1780,6 +1790,7 @@ f_dialog_msgbox()
 			--height $height     \
 			--text "$msg_text"   \
 			--ellipsize          \
+			$error               \
 			--info
 	else
 		$DIALOG \

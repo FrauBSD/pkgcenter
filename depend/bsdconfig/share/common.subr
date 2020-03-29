@@ -403,7 +403,7 @@ f_show_err()
 
 	if [ "$_DIALOG_SUBR" ]; then
 		f_dialog_title "${msg_error:-Error}"
-		f_dialog_msgbox "$msg"
+		f_dialog_msgbox -e "$msg"
 		f_dialog_title_restore
 	else
 		dialog --title "${msg_error:-Error}" --msgbox "$msg" 0 0
