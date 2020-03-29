@@ -1944,6 +1944,15 @@ f_dialog_noyes()
 			--ok-label "$msg_yes"           \
 			--cancel-label "$msg_no"        \
 			--yesno "$msg_text" $height $width
+	elif [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		$DIALOG \
+			--title "$title"                \
+			--question "$msg_text"
 	else
 		$DIALOG \
 			--title "$DIALOG_TITLE"         \
