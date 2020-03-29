@@ -223,35 +223,65 @@ f_dialog_input_group_password()
 	# Loop until the user provides taint-free/valid input
 	#
 	local __retval __password1 __password2
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local __title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$__title}" = "$DIALOG_TITLE" ] ||
+			__title="$DIALOG_BACKTITLE: $__title"
+	fi
 	while :; do
-		__password1=$( $DIALOG \
-			--title "$DIALOG_TITLE"         \
-			--backtitle "$DIALOG_BACKTITLE" \
-			--hline "$__hline"              \
-			--ok-label "$msg_ok"            \
-			--cancel-label "$msg_cancel"    \
-			--insecure                      \
-			--passwordbox "$__prompt1"      \
-			$__height1 $__width1            \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			__password1=$( $DIALOG \
+				--title "$title"                \
+				--ok-label "$msg_ok"            \
+				--cancel-label "$msg_cancel"    \
+				--entry --text="$__prompt1"     \
+				--hide-text                     \
+				--height $__height1             \
+				--width $__width1
+			)
+		else
+			__password1=$( $DIALOG \
+				--title "$DIALOG_TITLE"         \
+				--backtitle "$DIALOG_BACKTITLE" \
+				--hline "$__hline"              \
+				--ok-label "$msg_ok"            \
+				--cancel-label "$msg_cancel"    \
+				--insecure                      \
+				--passwordbox "$__prompt1"      \
+				$__height1 $__width1            \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		__retval=$?
 		debug= f_dialog_line_sanitize __password1
 
 		# Return if user has either pressed ESC or chosen Cancel/No
 		[ $__retval -eq $DIALOG_OK ] || return $__retval
 
-		__password2=$( $DIALOG \
-			--title "$DIALOG_TITLE"         \
-			--backtitle "$DIALOG_BACKTITLE" \
-			--hline "$__hline"              \
-			--ok-label "$msg_ok"            \
-			--cancel-label "$msg_cancel"    \
-			--insecure                      \
-			--passwordbox "$__prompt2"      \
-			$__height2 $__width2            \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			__password2=$( $DIALOG \
+				--title "$title"                \
+				--ok-label "$msg_ok"            \
+				--cancel-label "$msg_cancel"    \
+				--entry --text="$__prompt2"     \
+				--hide-text                     \
+				--height $__height2             \
+				--width $__width2
+			)
+		else
+			__password2=$( $DIALOG \
+				--title "$DIALOG_TITLE"         \
+				--backtitle "$DIALOG_BACKTITLE" \
+				--hline "$__hline"              \
+				--ok-label "$msg_ok"            \
+				--cancel-label "$msg_cancel"    \
+				--insecure                      \
+				--passwordbox "$__prompt2"      \
+				$__height2 $__width2            \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		__retval=$?
 		debug= f_dialog_line_sanitize __password2
 
