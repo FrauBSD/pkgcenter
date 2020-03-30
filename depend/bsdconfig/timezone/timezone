@@ -454,17 +454,37 @@ while :; do
 		# Launch the zone selection menu
 		# NOTE: This is as deep as we go
 		#
-		n=$( eval $DIALOG \
-			--title \"\$title\"              \
-			--backtitle \"\$btitle\"         \
-			--ok-label \"\$msg_ok\"          \
-			--cancel-label \"\$msg_cancel\"  \
-			--default-item \"\$defaultzone\" \
-			--menu \"\$prompt\"              \
-			$height $width $rows             \
-			$menu_list                       \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			# Calculate title
+			title="$DIALOG_TITLE"
+			[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+
+			n=$( eval $DIALOG \
+				--title \"\$title\"             \
+				--ok-label \"\$msg_ok\"         \
+				--cancel-label \"\$msg_cancel\" \
+				--text \"\$prompt\"             \
+				--height $height                \
+				--width $width                  \
+				--column=1                      \
+				--column=2                      \
+				--hide-header                   \
+				--list $menu_list
+			)
+		else
+			n=$( eval $DIALOG \
+				--title \"\$title\"              \
+				--backtitle \"\$btitle\"         \
+				--ok-label \"\$msg_ok\"          \
+				--cancel-label \"\$msg_cancel\"  \
+				--default-item \"\$defaultzone\" \
+				--menu \"\$prompt\"              \
+				$height $width $rows             \
+				$menu_list                       \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		retval=$?
 		f_dialog_data_sanitize n
 		defaultzone="$n"
