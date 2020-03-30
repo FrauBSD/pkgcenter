@@ -239,7 +239,6 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 			--ok-label "$msg_yes"    \
 			--cancel-label "$msg_no" \
 			--yesno "$msg" $height $width
-		result=$?
 	elif [ "$USE_ZENITY" ]; then
 		# Calculate title
 		title="$DIALOG_TITLE"
@@ -255,7 +254,6 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 			--height $height         \
 			--width $width
 		[ $? -ne $ZENITY_OK ]
-		result=$?
 	else
 		$DIALOG \
 			--title "$title"       \
@@ -264,8 +262,8 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 			--yes-label "$msg_yes" \
 			--no-label "$msg_no"   \
 			--yesno "$msg" $height $width
-		result=$?
 	fi
+	result=$?
 
 	if [ $result -eq $DIALOG_OK ]; then
 		# User chose YES
