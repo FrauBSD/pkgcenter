@@ -361,19 +361,43 @@ f_dialog_input_group_members()
 	                        $__menu_list
 
 	local __menu_choice __retval
+	local __sep="$NL" __on
+	if [ "$USE_ZENITY" ]; then
+		__sep="|"
+
+		# Calculate title
+		local __title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$__title}" != "$DIALOG_TITLE" ] ||
+			__title="$DIALOG_BACKTITLE: $__title"
+	fi
 	while :; do
-		__menu_choice=$( eval $DIALOG \
-			--title \"\$DIALOG_TITLE\"         \
-			--backtitle \"\$DIALOG_BACKTITLE\" \
-			--hline \"\$__hline\"              \
-			--ok-label \"\$msg_ok\"            \
-			--cancel-label \"\$msg_cancel\"    \
-			--default-item \"\$__defaultitem\" \
-			--menu \"\$__prompt\"              \
-			$__mheight $__mwidth $__mrows      \
-			$__menu_list                       \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			__menu_choice=$( eval $DIALOG \
+				--title \"\$DIALOG_TITLE\"      \
+				--ok-label \"\$msg_ok\"         \
+				--cancel-label \"\$msg_cancel\" \
+				--text \"\$__prompt\"           \
+				--height $__mheight             \
+				--width $__mwidth               \
+				--column=1                      \
+				--column=2                      \
+				--hide-header                   \
+				--list $__menu_list
+			)
+		else
+			__menu_choice=$( eval $DIALOG \
+				--title \"\$DIALOG_TITLE\"         \
+				--backtitle \"\$DIALOG_BACKTITLE\" \
+				--hline \"\$__hline\"              \
+				--ok-label \"\$msg_ok\"            \
+				--cancel-label \"\$msg_cancel\"    \
+				--default-item \"\$__defaultitem\" \
+				--menu \"\$__prompt\"              \
+				$__mheight $__mwidth $__mrows      \
+				$__menu_list                       \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		__retval=$?
 		f_dialog_data_sanitize __menu_choice
 		__defaultitem="$__menu_choice"
@@ -396,14 +420,29 @@ f_dialog_input_group_members()
 				__u="${__user_list%%$NL*}" # First line
 				f_shell_escape "$__u" __user
 
-				# Format of a checklist entry: tag item status
-				__check_list="$__check_list '$__user' ''"
-				case "$__input" in
-				"$__u"|"$__u",*|*,"$__u",*|*,"$__u")
-					__check_list="$__check_list on" ;;
-				*)
-					__check_list="$__check_list off"
-				esac
+				if [ "$USE_ZENITY" ]; then
+					# Checklist format: BOOL item
+					# NB: item set to user name below
+					case "$__input" in
+					"$__u"|"$__u",*|*,"$__u",*|*,"$__u")
+						__status=TRUE ;;
+					*)
+						__status=FALSE ;;
+					esac
+					__check_list="$__check_list $__status"
+					__check_list="$__check_list '$__user'"
+				else
+					# Checklist format: tag item status
+					# NB: item set to user name below
+					__check_list="$__check_list '$__user'"
+					case "$__input" in
+					"$__u"|"$__u",*|*,"$__u",*|*,"$__u")
+						__status=on ;;
+					*)
+						__status=off ;;
+					esac
+					__check_list="$__check_list $__status"
+				fi
 
 				__length=${#__user_list}
 				__user_list="${__user_list#*$NL}" # Kill line
@@ -417,18 +456,34 @@ f_dialog_input_group_members()
 				\"\$__prompt\"         \
 				\"\$__hline\"          \
 				$__check_list
-			__group_members=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"         \
-				--backtitle \"\$DIALOG_BACKTITLE\" \
-				--separate-output                  \
-				--hline \"\$__hline\"              \
-				--ok-label \"\$msg_ok\"            \
-				--cancel-label \"\$msg_cancel\"    \
-				--checklist \"\$__prompt\"         \
-				$__cheight $__cwidth $__crows      \
-				$__check_list                      \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			) || continue
+			if [ "$USE_ZENITY" ]; then
+				__group_members=$( eval $DIALOG \
+					--title \"\$title\"             \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--text \"\$__prompt\"           \
+					--height $__cheight             \
+					--width $__cwidth               \
+					--column=1                      \
+					--column=2                      \
+					--hide-header                   \
+					--checklist                     \
+					--list $__check_list
+				)
+			else
+				__group_members=$( eval $DIALOG \
+					--title \"\$DIALOG_TITLE\"         \
+					--backtitle \"\$DIALOG_BACKTITLE\" \
+					--separate-output                  \
+					--hline \"\$__hline\"              \
+					--ok-label \"\$msg_ok\"            \
+					--cancel-label \"\$msg_cancel\"    \
+					--checklist \"\$__prompt\"         \
+					$__cheight $__cwidth $__crows      \
+					$__check_list                      \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi || continue
 				# Return to previous menu if user either
 				# pressed ESC or chose Cancel/No
 			f_dialog_data_sanitize __group_members
