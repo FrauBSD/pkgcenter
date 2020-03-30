@@ -447,6 +447,7 @@ while :; do
 
 	f_getvar menu_program$mtag menu_program
 	case "$menu_program" in
+	"") continue ;;
 	/*) cmd="$menu_program" ;;
 	 *) cmd="$BSDCFG_LIBE/$menu_program"
 	esac
