@@ -459,7 +459,7 @@ f_dialog_input_group_members()
 				$__check_list
 			if [ "$USE_ZENITY" ]; then
 				__group_members=$( eval $DIALOG \
-					--title \"\$title\"             \
+					--title \"\$__title\"           \
 					--ok-label \"\$msg_ok\"         \
 					--cancel-label \"\$msg_cancel\" \
 					--text \"\$__prompt\"           \
