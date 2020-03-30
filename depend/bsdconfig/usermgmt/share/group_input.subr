@@ -367,7 +367,7 @@ f_dialog_input_group_members()
 
 		# Calculate title
 		local __title="$DIALOG_TITLE"
-		[ "${DIALOG_BACKTITLE:-$__title}" != "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$__title}" = "$DIALOG_TITLE" ] ||
 			__title="$DIALOG_BACKTITLE: $__title"
 	fi
 	while :; do
