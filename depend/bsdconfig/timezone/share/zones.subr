@@ -496,6 +496,20 @@ f_confirm_zone()
 			--ok-label "$msg_yes"    \
 			--cancel-label "$msg_no" \
 			--yesno "$prompt" $height $width
+	elif [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		$DIALOG \
+			--title "$title"         \
+			--ok-label "$msg_yes"    \
+			--cancel-label "$msg_no" \
+			--question               \
+			--text "$prompt"         \
+			--height $height         \
+			--width $width
 	else
 		$DIALOG \
 			--title "$title"       \
