@@ -242,7 +242,7 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 		result=$?
 	elif [ "$USE_ZENITY" ]; then
 		# Calculate title
-		local title="$DIALOG_TITLE"
+		title="$DIALOG_TITLE"
 		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
