@@ -225,7 +225,10 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 		defaultno="default-no"
 		height=10 width=77
 	elif [ "$USE_ZENITY" ]; then
-		height=10 width=77
+		title="$DIALOG_TITLE"
+		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+		f_dialog_buttonbox_size height width "$title" "" "$msg"
 	else
 		defaultno="defaultno"
 		height=7 width=73
@@ -240,11 +243,6 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 			--cancel-label "$msg_no" \
 			--yesno "$msg" $height $width
 	elif [ "$USE_ZENITY" ]; then
-		# Calculate title
-		title="$DIALOG_TITLE"
-		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
-			title="$DIALOG_BACKTITLE: $title"
-
 		$DIALOG \
 			--title "$title"          \
 			--ok-label "$msg_no"      \
