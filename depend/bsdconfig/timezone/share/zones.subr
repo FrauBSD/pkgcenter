@@ -502,6 +502,7 @@ f_confirm_zone()
 		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
+		f_dialog_buttonbox_size height width "$title" "" "$prompt"
 		$DIALOG \
 			--title "$title"         \
 			--ok-label "$msg_yes"    \
