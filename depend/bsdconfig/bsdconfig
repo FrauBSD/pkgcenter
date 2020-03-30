@@ -198,7 +198,7 @@ dialog_menu_main()
 	#
 	# Pick up the base modules (directories named `[0-9][0-9][0-9].*')
 	#
-	local menuitem menu_title menu_help menu_selection index=2
+	local menuitem menu_program menu_title menu_help menu_selection index=2
 	for menuitem in $( cd $BSDCFG_LIBE && ls -d [0-9][0-9][0-9].* ); do
 		[ -f "$BSDCFG_LIBE/$menuitem/INDEX" ] || continue
 		[ $index -lt ${#DIALOG_MENU_TAGS} ] || break
