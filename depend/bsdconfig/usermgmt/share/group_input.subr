@@ -373,7 +373,7 @@ f_dialog_input_group_members()
 	while :; do
 		if [ "$USE_ZENITY" ]; then
 			__menu_choice=$( eval $DIALOG \
-				--title \"\$DIALOG_TITLE\"      \
+				--title \"\$__title\"           \
 				--ok-label \"\$msg_ok\"         \
 				--cancel-label \"\$msg_cancel\" \
 				--text \"\$__prompt\"           \
