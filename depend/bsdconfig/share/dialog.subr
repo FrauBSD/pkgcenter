@@ -1131,26 +1131,13 @@ f_dialog_menu_with_help_size()
 # the actual terminal height or width) is stored in $var_height, $var_width,
 # and $var_rows (respectively).
 #
-# If `-c' is given, then calculate sizes for a checklist instead of radiolist.
-# NB: In zenity(1) the line-height of a checklist row is different than a
-# radiolist row.
-#
-# If `-n' is given, the calculated sizes ($var_height, $var_width, and
-# $var_rows) are not constrained to minimum/maximum values.
+# If the first argument is `-n', the calculated sizes ($var_height, $var_width,
+# and $var_rows) are not constrained to minimum/maximum values.
 #
 f_dialog_radiolist_size()
 {
-	local __checklist=
 	local __constrain=1
-	local OPTIND=1 OPTARG __flag
-	while getopts cn __flag; do
-		case "$__flag" in
-		c) __checklist=1 ;;
-		n) __constrain= ;;
-		*) break
-		esac
-	done
-	shift $(( $OPTIND - 1 ))
+	[ "$1" = "-n" ] && __constrain= && shift 1 # -n
 	local __var_height="$1" __var_width="$2" __var_rows="$3"
 	local __title="$4" __btitle="$5" __prompt="$6" __hline="$7"
 	shift 7 # var_height/var_width/var_rows/title/btitle/prompt/hline
@@ -1206,19 +1193,12 @@ f_dialog_radiolist_size()
 		if [ "$USE_ZENITY" ]; then
 			#
 			# Adjust height from f_dialog_infobox_size():
-			# 26 = checklist menu line height (in pixels)
-			# 32 = radiolist menu line height (in pixels)
-			# 21 = whitespace around menu (in pixels)
+			# 25 = menu line height (in pixels)
+			# 71 = non-menu space (in pixels)
 			#
-			if [ "$__checklist" ]; then
-				__height_rlist_size=$(( $__height_rlist_size +
-					$__rows_rlist_size * 26 + 21
-				))
-			else
-				__height_rlist_size=$(( $__height_rlist_size +
-					$__rows_rlist_size * 32 + 21
-				))
-			fi
+			__height_rlist_size=$(( $__height_rlist_size +
+				$__rows_rlist_size * 25 + 71
+			))
 		elif [ "$USE_XDIALOG" ]; then
 			__height_rlist_size=$((
 				$__height_rlist_size + $__rows_rlist_size + 7
@@ -1279,7 +1259,7 @@ f_dialog_radiolist_size()
 #
 f_dialog_checklist_size()
 {
-	f_dialog_radiolist_size -c "$@"
+	f_dialog_radiolist_size "$@"
 }
 
 # f_dialog_radiolist_with_help_size [-n] $var_height $var_width $var_rows \
