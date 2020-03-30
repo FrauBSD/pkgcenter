@@ -246,12 +246,12 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 			title="$DIALOG_BACKTITLE: $title"
 
 		$DIALOG \
-			--title "$title"         \
+			--title "$title"          \
 			--ok-label "$msg_no"      \
 			--cancel-label "$msg_yes" \
-			--question               \
-			--text "$msg"            \
-			--height $height         \
+			--question                \
+			--text "$msg"             \
+			--height $height          \
 			--width $width
 		[ $? -ne $ZENITY_OK ]
 	else
