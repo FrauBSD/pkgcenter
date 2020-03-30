@@ -435,6 +435,7 @@ f_dialog_input_group_members()
 					# Checklist format: tag item status
 					# NB: item set to user name below
 					__check_list="$__check_list '$__user'"
+					__check_list="$__check_list '$__user'"
 					case "$__input" in
 					"$__u"|"$__u",*|*,"$__u",*|*,"$__u")
 						__status=on ;;
@@ -493,7 +494,7 @@ f_dialog_input_group_members()
 			# separated one so that if the user switches over to
 			# manual editing, list reflects checklist selections
 			#
-			f_replaceall "$__group_members" "[$NL]" "," __input
+			f_replaceall "$__group_members" "[$__sep]" "," __input
 			;;
 		2) # Enter Group Members manually
 			local __prompt2="$msg_group_members"
