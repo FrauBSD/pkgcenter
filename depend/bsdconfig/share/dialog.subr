@@ -1921,8 +1921,13 @@ f_dialog_yesno()
 			title="$DIALOG_BACKTITLE: $title"
 
 		$DIALOG \
-			--title "$title"                \
-			--question "$msg_text"
+			--title "$title"         \
+			--ok-label "$msg_yes"    \
+			--cancel-label "$msg_no" \
+			--question               \
+			--text "$msg_text"       \
+			--height $height         \
+			--width $width
 	else
 		$DIALOG \
 			--title "$DIALOG_TITLE"         \
@@ -1971,9 +1976,14 @@ f_dialog_noyes()
 			title="$DIALOG_BACKTITLE: $title"
 
 		$DIALOG \
-			--title "$title"                \
-			--default-cancel                \
-			--question "$msg_text"
+			--title "$title"          \
+			--ok-label "$msg_no"      \
+			--cancel-label "$msg_yes" \
+			--question                \
+			--text "$msg_text"        \
+			--height $height          \
+			--width $width
+		[ $? -ne $ZENITY_OK ]
 	else
 		$DIALOG \
 			--title "$DIALOG_TITLE"         \
