@@ -343,7 +343,7 @@ f_dialog_input_group_gid()
 f_dialog_input_group_members()
 {
 	local __var_to_set="$1" __input="$2"
-	local __prompt="$msg_group_members:"
+	local __prompt="$msg_group_members"
 	local __menu_list="
 		'X' '$msg_continue'
 		'1' '$msg_select_group_members_from_list'
