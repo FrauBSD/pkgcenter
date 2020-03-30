@@ -214,7 +214,7 @@ fi
 #
 # Process the UTC option
 #
-if [ "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
+if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 	f_dialog_title "$msg_select_local_or_utc"
 	title="$DIALOG_TITLE"
 	btitle="$DIALOG_BACKTITLE"
