@@ -247,8 +247,8 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 
 		$DIALOG \
 			--title "$title"         \
-			--ok-label "$msg_yes"    \
-			--cancel-label "$msg_no" \
+			--ok-label "$msg_no"      \
+			--cancel-label "$msg_yes" \
 			--question               \
 			--text "$msg"            \
 			--height $height         \
