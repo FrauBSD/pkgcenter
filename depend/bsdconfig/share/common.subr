@@ -329,7 +329,7 @@ f_die()
 	fi
 
 	# If there are still arguments left, pass them to f_show_msg
-	[ $# -gt 0 ] && f_show_msg "$@"
+	[ $# -gt 0 ] && f_show_err "$@"
 
 	# Optionally call f_clean_up() function if it exists
 	f_have f_clean_up && f_clean_up
