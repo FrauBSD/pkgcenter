@@ -104,7 +104,7 @@ f_dialog_menu_group_list()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \
