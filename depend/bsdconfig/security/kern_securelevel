@@ -81,21 +81,42 @@ dialog_menu_main()
 	esac
 
 	local menu_choice
-	menu_choice=$( eval $DIALOG \
-		--title \"\$DIALOG_TITLE\"         \
-		--backtitle \"\$DIALOG_BACKTITLE\" \
-		--hline \"\$hline\"                \
-		--ok-label \"\$msg_ok\"            \
-		--cancel-label \"\$msg_cancel\"    \
-		--help-button                      \
-		--help-label \"\$msg_help\"        \
-		${USE_XDIALOG:+--help \"\"}        \
-		--default-item \"\$defaultitem\"   \
-		--menu \"\$prompt\"                \
-		$height $width $rows               \
-		$menu_list                         \
-		2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-	)
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		menu_choice=$( eval $DIALOG \
+			--title \"\$title\"             \
+			--ok-label \"\$msg_ok\"         \
+			--cancel-label \"\$msg_cancel\" \
+			--extra-button \"$msg_help\"    \
+			--text \"\$prompt\"             \
+			--height $height                \
+			--width $width                  \
+			--column=1                      \
+			--column=2                      \
+			--hide-header                   \
+			--list $menu_list
+		)
+	else
+		menu_choice=$( eval $DIALOG \
+			--title \"\$DIALOG_TITLE\"         \
+			--backtitle \"\$DIALOG_BACKTITLE\" \
+			--hline \"\$hline\"                \
+			--ok-label \"\$msg_ok\"            \
+			--cancel-label \"\$msg_cancel\"    \
+			--help-button                      \
+			--help-label \"\$msg_help\"        \
+			${USE_XDIALOG:+--help \"\"}        \
+			--default-item \"\$defaultitem\"   \
+			--menu \"\$prompt\"                \
+			$height $width $rows               \
+			$menu_list                         \
+			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+		)
+	fi
 	local retval=$?
 	f_dialog_menutag_store -s "$menu_choice"
 	return $retval
@@ -131,11 +152,21 @@ while :; do
 	retval=$?
 	f_dialog_menutag_fetch mtag
 
-	if [ $retval -eq $DIALOG_HELP ]; then
-		f_show_help "$SECURELEVEL_HELPFILE"
-		continue
-	elif [ $retval -ne $DIALOG_OK ]; then
-		f_die
+	if
+		if [ $retval -eq $ZENITY_CANCEL ] && [ "$mtag" = "$msg_help" ]
+		then
+			f_show_help "$SECURELEVEL_HELPFILE"
+			continue
+		elif [ $retval -ne $ZENITY_OK ]; then
+			fdie
+		fi
+	else # [X]dialog(1)
+		if [ $retval -eq $DIALOG_HELP ]; then
+			f_show_help "$SECURELEVEL_HELPFILE"
+			continue
+		elif [ $retval -ne $DIALOG_OK ]; then
+			f_die
+		fi
 	fi
 
 	break
