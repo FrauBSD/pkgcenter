@@ -138,7 +138,7 @@ f_dialog_menu_user_list()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \
@@ -1387,7 +1387,7 @@ f_dialog_menu_user_add()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \
@@ -1529,7 +1529,7 @@ f_dialog_menu_user_delete()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \
@@ -1663,7 +1663,7 @@ f_dialog_menu_user_edit()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \

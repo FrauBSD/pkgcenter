@@ -499,7 +499,7 @@ f_confirm_zone()
 	elif [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		f_dialog_buttonbox_size height width "$title" "" "$prompt"

@@ -76,7 +76,7 @@ dialog_menu_main()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \

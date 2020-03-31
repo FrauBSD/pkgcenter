@@ -101,7 +101,7 @@ dialog_menu_main()
 	if [ "$USE_ZENITY" ]; then
 		# Calculate title
 		local title="$DIALOG_TITLE"
-		[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 
 		menu_choice=$( eval $DIALOG \
@@ -226,7 +226,7 @@ if [ -e "$_PATH_WALL_CMOS_CLOCK" -a ! "$SKIPUTC" ]; then
 		height=10 width=77
 	elif [ "$USE_ZENITY" ]; then
 		title="$DIALOG_TITLE"
-		[ "${DIAlOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 			title="$DIALOG_BACKTITLE: $title"
 		f_dialog_buttonbox_size height width "$title" "" "$msg"
 	else
@@ -393,7 +393,7 @@ while :; do
 			if [ "$USE_ZENITY" ]; then
 				# Calculate title
 				title="$DIALOG_TITLE"
-				[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 					title="$DIALOG_BACKTITLE: $title"
 
 				tag=$( eval $DIALOG \
@@ -471,7 +471,7 @@ while :; do
 		if [ "$USE_ZENITY" ]; then
 			# Calculate title
 			title="$DIALOG_TITLE"
-			[ "${DIAlOg_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
 				title="$DIALOG_BACKTITLE: $title"
 
 			n=$( eval $DIALOG \
