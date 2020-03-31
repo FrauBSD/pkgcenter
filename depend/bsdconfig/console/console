@@ -143,7 +143,8 @@ while :; do
 
 	command=
 	case "$mtag" in
-	"X $msg_exit")      break ;;
+	"")                 continue          ;; # Loop menu on no-selection
+	"X $msg_exit")      break             ;; # Cancel/Exit
 	"2 $msg_font")      command=font      ;; # Choose alternate screen font
 	"3 $msg_keymap")    command=keymap    ;; # Choose alt. keyboard map
 	"4 $msg_repeat")    command=repeat    ;; # Set key repeat rate
