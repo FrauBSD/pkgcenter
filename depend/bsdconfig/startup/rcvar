@@ -139,20 +139,41 @@ dialog_menu_main()
 	f_dialog_default_fetch defaultitem
 
 	local menu_choice
-	menu_choice=$( eval $DIALOG \
-		--title \"\$DIALOG_TITLE\"         \
-		--backtitle \"\$DIALOG_BACKTITLE\" \
-		--hline \"\$hline\"                \
-		--keep-tite                        \
-		--ok-label \"\$msg_ok\"            \
-		--cancel-label \"\$msg_cancel\"    \
-		${SHOW_DESC:+--item-help}          \
-		--default-item \"\$defaultitem\"   \
-		--menu \"\$prompt\"                \
-		$height $width $rows               \
-		$menu_list                         \
-		2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-	)
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		menu_choice=$( eval $DIALOG \
+			--title \"\$title\"             \
+			--ok-label \"\$msg_ok\"         \
+			--cancel-label \"\$msg_cancel\" \
+			--text \"\$prompt\"             \
+			--height $height                \
+			--width $width                  \
+			--column=1                      \
+			--column=2                      \
+			--column=3                      \
+			--hide-header                   \
+			--list $menu_list
+		)
+	else
+		menu_choice=$( eval $DIALOG \
+			--title \"\$DIALOG_TITLE\"         \
+			--backtitle \"\$DIALOG_BACKTITLE\" \
+			--hline \"\$hline\"                \
+			--keep-tite                        \
+			--ok-label \"\$msg_ok\"            \
+			--cancel-label \"\$msg_cancel\"    \
+			${SHOW_DESC:+--item-help}          \
+			--default-item \"\$defaultitem\"   \
+			--menu \"\$prompt\"                \
+			$height $width $rows               \
+			$menu_list                         \
+			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+		)
+	fi
 	local retval=$?
 	f_dialog_data_sanitize menu_choice
 	f_dialog_menutag_store "$menu_choice"
