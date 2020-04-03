@@ -258,6 +258,10 @@ while :; do
 			f_dialog_input_view_details
 			continue
 		esac
+	elif [ $retval -eq $ZENITY_CANCEL ] && [ "$mtag" = "$msg_details" ]
+	then
+		f_dialog_input_view_details
+		continue
 	elif [ $retval -eq $DIALOG_HELP ]; then
 		# The ``Help'' button (labeled "Details") was pressed
 		f_dialog_input_view_details
