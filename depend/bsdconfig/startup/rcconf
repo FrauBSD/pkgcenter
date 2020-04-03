@@ -146,7 +146,7 @@ dialog_menu_main()
 			} else { # SHOW_VALUE (default behavior)
 				value = ENVIRON[var]
 				gsub(/'\''/, "'\''\\'\'\''", value)
-				printf "%s", value
+				printf " %s", value
 			}
 			printf "'\''"
 			if ( ENVIRON["SHOW_DESC"] ) {
