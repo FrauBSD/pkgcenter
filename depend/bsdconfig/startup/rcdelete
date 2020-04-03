@@ -227,7 +227,7 @@ dialog_menu_main()
 			--width $width			 \
 			--column=1			 \
 			--column=2			 \
-			$(SHOW_DESC:+--column=3}         \
+			${SHOW_DESC:+--column=3}         \
 			--hide-header			 \
 			--list $menu_list
 		)
