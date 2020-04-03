@@ -152,12 +152,13 @@ while :; do
 			# Anything else is a directive
 
 			$BSDCFG_LIBE/$APP_DIR/rcedit ${USE_XDIALOG:+-X} \
-			                             "${mtag# }"
+					${USE_ZENITY:+-Z} "${mtag# }"
 		done
 		;;
 	2) # Add Custom
 		f_dialog_input_rcvar || continue
-		$BSDCFG_LIBE/$APP_DIR/rcedit ${USE_XDIALOG:+-X} "$rcvar"
+		$BSDCFG_LIBE/$APP_DIR/rcedit \
+			${USE_XDIALOG:+-X} ${USE_ZENITY:+-Z} "$rcvar"
 		;;
 	esac
 done
