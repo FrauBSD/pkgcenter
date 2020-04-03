@@ -152,7 +152,7 @@ while :; do
 	retval=$?
 	f_dialog_menutag_fetch mtag
 
-	if
+	if [ $"USE_ZENITY" ]; then
 		if [ $retval -eq $ZENITY_CANCEL ] && [ "$mtag" = "$msg_help" ]
 		then
 			f_show_help "$SECURELEVEL_HELPFILE"
