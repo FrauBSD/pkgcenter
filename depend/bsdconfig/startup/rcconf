@@ -272,14 +272,16 @@ while :; do
 
 	case "$mtag" in
 	"X $msg_exit") break ;;
-	"> $msg_add_new") $BSDCFG_LIBE/$APP_DIR/rcadd ${USE_XDIALOG:+-X} ;;
+	"> $msg_add_new") $BSDCFG_LIBE/$APP_DIR/rcadd \
+			${USE_XDIALOG:+-X} ${USE_ZENITY:+-Z} ;;
 	"> $msg_delete")
 		# rcdelete has a similar interface that can inherit the below:
 		export SHOW_VALUE SHOW_DESC SHOW_DEFAULT_VALUE SHOW_CONFIGURED
-		$BSDCFG_LIBE/$APP_DIR/rcdelete ${USE_XDIALOG:+-X}
-		;;
+		$BSDCFG_LIBE/$APP_DIR/rcdelete \
+			${USE_XDIALOG:+-X} ${USE_ZENITY:+-Z} ;;
 	*) # Anything else is a variable to edit
-		$BSDCFG_LIBE/$APP_DIR/rcedit ${USE_XDIALOG:+-X} "${mtag# }"
+		$BSDCFG_LIBE/$APP_DIR/rcedit \
+			${USE_XDIALOG:+-X} ${USE_ZENITY:+-Z} "${mtag# }"
 	esac
 done
 
