@@ -137,6 +137,8 @@ while :; do
 			)"
 			;;
 		esac
+	else
+		continue
 	fi
 
 	#
