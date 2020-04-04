@@ -839,19 +839,39 @@ f_dialog_wireless_edit()
 	local menu_choice index struct defaultitem1=
 	while :; do
 		if [ $nmatches -gt 1 ]; then
-			menu_choice=$( eval $DIALOG \
-				--title \"\$title\"               \
-				--backtitle \"\$btitle\"          \
-				--hline \"\$hline\"               \
-				--ok-label \"\$msg_select\"       \
-				--cancel-label \"\$msg_cancel\"   \
-				--item-help                       \
-				--default-item \"\$defaultitem1\" \
-				--menu \"\$prompt1\"              \
-				$height1 $width1 $rows1           \
-				$menu_list1                       \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			) || return $FAILURE
+			if [ "$USE_ZENITY" ]; then
+				# Calculate title
+				local title="$DIALOG_TITLE"
+				[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+					title="$DIALOG_BACKTITLE: $title"
+
+				menu_choice=$( eval $DIALOG \
+					--title \"\$title\"             \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--text \"\$prompt1\"            \
+					--height $height1               \
+					--width $width1                 \
+					--column=1                      \
+					--column=2                      \
+					--hide-header                   \
+					--list $menu_list1
+				)
+			else
+				menu_choice=$( eval $DIALOG \
+					--title \"\$title\"               \
+					--backtitle \"\$btitle\"          \
+					--hline \"\$hline\"               \
+					--ok-label \"\$msg_select\"       \
+					--cancel-label \"\$msg_cancel\"   \
+					--item-help                       \
+					--default-item \"\$defaultitem1\" \
+					--menu \"\$prompt1\"              \
+					$height1 $width1 $rows1           \
+					$menu_list1                       \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi || return $FAILURE
 			f_dialog_data_sanitize menu_choice
 			defaultitem1="$menu_choice"
 			index=$( eval f_dialog_menutag2index_with_help \
@@ -891,18 +911,38 @@ f_dialog_wireless_edit()
 			eval f_dialog_menu_size height2 width2 rows2 \
 				\"\$title\" \"\$btitle\" \"\$prompt2\" \
 				\"\$hline\" $menu_list2
-			menu_choice=$( eval $DIALOG \
-				--title \"\$title\"               \
-				--backtitle \"\$btitle\"          \
-				--hline \"\$hline\"               \
-				--ok-label \"\$msg_select\"       \
-				--cancel-label \"\$msg_cancel\"   \
-				--default-item \"\$defaultitem2\" \
-				--menu \"\$prompt2\"              \
-				$height2 $width2 $rows2           \
-				$menu_list2                       \
-				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			) || break
+			if [ "$USE_ZENITY" ]; then
+				# Calculate title
+				local title="$DIALOG_TITLE"
+				[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+					title="$DIALOG_BACKTITLE: $title"
+
+				menu_choice=$( eval $DIALOG \
+					--title \"\$title\"             \
+					--ok-label \"\$msg_ok\"         \
+					--cancel-label \"\$msg_cancel\" \
+					--text \"\$prompt2\"            \
+					--height $height2               \
+					--width $width2                 \
+					--column=1                      \
+					--column=2                      \
+					--hide-header                   \
+					--list $menu_list2
+				)
+			else
+				menu_choice=$( eval $DIALOG \
+					--title \"\$title\"               \
+					--backtitle \"\$btitle\"          \
+					--hline \"\$hline\"               \
+					--ok-label \"\$msg_select\"       \
+					--cancel-label \"\$msg_cancel\"   \
+					--default-item \"\$defaultitem2\" \
+					--menu \"\$prompt2\"              \
+					$height2 $width2 $rows2           \
+					$menu_list2                       \
+					2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+				)
+			fi || break
 			f_dialog_data_sanitize menu_choice
 			defaultitem2="$menu_choice"
 
