@@ -1706,6 +1706,23 @@ f_dialog_pause()
 			--timeout "$duration"           \
 			--yesno "$pause_text"           \
 			$height $width
+	elif [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		$DIALOG \
+			--title "$title"             \
+			--ok-label "$msg_skip"	     \
+			--cancel-label "$msg_cancel" \
+			--text "$pause_text"         \
+			${noCancel:+--no-cancel}     \
+			--height $height             \
+			--width $width               \
+			--timeout "$duration"        \
+			--pulsate                    \
+			--progress
 	else
 		[ $duration -gt 0 ] && duration=$(( $duration - 1 ))
 		height=$(( $height + 3 )) # Add height for progress bar
