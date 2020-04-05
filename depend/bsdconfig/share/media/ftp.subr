@@ -203,20 +203,41 @@ f_dialog_menu_media_ftp()
 	                        $menu_list
 
 	local mtag
-	mtag=$( eval $DIALOG \
-		--title \"\$title\"             \
-		--backtitle \"\$btitle\"        \
-		--hline \"\$hline\"             \
-		--ok-label \"\$msg_ok\"         \
-		--cancel-label \"\$msg_cancel\" \
-		--menu \"\$prompt\"             \
-		$height $width $rows            \
-		$menu_list                      \
-		2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-	) || return $DIALOG_CANCEL
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		mtag=$( eval $DIALOG \
+			--title \"\$title\"             \
+			--ok-label \"\$msg_ok\"	        \
+			--cancel-label \"\$msg_cancel\" \
+			--text \"\$prompt\"             \
+			--height $height                \
+			--width $width                  \
+			--column=1                      \
+			--column=2                      \
+			--hide-header                   \
+			--list $menu_list
+		) || return $ZENITY_CANCEL
+	else
+		mtag=$( eval $DIALOG \
+			--title \"\$title\"             \
+			--backtitle \"\$btitle\"        \
+			--hline \"\$hline\"             \
+			--ok-label \"\$msg_ok\"         \
+			--cancel-label \"\$msg_cancel\" \
+			--menu \"\$prompt\"             \
+			$height $width $rows            \
+			$menu_list                      \
+			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+		) || return $DIALOG_CANCEL
+	fi
 	f_dialog_data_sanitize mtag
 
 	case "$mtag" in
+	"") f_dialog_menu_media_ftp ;;
 	URL) setvar $VAR_FTP_PATH "other" ;;
 	*)
 		local value
