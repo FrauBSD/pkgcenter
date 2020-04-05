@@ -203,32 +203,64 @@ f_media_options_menu()
 		                                  $menu_list
 
 		local mtag
-		mtag=$( eval $DIALOG \
-			--title \"\$title\"              \
-			--backtitle \"\$btitle\"         \
-			--hline \"\$hline\"              \
-			--item-help                      \
-			--ok-label \"\$msg_ok\"          \
-			--cancel-label \"\$msg_done\"    \
-			--help-button                    \
-			--help-label \"\$msg_help\"      \
-			--default-item \"\$defaultitem\" \
-			${USE_XDIALOG:+--help \"\"}      \
-			--menu \"\$prompt\"              \
-			$height $width $rows             \
-			$menu_list                       \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			# Calculate title
+			local title="$DIALOG_TITLE"
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+	
+			mtag=$( eval $DIALOG \
+				--title \"\$title\"             \
+				--ok-label \"\$msg_ok\"	        \
+				--cancel-label \"\$msg_done\"   \
+				--extra-button \"\$msg_help\"   \
+				--text \"\$prompt\"             \
+				--height $height                \
+				--width $width                  \
+				--column=1                      \
+				--column=2                      \
+				--column=3                      \
+				--hide-header                   \
+				--list $menu_list
+			)
+		else
+			mtag=$( eval $DIALOG \
+				--title \"\$title\"              \
+				--backtitle \"\$btitle\"         \
+				--hline \"\$hline\"              \
+				--item-help                      \
+				--ok-label \"\$msg_ok\"          \
+				--cancel-label \"\$msg_done\"    \
+				--help-button                    \
+				--help-label \"\$msg_help\"      \
+				--default-item \"\$defaultitem\" \
+				${USE_XDIALOG:+--help \"\"}      \
+				--menu \"\$prompt\"              \
+				$height $width $rows             \
+				$menu_list                       \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		local retval=$?
 		f_dialog_data_sanitize mtag
 		defaultitem="$mtag"
 		f_dprintf "retval=%s mtag=[%s]" $retval "$mtag"
 
-		if [ $retval -eq $DIALOG_HELP ]; then
-			f_show_help "$OPTIONS_HELPFILE"
-			continue
-		elif [ $retval -ne $DIALOG_OK ]; then
-			break # to success
+		if [ "$USE_ZENITY" ]; then
+			if [ $retval -eq $ZENITY_CANCEL ] && \
+				[ "$mtag" = "$msg_help" ]; then
+				f_show_help "$OPTIONS_HELPFILE"
+				continue
+			elif [ $retval -ne $ZENITY_OK ]; then
+				break # to success
+			fi
+		else
+			if [ $retval -eq $DIALOG_HELP ]; then
+				f_show_help "$OPTIONS_HELPFILE"
+				continue
+			elif [ $retval -ne $DIALOG_OK ]; then
+				break # to success
+			fi
 		fi
 
 		case "$mtag" in
