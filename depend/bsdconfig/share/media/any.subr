@@ -135,7 +135,8 @@ f_media_get_type()
 		f_dprintf "retval=%s mtag=[%s]" $retval "$mtag"
 
 		if [ "$USE_ZENITY" ]; then
-			if [ $retval -eq $ZENITY_CANCEL ] && [ "$mtag" = "$msg_help" ]; then
+			if [ $retval -eq $ZENITY_CANCEL ] && \
+				[ "$mtag" = "$msg_help" ]; then
 				f_show_help "$MEDIA_HELPFILE"
 				continue
 			elif [ $retval -ne $ZENITY_OK ]; then
