@@ -847,7 +847,7 @@ f_dialog_wireless_edit()
 
 				menu_choice=$( eval $DIALOG \
 					--title \"\$title\"             \
-					--ok-label \"\$msg_ok\"         \
+					--ok-label \"\$msg_select\"     \
 					--cancel-label \"\$msg_cancel\" \
 					--text \"\$prompt1\"            \
 					--height $height1               \
@@ -919,7 +919,7 @@ f_dialog_wireless_edit()
 
 				menu_choice=$( eval $DIALOG \
 					--title \"\$title\"             \
-					--ok-label \"\$msg_ok\"         \
+					--ok-label \"\$msg_select\"     \
 					--cancel-label \"\$msg_cancel\" \
 					--text \"\$prompt2\"            \
 					--height $height2               \
@@ -1354,7 +1354,7 @@ f_dialog_menu_wireless_edit()
 
 			menu_choice=$( eval $DIALOG \
 				--title \"\$title\"             \
-				--ok-label \"\$msg_ok\"	        \
+				--ok-label \"\$msg_select\"     \
 				--cancel-label \"\$msg_cancel\" \
 				--text \"\$prompt\"             \
 				--height $height                \
