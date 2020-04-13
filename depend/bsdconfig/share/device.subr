@@ -1201,28 +1201,66 @@ f_device_menu()
 
 	local mtag
 	while :; do
-		mtag=$( eval $DIALOG \
-			--title \"\$title\"             \
-			--backtitle \"\$btitle\"        \
-			--hline \"\$hline\"             \
-			--ok-label \"\$msg_ok\"         \
-			--cancel-label \"\$msg_cancel\" \
-			${helpfile:+                    \
-			  --help-button                 \
-			  --help-label \"\$msg_help\"   \
-			  ${USE_XDIALOG:+--help \"\"}   \
-			}                               \
-			--menu \"\$prompt\"             \
-			$height $width $rows            \
-			$menu_list                      \
-			2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-		)
+		if [ "$USE_ZENITY" ]; then
+			# Calculate title
+			local title="$DIALOG_TITLE"
+			[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+				title="$DIALOG_BACKTITLE: $title"
+
+			mtag=$( eval $DIALOG \
+				--title \"\$title\"             \
+				--ok-label \"\$msg_ok\"	        \
+				--cancel-label \"\$msg_cancel\" \
+				${helpfile:+                    \	
+				  --extra-button \"\$msg_help\" \
+				}                               \
+				--text \"\$prompt\"             \
+				--height $height                \
+				--width $width                  \
+				--column=1                      \
+				--column=2                      \
+				--hide-header                   \
+				--list $menu_list
+			)
+		else
+			mtag=$( eval $DIALOG \
+				--title \"\$title\"             \
+				--backtitle \"\$btitle\"        \
+				--hline \"\$hline\"             \
+				--ok-label \"\$msg_ok\"         \
+				--cancel-label \"\$msg_cancel\" \
+				${helpfile:+                    \
+				  --help-button                 \
+				  --help-label \"\$msg_help\"   \
+				  ${USE_XDIALOG:+--help \"\"}   \
+				}                               \
+				--menu \"\$prompt\"             \
+				$height $width $rows            \
+				$menu_list                      \
+				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
+			)
+		fi
 		local retval=$?
 
-		[ $retval -ne $DIALOG_HELP ] && break
-			# Otherwise, the Help button was pressed
-		f_show_help "$helpfile"
-			# ...then loop back to menu
+		# Loop menu on no-selection (zenity specific)
+		if [ -z $mtag ]; then
+			continue
+		fi
+
+		if [ "$USE_ZENITY" ]; then
+			if [ $retval -eq $ZENITY_CANCEL ] && \
+				[ "$mtag" = "$msg_help" ]; then
+				f_show_help "$helpfile"
+			else
+				break
+			fi
+		else
+			if [ $retval -ne $DIALOG_HELP ]; then
+				break
+			else
+				f_show_help "$helpfile"
+			fi
+		fi
 	done
 	f_dprintf "retval=%u mtag=[%s]" $retval "$mtag"
 
