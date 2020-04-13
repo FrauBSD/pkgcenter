@@ -1378,8 +1378,8 @@ f_dialog_menu_wireless_edit()
 				$height $width $rows             \
 				$menu_list                       \
 				2>&1 >&$DIALOG_TERMINAL_PASSTHRU_FD
-			) || break
-		fi
+			)
+		fi || break
 		f_dialog_data_sanitize menu_choice
 		defaultitem="$menu_choice"
 
