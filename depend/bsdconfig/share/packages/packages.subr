@@ -647,17 +647,36 @@ f_package_review()
 	                        $menu_list
 
 	# Show the review menu (ignore menu choice)
-	eval $DIALOG \
-		--title \"\$DIALOG_TITLE\"         \
-		--backtitle \"\$DIALOG_BACKTITLE\" \
-		--hline \"\$hline\"                \
-		--ok-label \"\$msg_proceed\"       \
-		--cancel-label \"\$msg_cancel\"    \
-		--menu \"\$prompt\"                \
-		$height $width $rows               \
-		$menu_list                         \
-		2> /dev/null || return $?
-			# Return if the user pressed ESC or chose Cancel/No
+	if [ "$USE_ZENITY" ]; then
+		# Calculate title
+		local title="$DIALOG_TITLE"
+		[ "${DIALOG_BACKTITLE:-$title}" = "$DIALOG_TITLE" ] ||
+			title="$DIALOG_BACKTITLE: $title"
+
+		eval $DIALOG \
+			--title \"\$title\"             \
+			--ok-label \"\$msg_proceed\"	\
+			--cancel-label \"\$msg_cancel\" \
+			--text \"\$prompt\"             \
+			--height $height                \
+			--width $width                  \
+			--column=1                      \
+			--column=2                      \
+			--hide-header                   \
+			--list $menu_list
+	else
+		eval $DIALOG \
+			--title \"\$DIALOG_TITLE\"         \
+			--backtitle \"\$DIALOG_BACKTITLE\" \
+			--hline \"\$hline\"                \
+			--ok-label \"\$msg_proceed\"       \
+			--cancel-label \"\$msg_cancel\"    \
+			--menu \"\$prompt\"                \
+			$height $width $rows               \
+			$menu_list                         \
+			2> /dev/null
+	fi || return $?
+	# Return if the user pressed ESC or chose Cancel/No
 
 	#
 	# Process each of the selected packages:
