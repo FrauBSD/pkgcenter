@@ -393,6 +393,9 @@ main(int argc, char *argv[])
 		case 'X': /* X11 support through x11/xdialog */
 			config->display_type = DPV_DISPLAY_XDIALOG;
 			break;
+		case 'Z': /* X11 support through x11/zenity */
+			config->display_type = DPV_DISPLAY_ZENITY;
+			break;
 		case '?': /* unknown argument (based on optstring) */
 			/* FALLTHROUGH */
 		default: /* unhandled argument (based on switch) */
@@ -541,5 +544,7 @@ usage(void)
 	    "Send data to executed cmd. First %s replaced with label.");
 	fprintf(stderr, OPTFMT, "-X",
 	    "X11. Use Xdialog(1) instead of dialog(1).");
+	fprintf(stderr, OPTFMT, "-Z",
+	    "X11. Use zenity(1) instead of dialog(1).");
 	exit(EXIT_FAILURE);
 }
