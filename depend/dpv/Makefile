@@ -1,4 +1,6 @@
-# $FreeBSD: head/usr.bin/dpv/Makefile 275042 2014-11-25 14:29:10Z bapt $
+# $FreeBSD: head/usr.bin/dpv/Makefile 350133 2019-07-19 15:10:53Z manu $
+
+PACKAGE=	dpv
 
 PROG=		dpv
 

@@ -32,7 +32,6 @@
 #include <sys/cdefs.h>
 
 #include "dpv.h"
-#include "dpv_private.h"
 
 /* Display characteristics */
 #define ENV_MSG_DONE	"msg_done"

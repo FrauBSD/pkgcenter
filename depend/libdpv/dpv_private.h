@@ -31,8 +31,6 @@
 
 #include <sys/types.h>
 
-#include <stdint.h>
-
 /* Debugging */
 extern uint8_t debug;
 
@@ -65,29 +63,5 @@ enum dprompt_state {
 	DPROMPT_CUSTOM_MSG,	/* dpv_file_node->msg */
 	DPROMPT_MINIMAL,	/* whitespace */
 };
-
-/* compatibility */
-#ifndef __DECONST
-#  define __DECONST(type, var) ((type)(uintptr_t)(const void *)(var))
-#endif
-#ifndef __unused
-# ifdef __GNUC__
-#   define __unused __attribute__((unused))
-# else
-#   define __unused
-# endif
-#endif
-#ifndef restrict
-# ifdef __GNUC__
-#   define restrict __restrict__
-# elif defined(__SUNPRO_CC) && defined(__RESTRICT)
-#   define restrict __RESTRICT
-# else
-#   define restrict
-# endif
-#endif
-#ifdef __APPLE__
-#  define strtonum(nptr,minval,maxval,errstr) strtoll(nptr,(char **)NULL,10)
-#endif
 
 #endif /* !_DPV_PRIVATE_H_ */

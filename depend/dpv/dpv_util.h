@@ -65,13 +65,4 @@
 #define LINE_STATUS_SOLO	"%'10lli lines read @ %'9.1f lines/sec."
 #define LINE_STATUS_MANY	(LINE_STATUS_SOLO " [%i/%i busy/wait]")
 
-/* compatibility */
-#ifndef __unused
-# ifdef __GNUC__
-#   define __unused __attribute__((unused))
-# else
-#   define __unused
-# endif
-#endif
-
 #endif /* !_DPV_UTIL_H_ */

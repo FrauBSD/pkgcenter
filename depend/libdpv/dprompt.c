@@ -25,24 +25,14 @@
  */
 
 #include <sys/cdefs.h>
-#ifdef __FBSDID
 __FBSDID("$FreeBSD: head/lib/libdpv/dprompt.c 335264 2018-06-16 20:00:41Z dteske $");
-#endif
 
 #include <sys/types.h>
 
-#ifndef _BSD_SOURCE
 #define _BSD_SOURCE /* to get dprintf() prototype in stdio.h below */
-#endif
 #include <dialog.h>
 #include <err.h>
-#ifdef __linux__
-#include <bsd/libutil.h>
-#elif !defined(__APPLE__)
 #include <libutil.h>
-#else
-#include <inttypes.h>
-#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +44,7 @@ __FBSDID("$FreeBSD: head/lib/libdpv/dprompt.c 335264 2018-06-16 20:00:41Z dteske
 #include "dialogrc.h"
 #include "dprompt.h"
 #include "dpv.h"
+#include "dpv_private.h"
 
 #define FLABEL_MAX 1024
 
@@ -593,15 +584,8 @@ dprompt_add_files(struct dpv_file_node *file_list,
 				    estext_rsize, "");
 			break;
 		case DPROMPT_DETAILS: /* Past/Current file(s) */
-#ifdef __linux__
-			humanize_number(human, pbar_size + 2, fp->read, " ",
-			    HN_AUTOSCALE, HN_NOSPACE | HN_DIVISOR_1000);
-#elif !defined(__APPLE__)
 			humanize_number(human, pbar_size + 2, fp->read, "",
 			    HN_AUTOSCALE, HN_NOSPACE | HN_DIVISOR_1000);
-#else
-			snprintf(human, sizeof(human), "%"PRIu64, fp->read);
-#endif
 
 			/* Calculate center alignment */
 			hlen = (int)strlen(human);

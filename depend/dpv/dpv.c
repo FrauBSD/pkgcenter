@@ -25,16 +25,12 @@
  */
 
 #include <sys/cdefs.h>
-#ifdef __FBSDID
 __FBSDID("$FreeBSD: head/usr.bin/dpv/dpv.c 294863 2016-01-27 00:03:43Z dteske $");
-#endif
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifndef _BSD_SOURCE
 #define _BSD_SOURCE /* to get dprintf() prototype in stdio.h below */
-#endif
 #include <dialog.h>
 #include <dpv.h>
 #include <err.h>
@@ -103,11 +99,7 @@ operate_common(struct dpv_file_node *file, int out)
 			fd = STDIN_FILENO;
 			if (isatty(fd)) {
 				fd = open("/dev/stdin", O_RDONLY);
-#if defined(__linux__) || defined(__APPLE__)
-				close(fd++);
-#else
 				close(fd--);
-#endif
 			}
 
 			/* This answer might be wrong, if dpv(3) has (by

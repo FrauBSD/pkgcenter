@@ -31,8 +31,6 @@
 
 #include <sys/types.h>
 
-#include <stdint.h>
-
 #ifndef TRUE
 #define TRUE 1
 #endif

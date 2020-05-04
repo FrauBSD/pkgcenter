@@ -25,22 +25,15 @@
  */
 
 #include <sys/cdefs.h>
-#ifdef __FBSDID
 __FBSDID("$FreeBSD: head/lib/libdpv/util.c 330943 2018-03-14 19:23:17Z dteske $");
-#endif
 
 #include <err.h>
 #include <limits.h>
 #include <spawn.h>
-#ifdef __linux__
-#include <bsd/stdio.h>
-#else
 #include <stdio.h>
-#endif
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "dpv_private.h"
 #include "util.h"
 
 extern char **environ;
