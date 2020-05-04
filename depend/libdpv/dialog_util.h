@@ -35,7 +35,7 @@
 
 #define DIALOG_SPAWN_DEBUG	0	/* Debug spawning of [X]dialog(1) */
 
-/* dialog(3), [X]dialog(1) and zenity(1) characteristics */
+/* dialog(3), [X]dialog(1), and zenity(1) characteristics */
 #define DIALOG		"dialog"
 #define XDIALOG		"Xdialog"
 #define ZENITY		"zenity"
