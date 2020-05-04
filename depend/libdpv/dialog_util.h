@@ -35,9 +35,10 @@
 
 #define DIALOG_SPAWN_DEBUG	0	/* Debug spawning of [X]dialog(1) */
 
-/* dialog(3) and [X]dialog(1) characteristics */
+/* dialog(3), [X]dialog(1) and zenity(1) characteristics */
 #define DIALOG		"dialog"
 #define XDIALOG		"Xdialog"
+#define ZENITY		"zenity"
 #define PROMPT_MAX	16384
 #define ENV_DIALOG	"DIALOG"
 #define ENV_USE_COLOR	"USE_COLOR"
@@ -46,6 +47,7 @@ extern uint8_t dialog_test;
 extern uint8_t use_libdialog;
 extern uint8_t use_dialog;
 extern uint8_t use_xdialog;
+extern uint8_t use_zenity;
 extern uint8_t use_color;
 extern char dialog[];
 

@@ -54,6 +54,7 @@ uint8_t dialog_test	= 0;
 uint8_t use_dialog	= 0;
 uint8_t use_libdialog	= 1;
 uint8_t use_xdialog	= 0;
+uint8_t use_zenity	= 0;
 uint8_t use_color	= 1;
 char dialog[PATH_MAX]	= DIALOG;
 
