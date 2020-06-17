@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2013-2018 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2013-2020 Devin Teske <dteske@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -149,15 +149,16 @@ x11_maxsize_update(void)
 	if (strncmp(rbuf, "Xdialog: Error", 14) == 0)
 		return;
 
-	/* Parse expected output: MaxSize: YY, XXX */
+	/* Check expected output: MaxSize: YY, XXX */
 	if ((rows = strchr(rbuf, ' ')) == NULL)
 		return;
-	if ((cols = strchr(rows, ',')) != NULL) {
-		/* strtonum(3) doesn't like trailing junk */
-		*(cols++) = '\0';
-		if ((cp = strchr(cols, '\n')) != NULL)
-			*cp = '\0';
-	}
+	if ((cols = strchr(rows, ',')) == NULL)
+		return;
+
+	/* strtonum(3) doesn't like trailing junk */
+	*(cols++) = '\0';
+	if ((cp = strchr(cols, '\n')) != NULL)
+		*cp = '\0';
 
 	/* Convert to unsigned short */
 	maxsize->ws_row = (unsigned short)strtonum(

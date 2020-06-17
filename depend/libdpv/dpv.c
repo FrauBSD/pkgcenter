@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2013-2016 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2013-2020 Devin Teske <dteske@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -244,12 +244,14 @@ dpv(struct dpv_config *config, struct dpv_file_node *file_list)
 		use_dialog	= FALSE;
 		use_libdialog	= FALSE;
 		use_xdialog	= FALSE;
+		use_zenity	= FALSE;
 		break;
 	case DPV_DISPLAY_DIALOG:
 		use_color	= TRUE;
 		use_dialog	= TRUE;
 		use_libdialog	= FALSE;
 		use_xdialog	= FALSE;
+		use_zenity	= FALSE;
 		break;
 	case DPV_DISPLAY_XDIALOG:
 		snprintf(dialog, PATH_MAX, XDIALOG);
@@ -257,12 +259,22 @@ dpv(struct dpv_config *config, struct dpv_file_node *file_list)
 		use_dialog	= FALSE;
 		use_libdialog	= FALSE;
 		use_xdialog	= TRUE;
+		use_zenity	= FALSE;
+		break;
+	case DPV_DISPLAY_ZENITY:
+		snprintf(dialog, PATH_MAX, ZENITY);
+		use_color	= FALSE;
+		use_dialog	= FALSE;
+		use_libdialog	= FALSE;
+		use_xdialog	= FALSE;
+		use_zenity	= TRUE;
 		break;
 	default:
 		use_color	= TRUE;
 		use_dialog	= FALSE;
 		use_libdialog	= TRUE;
 		use_xdialog	= FALSE;
+		use_zenity	= FALSE;
 		break;
 	} /* display_type */
 
@@ -375,7 +387,8 @@ dpv(struct dpv_config *config, struct dpv_file_node *file_list)
 	/* Print some debugging information */
 	if (debug) {
 		warnx("%s: %s(%i) max rows x cols = %i x %i",
-		    __func__, use_xdialog ? XDIALOG : DIALOG,
+		    __func__, use_zenity ? ZENITY :
+		    use_xdialog ? XDIALOG : DIALOG,
 		    use_libdialog ? 3 : 1, dialog_maxrows(),
 		    dialog_maxcols());
 	}

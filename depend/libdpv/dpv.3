@@ -1,4 +1,4 @@
-.\" Copyright (c) 2013-2018 Devin Teske
+.\" Copyright (c) 2013-2020 Devin Teske
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,7 @@ enum dpv_display {
     DPV_DISPLAY_STDOUT,        /* Use stdout */
     DPV_DISPLAY_DIALOG,        /* Use spawned dialog(1) */
     DPV_DISPLAY_XDIALOG,       /* Use spawned Xdialog(1) */
+    DPV_DISPLAY_ZENITY,        /* Use spawned zenity(1) */
 };
 
 enum dpv_output {
@@ -403,16 +404,20 @@ The below environment variables are referenced by
 .It Ev DIALOG
 Override command string used to launch
 .Xr dialog 1
-.Pq requires Dv DPV_DISPLAY_DIALOG
-or
+.Pq requires Dv DPV_DISPLAY_DIALOG ,
 .Xr Xdialog 1
-.Pq requires Dv DPV_DISPLAY_XDIALOG ;
+.Pq requires Dv DPV_DISPLAY_XDIALOG ,
+or
+.Xr zenity 1
+.Pq requires Dv DPV_DISPLAY_ZENITY ;
 default is either
 .Ql dialog
-.Pq for Dv DPV_DISPLAY_DIALOG
-or
+.Pq for Dv DPV_DISPLAY_DIALOG ,
 .Ql Xdialog
-.Pq for Dv DPV_DISPLAY_XDIALOG .
+.Pq for Dv DPV_DISPLAY_XDIALOG ,
+or
+.Ql zenity
+.Pq for Dv DPV_DISPLAY_ZENITY .
 .It Ev DIALOGRC
 If set and non-NULL,
 path to
