@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2013-2016 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2013-2020 Devin Teske <dteske@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -279,7 +279,7 @@ main(int argc, char *argv[])
 	 * Process command-line options
 	 */
 	while ((ch = getopt(argc, argv,
-	    "a:b:dDhi:I:klL:mn:No:p:P:t:TU:wx:X")) != -1) {
+	    "a:b:dDhi:I:klL:mn:No:p:P:t:TU:wx:XZ")) != -1) {
 		switch(ch) {
 		case 'a': /* additional message text to append */
 			if (config->aprompt == NULL) {
@@ -400,6 +400,9 @@ main(int argc, char *argv[])
 			break;
 		case 'X': /* X11 support through x11/xdialog */
 			config->display_type = DPV_DISPLAY_XDIALOG;
+			break;
+		case 'Z': /* X11 support through x11/zenity */
+			config->display_type = DPV_DISPLAY_ZENITY;
 			break;
 		case '?': /* unknown argument (based on optstring) */
 			/* FALLTHROUGH */
