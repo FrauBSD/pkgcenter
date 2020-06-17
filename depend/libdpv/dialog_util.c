@@ -25,7 +25,9 @@
  */
 
 #include <sys/cdefs.h>
+#ifdef __FBSDID
 __FBSDID("$FreeBSD: head/lib/libdpv/dialog_util.c 330943 2018-03-14 19:23:17Z dteske $");
+#endif
 
 #include <sys/ioctl.h>
 
@@ -35,7 +37,11 @@ __FBSDID("$FreeBSD: head/lib/libdpv/dialog_util.c 330943 2018-03-14 19:23:17Z dt
 #include <limits.h>
 #include <spawn.h>
 #include <stdio.h>
+#ifdef __linux__
+#include <bsd/stdlib.h>
+#else
 #include <stdlib.h>
+#endif
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>

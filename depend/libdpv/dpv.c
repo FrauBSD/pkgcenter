@@ -25,7 +25,9 @@
  */
 
 #include <sys/cdefs.h>
+#ifdef __FBSDID
 __FBSDID("$FreeBSD: head/lib/libdpv/dpv.c 294862 2016-01-27 00:02:51Z dteske $");
+#endif
 
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -37,7 +39,11 @@ __FBSDID("$FreeBSD: head/lib/libdpv/dpv.c 294862 2016-01-27 00:02:51Z dteske $")
 #include <err.h>
 #include <limits.h>
 #include <locale.h>
+#ifdef __linux__
+#include <bsd/stdio.h>
+#else
 #include <stdio.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <string_m.h>

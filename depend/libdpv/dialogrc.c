@@ -25,7 +25,9 @@
  */
 
 #include <sys/cdefs.h>
+#ifdef __FBSDID
 __FBSDID("$FreeBSD: head/lib/libdpv/dialogrc.c 290275 2015-11-02 20:03:59Z dteske $");
+#endif
 
 #include <sys/types.h>
 
@@ -39,6 +41,7 @@ __FBSDID("$FreeBSD: head/lib/libdpv/dialogrc.c 290275 2015-11-02 20:03:59Z dtesk
 #include <string_m.h>
 
 #include "dialogrc.h"
+#include "dpv_private.h"
 
 #define STR_BUFSIZE 255
 
