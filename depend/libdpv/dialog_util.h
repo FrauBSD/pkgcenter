@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2013-2014 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2013-2020 Devin Teske <dteske@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 /* dialog(3) and [X]dialog(1) characteristics */
 #define DIALOG		"dialog"
 #define XDIALOG		"Xdialog"
+#define ZENITY		"zenity"
 #define PROMPT_MAX	16384
 #define ENV_DIALOG	"DIALOG"
 #define ENV_USE_COLOR	"USE_COLOR"
@@ -46,6 +47,7 @@ extern uint8_t dialog_test;
 extern uint8_t use_libdialog;
 extern uint8_t use_dialog;
 extern uint8_t use_xdialog;
+extern uint8_t use_zenity;
 extern uint8_t use_color;
 extern char dialog[];
 

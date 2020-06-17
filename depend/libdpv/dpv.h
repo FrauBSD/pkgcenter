@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2013-2016 Devin Teske <dteske@FreeBSD.org>
+ * Copyright (c) 2013-2020 Devin Teske <dteske@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@ enum dpv_display {
 	DPV_DISPLAY_STDOUT,		/* Display on stdout */
 	DPV_DISPLAY_DIALOG,		/* Display using spawned dialog(1) */
 	DPV_DISPLAY_XDIALOG,		/* Display using spawned Xdialog(1) */
+	DPV_DISPLAY_ZENITY,		/* Display using spawned zenity(1) */
 };
 
 /*
