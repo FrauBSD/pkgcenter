@@ -92,6 +92,7 @@ static void
 tty_maxsize_update(void)
 {
 	int fd = STDIN_FILENO;
+	int opened = 0;
 	struct termios t;
 
 	if (maxsize == NULL) {
@@ -100,12 +101,18 @@ tty_maxsize_update(void)
 		memset((void *)maxsize, '\0', sizeof(struct winsize));
 	}
 
-	if (!isatty(fd))
+	if (!isatty(fd)) {
 		fd = open("/dev/tty", O_RDONLY);
+		if (fd < 0)
+			err(EXIT_FAILURE, "Unable to open /dev/tty");
+		opened = 1;
+	}
 	if ((tcgetattr(fd, &t) < 0) || (ioctl(fd, TIOCGWINSZ, maxsize) < 0)) {
 		maxsize->ws_row = TTY_DEFAULT_ROWS;
 		maxsize->ws_col = TTY_DEFAULT_COLS;
 	}
+	if (opened)
+		(void)close(fd);
 }
 
 /*
@@ -148,7 +155,11 @@ x11_maxsize_update(void)
 	}
 
 	/* Read in the line returned from Xdialog(1) */
-	if ((fgets(rbuf, LINE_MAX, f) == NULL) || (pclose(f) < 0))
+	if (fgets(rbuf, LINE_MAX, f) == NULL) {
+		(void)pclose(f);
+		return;
+	}
+	if (pclose(f) < 0)
 		return;
 
 	/* Check for X11-related errors */
