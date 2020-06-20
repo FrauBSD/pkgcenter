@@ -302,6 +302,15 @@ dialog_spawn_gauge(char *init_prompt, pid_t *pid)
 			errx(EXIT_FAILURE, "Out of memory?!");
 		sprintf(dargv[n++], "--wrap");
 	}
+	if (use_zenity) {
+		if ((dargv[n] = malloc(10)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+		sprintf(dargv[n++], "--progress");
+
+		if ((dargv[n] = malloc(10)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+		sprintf(dargv[n++], "--text");
+	}
 	if ((dargv[n] = malloc(8)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 	if (!use_zenity)
