@@ -309,6 +309,14 @@ dialog_spawn_gauge(char *init_prompt, pid_t *pid)
 
 		if ((dargv[n] = malloc(10)) == NULL)
 			errx(EXIT_FAILURE, "Out of memory?!");
+		sprintf(dargv[n++], "--no-cancel");
+
+		if ((dargv[n] = malloc(10)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+		sprintf(dargv[n++], "--auto-close");
+
+		if ((dargv[n] = malloc(10)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
 		sprintf(dargv[n++], "--text");
 	}
 	if ((dargv[n] = malloc(8)) == NULL)
