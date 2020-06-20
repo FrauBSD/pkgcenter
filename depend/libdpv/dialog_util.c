@@ -304,11 +304,22 @@ dialog_spawn_gauge(char *init_prompt, pid_t *pid)
 	}
 	if ((dargv[n] = malloc(8)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
-	sprintf(dargv[n++], "--gauge");
+	if (!use_zenity)
+		sprintf(dargv[n++], "--gauge");
 	dargv[n++] = use_xdialog ? dummy_init : init_prompt;
+	if (use_zenity) {
+		if ((dargv[n] = malloc(40)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+		sprintf(dargv[n++], "--height");
+	}
 	if ((dargv[n] = malloc(40)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 	snprintf(dargv[n++], 40, "%u", height);
+	if (use_zenity) {
+		if ((dargv[n] = malloc(40)) == NULL)
+			errx(EXIT_FAILURE, "Out of memory?!");
+		sprintf(dargv[n++], "--width");
+	}
 	if ((dargv[n] = malloc(40)) == NULL)
 		errx(EXIT_FAILURE, "Out of memory?!");
 	snprintf(dargv[n++], 40, "%u", width);
