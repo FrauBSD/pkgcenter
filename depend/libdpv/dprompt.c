@@ -245,6 +245,12 @@ dprompt_init(struct dpv_file_node *file_list)
 	dheight += dialog_prompt_wrappedlines(pprompt, dwidth - 4, 0);
 	dheight += dialog_prompt_wrappedlines(aprompt, dwidth - 4, 1);
 
+	/* If using zenity(1), adjust based on font height (in pixels) */
+	if (use_zenity) {
+		dheight = dheight * 19 + 1;
+		dwidth = dwidth * 7 + 2 * dwidth / 3; /* 666% */
+	}
+
 	if (debug)
 		warnx("dheight = %i dwidth = %i fheight = %i",
 		    dheight, dwidth, fheight);
