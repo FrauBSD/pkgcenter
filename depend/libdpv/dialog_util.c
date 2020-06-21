@@ -303,10 +303,12 @@ int
 tty_maxcols(void)
 {
 
-	if (use_xdialog && maxsize == NULL)
-		x11_maxsize_update(); /* initialize maxsize for GUI */
-	else if (!use_xdialog)
+	if (use_xdialog || use_zenity) {
+		if (maxsize == NULL)
+			x11_maxsize_update(); /* initialize maxsize for GUI */
+	} else {
 		tty_maxsize_update(); /* update maxsize for TTY */
+	}
 
 	return (maxsize->ws_col);
 }
