@@ -33,12 +33,13 @@
 
 #include "dialogrc.h"
 
-#define DIALOG_SPAWN_DEBUG	0	/* Debug spawning of [X]dialog(1) */
+#define DIALOG_SPAWN_DEBUG	0	/* Debug posix_spawnp(2)/popen(3) */
 
 /* dialog(3), [X]dialog(1), and zenity(1) characteristics */
 #define DIALOG		"dialog"
 #define XDIALOG		"Xdialog"
 #define ZENITY		"zenity"
+#define ZENITY_SCALE	0.9 /* max height/width adjustment */
 #define PROMPT_MAX	16384
 #define ENV_DIALOG	"DIALOG"
 #define ENV_USE_COLOR	"USE_COLOR"

@@ -130,10 +130,11 @@ tty_maxsize_update(void)
 static void
 x11_maxsize_update(void)
 {
+	int8_t use_xrandr = 0;
 	FILE *f = NULL;
-	char *cols;
+	char *cols = NULL;
 	char *cp;
-	char *rows;
+	char *rows = NULL;
 	char cmdbuf[LINE_MAX];
 	char rbuf[LINE_MAX];
 
@@ -144,44 +145,116 @@ x11_maxsize_update(void)
 	}
 
 	/* Assemble the command necessary to get X11 sizes */
-	snprintf(cmdbuf, LINE_MAX, "%s --print-maxsize 2>&1", dialog);
+	if (use_xdialog) {
+		snprintf(cmdbuf, LINE_MAX, "%s --print-maxsize 2>&1", dialog);
+	} else {
+		snprintf(cmdbuf, LINE_MAX, "xwininfo -root");
+	}
 
 	fflush(STDIN_FILENO); /* prevent popen(3) from seeking on stdin */
 
+#if DIALOG_SPAWN_DEBUG
+	fprintf(stderr, "%s: spawning `%s'\n", __func__, cmdbuf);
+#endif
 	if ((f = popen(cmdbuf, "r")) == NULL) {
-		if (debug)
-			warnx("WARNING! Command `%s' failed", cmdbuf);
-		return;
+		if (use_xdialog) {
+			if (debug)
+				warnx("WARNING! Command `%s' failed", cmdbuf);
+			return;
+		} else {
+			use_xrandr = 1;
+		}
+	}
+	if (use_xrandr) {
+		snprintf(cmdbuf, LINE_MAX, "xrandr");
+#if DIALOG_SPAWN_DEBUG
+		fprintf(stderr, "%s: spawning `%s'\n", __func__, cmdbuf);
+#endif
+		if ((f = popen(cmdbuf, "r")) == NULL) {
+			if (debug)
+				warnx("WARNING! Command `%s' failed", cmdbuf);
+			return;
+		}
 	}
 
-	/* Read in the line returned from Xdialog(1) */
-	if (fgets(rbuf, LINE_MAX, f) == NULL) {
-		(void)pclose(f);
-		return;
+	if (use_xdialog) {
+		/* Read in the line returned from Xdialog(1) */
+		if (fgets(rbuf, LINE_MAX, f) == NULL) {
+			(void)pclose(f);
+			return;
+		}
+		if (pclose(f) < 0)
+			return;
+
+		/* Check for X11-related errors */
+		if (strncmp(rbuf, "Xdialog: Error", 14) == 0)
+			return;
+
+		/* Check expected output: MaxSize: YY, XXX */
+		if ((rows = strchr(rbuf, ' ')) == NULL)
+			return;
+		if ((cols = strchr(rows, ',')) == NULL)
+			return;
+
+		/* strtonum(3) doesn't like trailing junk */
+		*(cols++) = '\0';
+		if ((cp = strchr(cols, '\n')) != NULL)
+			*cp = '\0';
+	} else if (use_xrandr) {
+		while (fgets(rbuf, LINE_MAX, f) != NULL) {
+#if DIALOG_SPAWN_DEBUG
+			fprintf(stderr, "%s: xrandr: %s", __func__, rbuf);
+#endif
+			if ((cols = strstr(rbuf, "current ")) == NULL)
+				continue;
+			break;
+		}
+		if (pclose(f) < 0 || cols == NULL)
+			return;
+
+		cols += 8;
+		if ((rows = strchr(cols, 'x')) == NULL)
+			return;
+		*(rows - 1) = '\0';
+		rows += 2;
+
+		/* strtonum(3) doesn't like trailing junk */
+		if ((cp = strchr(rows, ',')) != NULL)
+			*cp = '\0';
+		else if ((cp = strchr(rows, '\n')) != NULL)
+			*cp = '\0';
+	} else {
+		while (fgets(rbuf, LINE_MAX, f) != NULL) {
+#if DIALOG_SPAWN_DEBUG
+			fprintf(stderr, "%s: xwininfo: %s", __func__, rbuf);
+#endif
+			if (strncmp(rbuf, "  Width: ", 9) == 0) {
+				if ((cols = malloc(LINE_MAX)) == NULL)
+					errx(EXIT_FAILURE, "Out of memory?!");
+				strncpy(cols, rbuf + 9, strlen(rbuf) - 10);
+			} else if (strncmp(rbuf, "  Height: ", 10) == 0) {
+				if ((rows = malloc(LINE_MAX)) == NULL)
+					errx(EXIT_FAILURE, "Out of memory?!");
+				strncpy(rows, rbuf + 10, strlen(rbuf) - 11);
+			}
+			if (rows != NULL && cols != NULL)
+				break;
+		}
+		if (pclose(f) < 0 || rows == NULL || cols == NULL)
+			return;
 	}
-	if (pclose(f) < 0)
-		return;
-
-	/* Check for X11-related errors */
-	if (strncmp(rbuf, "Xdialog: Error", 14) == 0)
-		return;
-
-	/* Check expected output: MaxSize: YY, XXX */
-	if ((rows = strchr(rbuf, ' ')) == NULL)
-		return;
-	if ((cols = strchr(rows, ',')) == NULL)
-		return;
-
-	/* strtonum(3) doesn't like trailing junk */
-	*(cols++) = '\0';
-	if ((cp = strchr(cols, '\n')) != NULL)
-		*cp = '\0';
 
 	/* Convert to unsigned short */
 	maxsize->ws_row = (unsigned short)strtonum(
 	    rows, 0, USHRT_MAX, (const char **)NULL);
 	maxsize->ws_col = (unsigned short)strtonum(
 	    cols, 0, USHRT_MAX, (const char **)NULL);
+
+	/* Adjust size for zenity(1) */
+	if (use_zenity) {
+		maxsize->ws_row *= ZENITY_SCALE;
+		maxsize->ws_col *= ZENITY_SCALE;
+	}
 }
 
 /*
@@ -191,10 +264,12 @@ int
 dialog_maxrows(void)
 {
 
-	if (use_xdialog && maxsize == NULL)
-		x11_maxsize_update(); /* initialize maxsize for GUI */
-	else if (!use_xdialog)
+	if (use_xdialog || use_zenity) {
+		if (maxsize == NULL)
+			x11_maxsize_update(); /* initialize maxsize for GUI */
+	} else {
 		tty_maxsize_update(); /* update maxsize for TTY */
+	}
 	return (maxsize->ws_row);
 }
 
@@ -205,10 +280,12 @@ int
 dialog_maxcols(void)
 {
 
-	if (use_xdialog && maxsize == NULL)
-		x11_maxsize_update(); /* initialize maxsize for GUI */
-	else if (!use_xdialog)
+	if (use_xdialog || use_zenity) {
+		if (maxsize == NULL)
+			x11_maxsize_update(); /* initialize maxsize for GUI */
+	} else {
 		tty_maxsize_update(); /* update maxsize for TTY */
+	}
 
 	if (use_dialog || use_libdialog) {
 		if (use_shadow)
