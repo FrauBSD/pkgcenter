@@ -30,6 +30,7 @@ __FBSDID("$FreeBSD$");
 
 #include <sys/param.h>
 
+#include <ctype.h>
 #include <fcntl.h>
 #include <libgen.h>
 #include <paths.h>
@@ -69,16 +70,16 @@ extern uint8_t found;
 #endif
 
 /*
- * Search for config option (struct fp_config) in the array of config
+ * Search for config option (struct figput_config) in the array of config
  * options and set the value of the struct whose directive matches the given
  * parameter. On success, returns 1, otherwise 0.
  */
 int
-set_config_option(struct fp_config options[], const char *directive,
-    union fp_cfgvalue *value)
+set_config_option(struct figput_config options[], const char *directive,
+    union figput_cfgvalue *value)
 {
 	uint32_t n;
-	struct fp_config *found = NULL;
+	struct figput_config *found = NULL;
 
 	/* Check arguments */
 	if (options == NULL || directive == NULL)
@@ -100,17 +101,29 @@ set_config_option(struct fp_config options[], const char *directive,
 }
 
 int
-put_config(struct fp_config options[], const char *path, uint8_t put_options)
+put_config(struct figput_config options[], const char *path,
+    uint16_t processing_options, uint16_t put_options)
 {
 	uint8_t backup;
+	uint8_t bequals;
+	uint8_t bsemicolon;
+	uint8_t case_sensitive;
+	uint8_t comment = 0;
 	uint8_t emptyok;
+	uint8_t missing;
 	uint8_t nodflt;
 	uint8_t nodup;
+	uint8_t require_equals;
+	uint8_t strict_equals;
 	uint8_t unquoted;
+	char p[2];
 	const char *tmpdir;
 	int fd;
 	int tmpfd;
 	ssize_t r = 1;
+	struct figput_config *option;
+	uint32_t line = 1;
+	uint32_t n;
 	char rpath[PATH_MAX];
 	char tpath[PATH_MAX];
 
@@ -118,12 +131,23 @@ put_config(struct fp_config options[], const char *path, uint8_t put_options)
 	if (options == NULL)
 		return (-1);
 
+	/* Reading options from processing_options */
+	bequals = (processing_options & FIGPAR_BREAK_ON_EQUALS) == 0 ? 0 : 1;
+	bsemicolon =
+	    (processing_options & FIGPAR_BREAK_ON_EQUALS) == 0 ? 0 : 1;
+	case_sensitive =
+	    (processing_options & FIGPAR_CASE_SENSITIVE) == 0 ? 0 : 1;
+	require_equals =
+	    (processing_options & FIGPAR_REQUIRE_EQUALS) == 0 ? 0 : 1;
+	strict_equals =
+	    (processing_options & FIGPAR_STRICT_EQUALS) == 0 ? 0 : 1;
+
 	/* Writing options from put_options */
-	backup   = (put_options & FP_SAVE_BACKUP)        == 0 ? 0 : 1;
-	emptyok  = (put_options & FP_SAVE_ALLOW_EMPTY)   == 0 ? 0 : 1;
-	nodflt   = (put_options & FP_NO_SAVE_DEFAULTS)   == 0 ? 0 : 1;
-	nodup    = (put_options & FP_NO_SAVE_DUPLICATES) == 0 ? 0 : 1;
-	unquoted = (put_options & FP_SAVE_UNQUOTED)      == 0 ? 0 : 1;
+	backup   = (put_options & FIGPUT_SAVE_BACKUP)        == 0 ? 0 : 1;
+	emptyok  = (put_options & FIGPUT_SAVE_ALLOW_EMPTY)   == 0 ? 0 : 1;
+	nodflt   = (put_options & FIGPUT_NO_SAVE_DEFAULTS)   == 0 ? 0 : 1;
+	nodup    = (put_options & FIGPUT_NO_SAVE_DUPLICATES) == 0 ? 0 : 1;
+	unquoted = (put_options & FIGPUT_SAVE_UNQUOTED)      == 0 ? 0 : 1;
 
 	/* Resolve the file path */
 	if (realpath(path, rpath) == 0)
@@ -137,6 +161,8 @@ put_config(struct fp_config options[], const char *path, uint8_t put_options)
 	if ((snprintf(tpath, PATH_MAX, "%s/%s.XXXXXXXXXX", tmpdir,
 	    basename(rpath))) < 0)
 		return (-1);
+
+	/* Create temporary file */
 	if ((tmpfd = mkstemp(tpath)) == -1)
 		return (-1);
 
@@ -146,10 +172,58 @@ put_config(struct fp_config options[], const char *path, uint8_t put_options)
 
 	/* Read from the original and write to the temporary until EOF */
 	while (r != 0) {
-		break; /* XXX */
+		r = read(fd, p, 1);
+
+		/* Skip to the beginning of a directive */
+		while (r != 0 && (isspace(*p) || *p == '#' || comment ||
+		    (bsemicolon && *p == ';'))) {
+			if (*p == '#')
+				comment = 1;
+			else if (*p == '\n') {
+				comment = 0;
+				line++;
+			}
+			r = read(fd, p, 1);
+		}
+		/* Test for EOF */
+		if (r == 0) {
+			close(fd);
+			goto eof_actions;
+		}
 	}
 
+eof_actions:
+	/* Close read config (keep temp file open for additional writes) */
 	close(fd);
+
+	/* Loop through options we were told to put */
+	for (n = 0; options[n].directive != NULL; n++) {
+		option = &options[n];
+		missing =
+		    (option->result & FIGPUT_DIRECTIVE_FOUND) == 0 ? 1 : 0;
+		switch (option->action) {
+		case FIGPUT_ACTION_REMOVE:
+			/* Removed already */
+			continue;
+		case FIGPUT_ACTION_SET_VALUE:
+			if (!missing) {
+				/* Changed already */
+				continue;
+			}
+			/* Add to output file */
+			break;
+		case FIGPUT_ACTION_CHECK:
+			if (missing) {
+				/* Checks failed, mark as different */
+				option->result |= FIGPUT_VALUE_CHANGED;
+				continue;
+			}
+			/* Checks done */
+			continue;
+		}
+		/* XXX need to add this directive to end of file XXX */
+	}
+
 	close(tmpfd);
 
 	/* XXX move XXX */

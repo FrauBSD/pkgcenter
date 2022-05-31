@@ -32,26 +32,60 @@
 
 #include <figpar.h>
 
+#define figput_cfgvalue figpar_cfgvalue
+
 /*
  * Options to put_config() for put_options bitmask
  */
-#define FP_NO_SAVE_DEFAULTS     0x0001 /* Error if new value == default */
-#define FP_NO_SAVE_DUPLICATES   0x0002 /* Error if directive found twice */
-#define FP_SAVE_ALLOW_EMPTY     0x0004 /* Directive can have no value if type
-					* is one of:
-					*   - FP_TYPE_NONE
-					*   - FP_TYPE_BOOL
-					* NB: for latter, default value must
-					* be false, otherwise raise error
-					*/
-#define FP_SAVE_BACKUP          0x0008 /* Back up config file */
-#define FP_SAVE_UNQUOTED        0x0010 /* Save values without quotes */
+#define FIGPUT_NO_SAVE_DEFAULTS     0x0001 /* Error if new value == default */
+#define FIGPUT_NO_SAVE_DUPLICATES   0x0002 /* Error if directive found twice */
+#define FIGPUT_SAVE_ALLOW_EMPTY     0x0004 /* Directive can have no value if
+					    * type is one of:
+					    *   - FP_TYPE_NONE
+					    *   - FP_TYPE_BOOL
+					    * NB: for latter, default must be
+					    * false, otherwise raise error
+					    */
+#define FIGPUT_SAVE_BACKUP          0x0008 /* Back up config file */
+#define FIGPUT_SAVE_UNQUOTED        0x0010 /* Save values without quotes */
+
+/*
+ * Per-directive actions
+ */
+#define FIGPUT_ACTION_SET_VALUE     0x0000 /* Default */
+#define FIGPUT_ACTION_CHECK         0x0001 /* Check current value */
+#define FIGPUT_ACTION_REMOVE        0x0002 /* Remove directive from config */
+
+/*
+ * Per-directive result codes
+ */
+#define FIGPUT_DIRECTIVE_FOUND      0x0001 /* vs not found (see added) */
+#define FIGPUT_VALUE_CHANGED        0x0002 /* vs no change required */
+#define FIGPUT_DIRECTIVE_ADDED      0x0004 /* vs already existed */
+#define FIGPUT_DIRECTIVE_REMOVED    0x0008 /* vs not found */
+
+/*
+ * Anatomy of a config file option for writing
+ */
+struct figput_config {
+	enum figpar_cfgtype	type;		/* Option value type */
+	const char		*directive;	/* config file keyword */
+	union figpar_cfgvalue	value;		/* NB: for action to write */
+	uint8_t			action;		/* Action to perform */
+	uint16_t		result;		/* NB: set by put_config */
+	uint32_t		line;		/* NB: set by put_config */
+
+	/*
+	 * Function pointer; how to write the directive
+	 */
+	int (*write)(struct figput_config *option);
+};
 
 __BEGIN_DECLS
-int	put_config(struct fp_config _options[], const char *_path,
-	    uint8_t _put_options);
-int	set_config_option(struct fp_config _options[],
-	    const char *_directive, union fp_cfgvalue *_value);
+int	put_config(struct figput_config _options[], const char *_path,
+	    uint16_t _processing_options, uint16_t _put_options);
+int	set_config_option(struct figput_config _options[],
+	    const char *_directive, union figput_cfgvalue *_value);
 __END_DECLS
 
 #endif /* _FIGPUT_H_ */
