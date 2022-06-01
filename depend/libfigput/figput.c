@@ -37,9 +37,10 @@ __FBSDID("$FreeBSD$");
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string_m.h>
 #include <unistd.h>
 
-#if 0
+#if 0 /* REFERENCE MATERIAL */
 #include <err.h>
 #include <limits.h>
 #include <figpar.h>
@@ -49,12 +50,12 @@ __FBSDID("$FreeBSD$");
 #endif
 
 #include "figput.h"
-#if 0
+#if 0 /* REFERENCE MATERIAL */
 #include "parser.h"
 #include "util.h"
 #endif
 
-#if 0
+#if 0 /* REFERENCE MATERIAL */
 #define STR_BUFSIZE 255
 #define defcheck(type) do {                               \
 	if (nodef                 &&                      \
@@ -64,7 +65,7 @@ __FBSDID("$FreeBSD$");
 } while (0)
 #endif
 
-#if 0
+#if 0 /* REFERENCE MATERIAL */
 extern uint8_t fline;
 extern uint8_t found;
 #endif
@@ -108,22 +109,46 @@ put_config(struct figput_config options[], const char *path,
 	uint8_t bequals;
 	uint8_t bsemicolon;
 	uint8_t case_sensitive;
-	uint8_t comment = 0;
+	uint8_t comment;
 	uint8_t emptyok;
+	uint8_t end;
+	uint8_t have_directive;
+	uint8_t have_equals;
+	uint8_t have_value;
+	uint8_t matched_directive;
 	uint8_t missing;
 	uint8_t nodflt;
 	uint8_t nodup;
+	uint8_t quote;
 	uint8_t require_equals;
 	uint8_t strict_equals;
 	uint8_t unquoted;
+	uint16_t result;
 	char p[2];
+	char *dcmp = NULL;
+	char *directive = NULL;
+	char *statement = NULL;
+	char *t;
 	const char *tmpdir;
-	int fd;
-	int tmpfd;
+	char *value = NULL;
+	int error;
+	int fd = -1;
+	int rv = 0;
+	int tmpfd = -1;
 	ssize_t r = 1;
 	struct figput_config *option;
+	uint32_t dsize = 0;
 	uint32_t line = 1;
 	uint32_t n;
+	uint32_t ssize = 0;
+	uint32_t vsize = 0;
+	off_t curpos;
+	off_t endd;
+	off_t endpos;
+	off_t endv;
+	off_t startd;
+	off_t startpos;
+	off_t startv;
 	char rpath[PATH_MAX];
 	char tpath[PATH_MAX];
 
@@ -172,36 +197,402 @@ put_config(struct figput_config options[], const char *path,
 
 	/* Read from the original and write to the temporary until EOF */
 	while (r != 0) {
-		r = read(fd, p, 1);
+		comment = 0;
+		have_directive = 0;
+		have_equals = 0; /* NB: Only used when bequals set */
+		have_value = 0;
+		matched_directive = 0;
+
+		/* Get the current offset as statement start */
+		startpos = lseek(fd, 0, SEEK_CUR) - 1;
+		if (startpos == -1) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+		endpos = startpos;
 
 		/* Skip to the beginning of a directive */
+		/* XXX Only # is supported for comments XXX */
+		r = read(fd, p, 1);
 		while (r != 0 && (isspace(*p) || *p == '#' || comment ||
 		    (bsemicolon && *p == ';'))) {
 			if (*p == '#')
 				comment = 1;
 			else if (*p == '\n') {
-				comment = 0;
 				line++;
 			}
 			r = read(fd, p, 1);
+			endpos += 1;
 		}
-		/* Test for EOF */
-		if (r == 0) {
-			close(fd);
-			goto eof_actions;
-		}
-	}
+		/* Test for EOF before reaching directive */
+		if (r == 0)
+			goto put_config_eof;
+		/* Test whether we read through a comment line */
+		if (comment)
+			goto put_config_end_statement;
 
-eof_actions:
+		/* Get the current offset as start of directive */
+		startd = lseek(fd, 0, SEEK_CUR) - 1;
+		if (startd == -1) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* Find the end of the directive */
+		endd = startd;
+		for (n = 0; r != 0; n++) {
+			/* XXX ??? Literal # can be in directive ???! XXX */
+			/* XXX Do not want, but I think figpar allows XXX */
+			/* XXX !!! fix figpar and figput at same time XXX */
+			if (isspace(*p))
+				break;
+			if (bequals && *p == '=') {
+				have_equals = 1;
+				break;
+			}
+			if (bsemicolon && *p == ';')
+				break;
+			r = read(fd, p, 1);
+		}
+		endd += n;
+
+		/* Test for EOF with zero data read */
+		if (n == 0 && r == 0)
+			goto put_config_eof;
+
+		/* Go back to the beginning of the directive */
+		error = (int)lseek(fd, startd, SEEK_SET);
+		if (error == (startd - 1)) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* Allocate and read the directive into memory */
+		if ((endd - startd) > dsize) {
+			dsize = (endd - startd) + 1;
+			if ((directive = realloc(directive, dsize)) == NULL) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+			if (case_sensitive) {
+				dcmp = directive;
+			} else if ((dcmp = realloc(dcmp, dsize)) == NULL) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+		}
+		r = read(fd, directive, dsize - 1);
+		directive[dsize] = '\0';
+		have_directive = 1;
+
+		/* Determine if directive matches */
+		if (!case_sensitive) {
+			strcpy(dcmp, directive);
+			strtolower(dcmp);
+		}
+		for (n = 0; options[n].directive != NULL; n++) {
+			option = &options[n];
+			if (strcmp(option->directive, dcmp) != 0) {
+				/* Not a match */
+				continue;
+			}
+			matched_directive = 1;
+			break;
+		}
+
+		/* Test for EOF with some data read */
+		if (r == 0)
+			goto put_config_eof;
+
+		/*
+		 * Read up to start of value (we need to know where the value
+		 * ends but to do that we first need to know where it begins).
+		 *
+		 * NB: Regardless of whether the directive is known or NOT, we
+		 * need to parse the whole line so even when it does not match
+		 * a line we need to edit, we can parse up to the end of the
+		 * full statement to contine at the next (which, if we the
+		 * config supports semi-colons, may not necessarily be at the
+		 * next newline character).
+		 */
+
+		/*
+		 * If we are supposed to break-on-equals (vs simply requiring
+		 * only whitespace separating directive and value) and the
+		 * current character is an equal sign, seek past it and read
+		 * the next character.
+		 */
+		if (bequals && *p == '=') {
+			if (lseek(fd, 1, SEEK_CUR) != -1)
+				r = read(fd, p, 1);
+			/*
+			 * Consider there to be no value to the directive if
+			 * (1) equals are strict (zero whitespace allowed
+			 * around them) and (2) the character immediately
+			 * following is a space.
+			 *
+			 * NB: The newline acts as a terminator.
+			 */
+			if (strict_equals && isspace(*p))
+				*p = '\n';
+		}
+
+		/*
+		 * Read past whitespace to get to value start
+		 * NB: If we are (a) told to break-on-semicolon and are
+		 *     currently on a semi-colon, or (2) asked to treat equals
+		 *     strictly (no surrounding whitespace) then do not advance
+		 *     position.
+		 */
+		if (!(bsemicolon && *p == ';') &&
+		    !(strict_equals && *p == '=')) {
+			while (r != 0 && isspace(*p) && *p != '\n')
+				r = read(fd, p, 1);
+		}
+
+		/*
+		 * If we (1) have not hit EOF (r == 0) and (2) are supposed-to
+		 * break-on-equals and (3) are on equals and (4) whitespace is
+		 * allowed around the equals (strict_equals is unset) then read
+		 * past any whitespace that follows said equals.
+		 */
+		if (r != 0 && bequals && *p == '=' && !strict_equals) {
+			have_equals = 1;
+			r = read(fd, p, 1);
+			while (r != 0 && isspace(*p) && *p != '\n')
+				r = read(fd, p, 1);
+		}
+
+		/* Get the current offset as start of value */
+		startv = lseek(fd, 0, SEEK_CUR) - 1;
+		if (startv == -1) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* If no value, allocate a dummy value for below */
+		/* XXX Only # is supported for comments XXX */
+		if (r == 0 || *p == '\n' || *p == '#' ||
+		    (bsemicolon && *p == ';')) {
+			/* Initialize the value if not already done */
+			if (value == NULL && (value = malloc(1)) == NULL) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+			value[0] = '\0';
+			endv = startv;
+			goto put_config_have_value;
+		}
+
+		/*
+		 * Find the end of the value
+		 */
+		end = 0;
+		quote = 0;
+		while (r != 0 && end == 0) {
+			/* Read until some condition prevents it */
+			if (*p != '\"' && *p != '#' && *p != '\n' &&
+			    (!bsemicolon || *p != ';')) {
+				r = read(fd, p, 1);
+				continue;
+			}
+
+			/* Get the current offset as last char read */
+			curpos = lseek(fd, 0, SEEK_CUR) - 1;
+			if (curpos == -1) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+
+			/*
+			 * Seek back to test whether last char is escaped with
+			 * backslash (making it part of value).
+			 */
+			error = (int)lseek(fd, -2, SEEK_CUR);
+			if (error == -3) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+			r = read(fd, p, 1);
+
+			/* Count how many backslashes there are (0 or more) */
+			for (n = 0; *p == '\\'; n++) {
+				/* Move back another byte */
+				error = (int)lseek(fd, -2,
+						   SEEK_CUR);
+				if (error == -3) {
+					rv = -1;
+					goto put_config_cleanup;
+				}
+				r = read(fd, p, 1);
+			}
+
+			/* Return to previous position of last char read */
+			error = (int)lseek(fd, curpos, SEEK_SET);
+			if (error == (curpos - 1)) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+			r = read(fd, p, 1);
+
+			/*
+			 * If last character is NOT escaped
+			 */
+			if ((n & 1) == 0) {
+				switch (*p) {
+				case '\"':
+					quote = !quote;
+					break;
+				case '#':
+					if (!quote)
+						end = 1;
+					break;
+				case '\n':
+					end = 1;
+					break;
+				case ';':
+					if (!quote &&
+					    bsemicolon)
+						end = 1;
+					break;
+				}
+			} else { /* Escaped */
+				switch (*p) {
+				case '\n':
+					line++;
+				}
+			}
+
+			/* Advance to the next character */
+			r = read(fd, p, 1);
+		}
+
+		/* Get the current offset as value end */
+		endv = lseek(fd, 0, SEEK_CUR) - 1;
+		if (endv == -1) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* Move offset back to the beginning of the value */
+		error = (int)lseek(fd, startv, SEEK_SET);
+		if (error == (startv - 1)) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* Calculate value length */
+		n = (uint32_t)(endv - startv);
+		if (r != 0) /* more to read, don't include last char read */
+			n--;
+
+		/* Allocate and read the value into memory */
+		if (n > vsize) {
+			vsize = n + 1;
+			if ((value = realloc(value, vsize)) == NULL) {
+				rv = -1;
+				goto put_config_cleanup;
+			}
+		}
+		r = read(fd, value, vsize - 1);
+		value[vsize] = '\0';
+		have_value = 1;
+
+		/* Cut trailing whitespace off by termination */
+		t = value + vsize - 1;
+		while (isspace(*--t))
+			*t = '\0';
+
+put_config_have_value:
+		/* Continue to read until end of statement */
+		if (*p == '\n' || (bsemicolon && *p == ';')) {
+			while (r != 0 && (isspace(*p) || *p == '#' ||
+			    comment)) {
+				if (*p == '#')
+					comment = 1;
+				else if (*p == '\n') {
+					comment = 0;
+					line++;
+				}
+				r = read(fd, p, 1);
+			}
+		}
+
+		/* Get the current offset as statement end */
+		endpos = lseek(fd, 0, SEEK_CUR) - 1;
+		if (endpos == -1) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+put_config_end_statement:
+
+		/*
+		 * For no-match, simply put the line/statement and continue
+		 */
+		if (!matched_directive) {
+			/* Read up to the end of the statement */
+		}
+
+#if 0 /* UPCOMING */
+		result = option->result; /* NB: copy */
+		missing =
+		    (result & FIGPUT_DIRECTIVE_FOUND) == 0 ? 1 : 0;
+		switch(option->action) {
+		case FIGPUT_ACTION_CHECK:
+		case FIGPUT_ACTION_REMOVE:
+		case FIGPUT_ACTION_SET_VALUE:
+		}
+#endif
+
+	} /* while (read) */
+
+put_config_eof:
 	/* Close read config (keep temp file open for additional writes) */
 	close(fd);
+	fd = -1;
+
+	/*
+	 * Write any remaining data trailing the last statement
+	 */
+	if (!have_directive && endpos > startpos) {
+		/* Allocate space for the statement to be read */
+		n = (endpos - startpos) + 1;
+		if (n > ssize)
+			ssize = n;
+		if ((statement = realloc(statement, ssize)) == NULL) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* Go back to the beginning of the statement */
+		error = (int)lseek(fd, startpos, SEEK_SET);
+		if (error == (startpos - 1)) {
+			rv = -1;
+			goto put_config_cleanup;
+		}
+
+		/* Read statement so we can then write it as-is */
+		r = read(fd, statement, ssize - 1);
+		statement[ssize] = '\0';
+
+		/* XXX write statement to tmpfd XXX */
+	}
 
 	/* Loop through options we were told to put */
 	for (n = 0; options[n].directive != NULL; n++) {
 		option = &options[n];
-		missing =
-		    (option->result & FIGPUT_DIRECTIVE_FOUND) == 0 ? 1 : 0;
+		result = option->result; /* NB: copy */
+		missing = (result & FIGPUT_DIRECTIVE_FOUND) == 0 ? 1 : 0;
 		switch (option->action) {
+		case FIGPUT_ACTION_CHECK:
+			if (missing) {
+				/* Checks failed, mark as different */
+				option->result |= FIGPUT_VALUE_CHANGED;
+				continue;
+			}
+			/* Checks done */
+			continue;
 		case FIGPUT_ACTION_REMOVE:
 			/* Removed already */
 			continue;
@@ -212,26 +603,28 @@ eof_actions:
 			}
 			/* Add to output file */
 			break;
-		case FIGPUT_ACTION_CHECK:
-			if (missing) {
-				/* Checks failed, mark as different */
-				option->result |= FIGPUT_VALUE_CHANGED;
-				continue;
-			}
-			/* Checks done */
-			continue;
 		}
-		/* XXX need to add this directive to end of file XXX */
+
+		/* XXX need to add directive to tmpfd XXX */
 	}
 
 	close(tmpfd);
+	tmpfd = -1;
 
-	/* XXX move XXX */
+	/* XXX move file XXX */
 
-	return (0);
+put_config_cleanup:
+	if (fd >= 0)
+		close(fd);
+	if (tmpfd >= 0)
+		close(tmpfd);
+
+	/* XXX free memory XXX */
+
+	return (rv);
 }
 
-#if 0
+#if 0 /* REFERENCE MATERIAL */
 int
 emit_config(struct figpar_config options[static 1], const char *path,
     const char *directive, const char *value, uint16_t par_options,
