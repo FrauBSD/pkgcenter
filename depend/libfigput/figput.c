@@ -112,7 +112,7 @@ put_config(struct figput_config options[], const char *path,
 	uint8_t comment;
 	uint8_t emptyok;
 	uint8_t end;
-	uint8_t have_directive;
+	uint8_t have_directive = 0;
 	uint8_t have_equals;
 	uint8_t have_value;
 	uint8_t matched_directive;
@@ -144,10 +144,10 @@ put_config(struct figput_config options[], const char *path,
 	uint32_t vsize = 0;
 	off_t curpos;
 	off_t endd;
-	off_t endpos;
+	off_t endpos = 0;
 	off_t endv;
 	off_t startd;
-	off_t startpos;
+	off_t startpos = 0;
 	off_t startv;
 	char rpath[PATH_MAX];
 	char tpath[PATH_MAX];
