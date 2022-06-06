@@ -28,10 +28,92 @@
 #include <sys/cdefs.h>
 __FBSDID("$FreeBSD$");
 
+#include <err.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define parse(item) do { \
+	if ((item = malloc(strlen(optarg)+1)) == NULL)           \
+		err(EXIT_FAILURE, #item);                        \
+	if (snprintf(item, strlen(optarg)+1, "%s", optarg) < 0)  \
+		return (-1);                                     \
+} while (0)
+
+/* Debugging */
+static bool debug = false;
+
+/* Extra information */
+static char *pgm; /* set to argv[0] by main() */
+
+/* Function prototypes */
+static void usage(void);
 
 int
 main(int argc, char *argv[])
 {
+	int ch;
+	char *directive = NULL;
+	char *value = NULL;
+	char rpath[PATH_MAX] = {0};
+
+	pgm = argv[0]; /* store a copy of invocation name */
+
+	/*
+	 * Process command-line options
+	 */
+	while ((ch = getopt(argc, argv,
+	    "Dc:d:v:h")) != -1) {
+		switch(ch) {
+		case 'D': /* debugging */
+			debug = true;
+			break;
+		case 'c': /* resolve configuration file path */
+			if (realpath(optarg, rpath) == 0)
+				err(EXIT_FAILURE, "%s", rpath);
+			break;
+		case 'd': /* set directive */
+			parse(directive);
+			break;
+		case 'h': /* help/usage */
+			usage();
+			break; /* NOTREACHED */
+		case 'v': /* set value */
+			parse(value);
+			break;
+		default:
+			usage();
+			break; /* NOTREACHED */
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	/* Sanity checks */
+	if (!strlen(rpath))
+		errx(EXIT_FAILURE, "Configuration file is not provided");
+
+	free(directive);
+	free(value);
+
 	exit(EXIT_SUCCESS);
+}
+
+#ifdef __STDC_VERSION__
+#if __STDC_VERSION__ >  201710L && __has_c_attribute(noreturn)
+[[noreturn]]
+#endif
+#if __STDC_VERSION__ >= 201112L
+_Noreturn
+#endif
+#endif
+static void
+usage(void)
+{
+
+	fprintf(stderr, "Usage: ...\n"); /* XXX: Incomplete */
+	exit(EXIT_FAILURE);
 }
