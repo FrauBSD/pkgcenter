@@ -102,13 +102,10 @@ main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 }
 
-#ifdef __STDC_VERSION__
-#if __STDC_VERSION__ >  201710L && __has_c_attribute(noreturn)
+#if   __STDC_VERSION__ >= 202000L && __has_c_attribute(noreturn)
 [[noreturn]]
-#endif
-#if __STDC_VERSION__ >= 201112L
+#elif __STDC_VERSION__ >= 201112L
 _Noreturn
-#endif
 #endif
 static void
 usage(void)
