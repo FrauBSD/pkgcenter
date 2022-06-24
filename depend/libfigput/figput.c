@@ -204,8 +204,7 @@ put_config(struct figput_config options[], const char *path,
 		matched_directive = 0;
 
 		/* Get the current offset as statement start */
-		startpos = lseek(fd, 0, SEEK_CUR) - 1;
-		if (startpos == -1) {
+		if ((startpos = lseek(fd, 0, SEEK_CUR)) == -1) {
 			rv = -1;
 			goto put_config_cleanup;
 		}
