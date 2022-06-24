@@ -82,9 +82,9 @@ struct figput_config {
 };
 
 __BEGIN_DECLS
-int	put_config(struct figput_config _options[], const char *_path,
+int	put_config(struct figput_config _options[static 1], const char *_path,
 	    uint16_t _processing_options, uint16_t _put_options);
-int	set_config_option(struct figput_config _options[],
+int	set_config_option(struct figput_config _options[static 1],
 	    const char *_directive, union figput_cfgvalue *_value);
 __END_DECLS
 
