@@ -191,6 +191,14 @@ put_config(struct figput_config options[static 1], const char *path,
 			if (*p == '#')
 				comment = 1;
 			else if (*p == '\n') {
+                                /*
+                                 * XXX: Multiline comments are not supported
+                                 * at this time, so we simply reset comment
+                                 * back to zero. But if we ever add support
+                                 * for multiline comments, we need to first
+                                 * make sure the terminating sequence is met.
+                                 */
+                                comment = 0;
 				line++;
 			}
 			r = read(fd, p, 1);
