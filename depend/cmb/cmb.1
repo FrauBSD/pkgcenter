@@ -36,22 +36,22 @@ there are N sets where each set consists of an increasing number of items
 By default,
 all sets are produced
 .Pq Ql Li -k 0 .
-Combination order within a set of N-items is always consistent and repeatable
-given the order of items on the command-line.
-The order of combinations within a single set of N-items
+Combination order within a set of N items is always consistent and repeatable
+given the order of items on the command line.
+The order of combinations within a single set of N items
 .Pq where every combination in the set has the same number of items
-is dependent upon the order of items on the command-line.
+is dependent upon the order of items on the command line.
 .Pp
 Available options:
-.Bl -tag -width ".Fl r Ar range"
+.Bl -tag -width "-r range"
 .It Fl 0
 Change the behavior of
 .Ql Fl f
-to read items separated by NUL character
+to read items separated by a NUL character
 .Pq character code 0
 instead of newline.
 .It Fl c Ar num
-Produce at-most
+Produce at most
 .Ar num
 combinations.
 If
@@ -72,7 +72,7 @@ Ignored when given
 .Ql Fl t .
 .It Fl e
 Show empty set.
-A single combination containing no-items.
+A single combination containing no items.
 .It Fl F Ar num
 Find
 .Sq Fl X Ar op
@@ -86,11 +86,12 @@ one item per line
 .Pq default .
 With
 .Ql Fl 0 ,
-read items separated by NUL character.
+read items separated by a NUL character.
 If an argument is
 .Ql Li - ,
 read from stdin.
-The sum of items read from all files cannot exceed 4294967295.
+The sum of items read from all files cannot exceed 4294967295
+.Pq 2^32-1 .
 .It Fl i Ar num
 Skip the first
 .Va num-1
@@ -191,7 +192,8 @@ expand to numbers 1 to num.
 If a range
 .Pq Qo min..max Qc or Qo min-max Qc ,
 expand to numbers min to max.
-Numbers must be whole positive integers between 0 and 4294967295.
+Numbers must be whole positive integers between 0 and 4294967295
+.Pq 2^32-1 .
 .It Fl S
 Silent.
 Do not print combinations to stdout.
@@ -215,7 +217,7 @@ Print version information to stdout and exit.
 Includes
 .Xr cmb 3
 library version and
-.Pq if-enabled
+.Pq if enabled
 .Xr SSL 3
 library version.
 .It Fl X Ar op
@@ -238,7 +240,7 @@ for
 Ignored when given
 .Ql Fl t .
 .It Fl z
-Print combinations followed by ASCII NUL character
+Print combinations followed by an ASCII NUL character
 .Pq character code 0
 instead of newline
 .Pq character code 10 .
@@ -348,7 +350,7 @@ ending with 2-item combinations:
 cmb -k -1..2 1 2 3
 .Ed
 .Pp
-Print combinations starting with 2-items ending with maximum items
+Print combinations starting with 2 items ending with maximum items
 .Pq 3 :
 .Bd -literal -offset indent
 cmb -k 2..-1 x y z
@@ -368,6 +370,6 @@ cmb -X add -F 4 -r 3
 The
 .Nm
 utility first appeared in
-.Fx 13.0 .
+.Fx 15.0 .
 .Sh AUTHORS
 .An Devin Teske Aq Mt dteske@FreeBSD.org
