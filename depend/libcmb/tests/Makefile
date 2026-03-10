@@ -1,8 +1,7 @@
 ############################################################ IDENT(1)
 #
 # $Title: Makefile to compile cmb(3) tests $
-# $Copyright: 2019 Devin Teske. All rights reserved. $
-# $FrauBSD: pkgcenter/depend/libcmb/tests/Makefile 2019-01-19 16:48:37 -0800 freebsdfrau $
+# $Copyright: 2019-2026 Devin Teske. All rights reserved. $
 #
 ############################################################ OBJECTS
 
